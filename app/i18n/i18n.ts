@@ -3,19 +3,17 @@ import i18n from "i18n-js"
 import { I18nManager } from "react-native"
 
 // if English isn't your default language, move Translations to the appropriate language file.
-import en, { Translations } from "./en"
-import ar from "./ar"
-import ko from "./ko"
-import fr from "./fr"
+import fa, { Translations } from "./fa"
+
 
 i18n.fallbacks = true
 
 // to use regional locales use { "en-US": enUS } etc
-i18n.translations = { ar, en, "en-US": en, ko, fr }
+i18n.translations = { fa }
 
-const fallbackLocale = "en-US"
+const fallbackLocale = "fa"
 const systemLocale = Localization.getLocales()[0]
-const systemLocaleTag = systemLocale?.languageTag ?? "en-US"
+const systemLocaleTag = systemLocale?.languageTag ?? "fa"
 
 if (Object.prototype.hasOwnProperty.call(i18n.translations, systemLocaleTag)) {
   // if specific locales like en-FI or en-US is available, set it
@@ -31,9 +29,12 @@ if (Object.prototype.hasOwnProperty.call(i18n.translations, systemLocaleTag)) {
 }
 
 // handle RTL languages
-export const isRTL = systemLocale?.textDirection === "rtl"
+// export const isRTL = systemLocale?.textDirection === "rtl"
+export const isRTL = true
 I18nManager.allowRTL(isRTL)
 I18nManager.forceRTL(isRTL)
+console.log(isRTL)
+console.log(systemLocale)
 
 /**
  * Builds up valid keypaths for translations.

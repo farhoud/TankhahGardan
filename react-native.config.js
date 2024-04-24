@@ -18,5 +18,5 @@ module.exports = {
     ios: {
       unstable_reactLegacyComponentNames: ["CellContainer", "AutoLayoutView"],
     },
-  },
+  }
 }

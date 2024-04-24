@@ -86,10 +86,14 @@ export function Icon(props: IconProps) {
 }
 
 export const iconRegistry = {
+  addPhotoCamera: require("../../assets/icons/add_photo_camera.png"),
+  addPhotoGallery: require("../../assets/icons/add_photo_gallery.png"),
   back: require("../../assets/icons/back.png"),
   bell: require("../../assets/icons/bell.png"),
   caretLeft: require("../../assets/icons/caretLeft.png"),
   caretRight: require("../../assets/icons/caretRight.png"),
+  caretUp: require("../../assets/icons/caretUp.png"),
+  caretDown: require("../../assets/icons/caretDown.png"),
   check: require("../../assets/icons/check.png"),
   clap: require("../../assets/icons/demo/clap.png"),
   community: require("../../assets/icons/demo/community.png"),
@@ -108,6 +112,11 @@ export const iconRegistry = {
   slack: require("../../assets/icons/demo/slack.png"),
   view: require("../../assets/icons/view.png"),
   x: require("../../assets/icons/x.png"),
+  add: require("../../assets/icons/add.png"),
+  dateRange: require("../../assets/icons/date_range.png"),
+  search: require("../../assets/icons/search.png"),
+  charge: require("../../assets/icons/charge.png"),
+  spend: require("../../assets/icons/spend.png"),
 }
 
 const $imageStyleBase: ImageStyle = {
