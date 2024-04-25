@@ -184,8 +184,8 @@ const $baseViewStyle: ViewStyle = {
 }
 
 const $baseTextStyle: TextStyle = {
-  fontSize: 16,
-  lineHeight: 20,
+  fontSize: 14,
+  lineHeight: 18,
   fontFamily: typography.primary.medium,
   textAlign: "center",
   flexShrink: 1,
