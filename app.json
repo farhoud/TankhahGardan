@@ -17,9 +17,7 @@
       "fallbackToCacheTimeout": 0
     },
     "jsEngine": "hermes",
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "android": {
       "icon": "./assets/images/app-icon-android-legacy.png",
       "package": "com.tankhahgardan",
@@ -67,7 +65,12 @@
           }
         }
       ],
-      "expo-font",
+      [
+        "expo-font",
+        {
+          "fonts": ["./assets/fonts/IRANSansXFaNum-Bold.ttf", "./assets/fonts/IRANSansXFaNum-Regular"]
+        }
+      ],
       [
         "expo-image-picker",
         {
@@ -77,6 +80,11 @@
     ],
     "experiments": {
       "tsconfigPaths": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "73fd6a4c-37aa-45f1-baf6-a00c51a8e49f"
+      }
     }
   },
   "ignite": {
