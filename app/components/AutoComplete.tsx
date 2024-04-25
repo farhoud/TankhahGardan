@@ -19,8 +19,7 @@ import {
 } from "react-native"
 import { isRTL, translate } from "../i18n"
 import { colors, spacing, typography } from "../theme"
-import { Text, TextProps, ListItem, ListView, Icon, Button } from "."
-import { overlay } from "reactotron-react-native"
+import { Text, TextProps, ListItem, Button } from "."
 
 export interface TextFieldAccessoryProps {
   style: StyleProp<any>
@@ -182,7 +181,6 @@ export const AutoComplete = forwardRef(function TextField(
    */
   function focusInput() {
     if (disabled) return
-
     input.current?.focus()
   }
 
@@ -227,19 +225,6 @@ export const AutoComplete = forwardRef(function TextField(
             multiline={TextInputProps.multiline ?? false}
           />
         )}
-        <TouchableOpacity
-          activeOpacity={1}
-          style={$leftAccessoryStyle}
-          onPress={() => {
-            setVisible(!visible)
-          }}
-          accessibilityState={{ disabled }}
-        >
-          <Icon
-            icon={"caretDown"}
-            style={{ transform: [{ rotate: !visible ? "0deg" : "180deg" }] }}
-          ></Icon>
-        </TouchableOpacity>
 
         <TextInput
           onPressOut={() => setVisible(true)}
@@ -251,9 +236,6 @@ export const AutoComplete = forwardRef(function TextField(
           {...TextInputProps}
           editable={!disabled}
           style={[$inputStyles, { textAlign: "right", direction: "rtl" }]}
-          onBlur={() => setVisible(false)}
-          // onFocus={() => setVisible(true)}
-          // onPressOut={()=> setVisible(false)}
         />
 
         {!!RightAccessory && (
@@ -266,10 +248,21 @@ export const AutoComplete = forwardRef(function TextField(
         )}
       </View>
 
-      <Modal visible={visible} transparent onRequestClose={()=>{setVisible(false)}}>
-        <TouchableOpacity style={$centeredView} onPress={()=>{setVisible(false)}}>
+      <Modal
+        visible={visible}
+        transparent
+        onRequestClose={() => {
+          setVisible(false)
+        }}
+      >
+        <TouchableOpacity
+          style={$centeredView}
+          onPress={() => {
+            setVisible(false)
+          }}
+        >
           <TouchableOpacity style={$dpkContainer} activeOpacity={1} onPress={focusInput}>
-            <View style={{ display: "flex", width:"100%" }}>
+            <View style={{ display: "flex", width: "100%" }}>
               <TextInput
                 ref={input}
                 underlineColorAndroid={colors.border}
@@ -280,25 +273,24 @@ export const AutoComplete = forwardRef(function TextField(
                 editable={!disabled}
                 style={{ textAlign: "right", direction: "rtl" }}
                 autoFocus
-                // style={{ flex: 1}}
-                // style={[$inputStyles, { textAlign: "right", direction: "rtl" }]}
-                // onFocus={() => setVisible(true)}
-                // onPressOut={()=> setVisible(false)}
-                />
-                {suggestions?.map((item, index) => {
-                  console.log(item)
-                  return (
-                    <ListItem
-                      key={index}
-                      onPress={() => selectSuggestion(item.title)}
-                      textStyle={{ textAlign: "center" }}
-                      text={item.title}
-                    />
-                  )
-                })}
-                <Button onPress={()=>{setVisible(false)}}>اضافه</Button>
+              />
+              {suggestions?.map((item, index) => {
+                return (
+                  <ListItem
+                    key={index}
+                    onPress={() => selectSuggestion(item.title)}
+                    textStyle={{ textAlign: "center", fontSize: 14 }}
+                    text={item.title}
+                  />
+                )
+              })}
+              <Button
+                onPress={() => {
+                  setVisible(false)
+                }}
+                tx="common.add"
+              />
             </View>
-
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
@@ -360,29 +352,6 @@ const $leftAccessoryStyle: ViewStyle = {
   height: 40,
   justifyContent: "center",
   alignItems: "center",
-}
-
-const $overlay: ViewStyle | TextStyle = {
-  // width:"100%",
-  // height:"100%",
-  position: "absolute",
-  top: 70,
-  right: 0,
-  left: 0,
-  margin: 2,
-  backgroundColor: "white",
-  // borderRadius: 0,20,0,20
-  // padding: 35,
-  // alignItems: "center",
-  shadowColor: "#000",
-  shadowOffset: {
-    width: 0,
-    height: 2,
-  },
-  shadowOpacity: 0.25,
-  shadowRadius: 4,
-  elevation: 5,
-  // zIndex: 1000
 }
 
 const $centeredView: ViewStyle = {
