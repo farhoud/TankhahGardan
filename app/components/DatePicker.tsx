@@ -243,9 +243,9 @@ export const DatePicker = forwardRef(function TextField(
           {...TextInputProps}
           editable={!disabled}
           style={$inputStyles}
-          onFocus={() => {
+          showSoftInputOnFocus={false}
+          onFocus={(e) => {
             setModalVisibility(true)
-            Keyboard.dismiss()
           }}
         />
 
@@ -380,7 +380,7 @@ export function DatePickerModal(props: DatePickerModalProps) {
 
   return (
     <View style={$centeredView}>
-      <Modal transparent {...(modalProps as ModalProps)}>
+      <Modal transparent {...(modalProps as ModalProps)} onRequestClose={()=>{props.onClose(value)}}>
         <View style={$centeredView}>
           <View style={$dpkContainer}>
             <View style={$dpkContentContainer}>

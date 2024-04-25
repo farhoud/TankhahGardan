@@ -1,7 +1,4 @@
-import React, {
-  useEffect,
-  useState,
-} from "react"
+import React, { useEffect, useState } from "react"
 import {
   Modal,
   StyleProp,
@@ -45,49 +42,49 @@ export function DateRangePicker(props: DateRangePickerProps) {
   const formatLabel = () => {
     const startStr = start ? formatDateIR(start) : "ندارد"
     const endStr = end ? formatDateIR(end) : "ندارد"
-    return (
-      <Text
-        preset="formLabel"
-        style={{ direction: "rtl", textAlign: "right" }}
-        text={`${startStr} تا ${endStr}`}
-      />
-    )
+    return <Text preset="formLabel" style={{}} text={`${startStr} تا ${endStr}`} />
   }
 
   return (
     <>
       <Modal transparent visible={visible}>
-        <View style={$centeredView}>
-          <View style={$dpkContainer}>
-            <View style={$dpkContentContainer}>
-              <View
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <DatePickerInput value={start || new Date()} onValueChange={onStartChange} />
-                <Text>تا</Text>
-                <DatePickerInput value={end || new Date()} onValueChange={onEndChange} />
+        <TouchableOpacity
+          style={$centeredView}
+          onPress={() => {
+            setVisible(false)
+          }}
+        >
+          <TouchableOpacity activeOpacity={1} style={$centeredView}>
+            <View style={$dpkContainer}>
+              <View style={$dpkContentContainer}>
+                <View
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <DatePickerInput value={start || new Date()} onValueChange={onStartChange} />
+                  <Text>تا</Text>
+                  <DatePickerInput value={end || new Date()} onValueChange={onEndChange} />
+                </View>
+              </View>
+              <View style={$dpkContentActions}>
+                <Button
+                  tx="common.ok"
+                  onPress={() => {
+                    setVisible(false)
+                  }}
+                ></Button>
               </View>
             </View>
-            <View style={$dpkContentActions}>
-              <Button
-                tx="common.ok"
-                onPress={() => {
-                  setVisible(false)
-                }}
-              ></Button>
-            </View>
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
 
       <Button
         preset={"default"}
-        // style={{ width: "100%" }}
         onPress={() => {
           setVisible(true)
         }}
@@ -148,7 +145,7 @@ export function DatePickerInput(props: DatePickerModalProps) {
   }, [value])
 
   return (
-    <View style={{ display: "flex", flexDirection: "row" }}>
+    <View style={{ display: "flex", flexDirection: "row-reverse" }}>
       <View style={$dpkController}>
         <TouchableOpacity style={$dpkIconBtn} onPress={() => changeValue(year, true, setYear, 4)}>
           <Icon icon={"caretUp"}></Icon>
@@ -225,12 +222,13 @@ const $dpkContainer: ViewStyle = {
   shadowRadius: 4,
   elevation: 5,
   height: "50%",
-  width: "80%",
+  width: "70%",
 }
 
 const $dpkContentContainer: ViewStyle = {
   display: "flex",
   flexDirection: "row",
+  justifyContent: "space-around",
   flex: 1,
 }
 
@@ -245,7 +243,8 @@ const $dpkController: ViewStyle = {
 }
 
 const $dpkInput = {
-  fontSize: 16,
+  fontSize: 18,
+  fontFamily: "IRANSansXFaNum-Regular",
 }
 
 const $dpkIconBtn: ViewStyle = { padding: 10, borderRadius: 180 }
