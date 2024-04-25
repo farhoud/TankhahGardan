@@ -1,14 +1,13 @@
 import { observer } from "mobx-react-lite"
 import React, { FC, useEffect, useLayoutEffect, useState } from "react"
-import { TextStyle, View, ViewStyle } from "react-native"
-import { AutoImage, Button, Header, Icon, Screen, Text } from "../../components"
+import { TextStyle, View, ViewStyle, TouchableOpacity } from "react-native"
+import { AutoImage, Header, Icon, Screen, Text } from "../../components"
 import { colors } from "../../theme"
 import { TextField } from "../../components"
 import { AutoComplete } from "app/components/AutoComplete"
 import { ButtonSelect } from "app/components/ButtonSelect"
 import { DatePicker } from "app/components/DatePicker"
 import * as ImagePicker from "expo-image-picker"
-import { TouchableOpacity } from "react-native-gesture-handler"
 import * as FileSystem from "expo-file-system"
 import { useObject, useQuery, useRealm } from "@realm/react"
 import { PaymentMethod, Spend } from "app/models/realm/models"
@@ -17,8 +16,8 @@ import { currencyFormatter } from "app/utils/formatDate"
 import { isNumber } from "app/utils/validation"
 import { BSON, UpdateMode } from "realm"
 import ImageView from "react-native-image-viewing"
-import { AppStackScreenProps, StackNavigation } from "app/navigators"
-import { useNavigation } from "@react-navigation/native"
+import { StackNavigation } from "app/navigators"
+import { CommonActions, useNavigation } from "@react-navigation/native"
 import { SpendStackScreenProps } from "app/navigators/SpendNavigator"
 
 export const TankhahSpendFormScreen: FC<SpendStackScreenProps<"TankhahSpendForm">> = observer(
@@ -177,10 +176,22 @@ export const TankhahSpendFormScreen: FC<SpendStackScreenProps<"TankhahSpendForm"
             },
             data ? UpdateMode.Modified : undefined,
           )
-          
         })
-        navigation.goBack()
+        goBack()
         return
+      }
+    }
+
+    const goBack = () => {
+      if (navigation.canGoBack()) {
+        navigation.goBack()
+      } else {
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: "Demo", params: { screen: "TankhahHome", params: {} } }],
+          }),
+        )
       }
     }
 
@@ -215,23 +226,25 @@ export const TankhahSpendFormScreen: FC<SpendStackScreenProps<"TankhahSpendForm"
           <Header
             title="خرج"
             leftIcon="back"
-            onLeftPress={() => navigation.goBack()}
+            onLeftPress={() => goBack()}
             rightTx="common.save"
-            onRightPress={isValid?handleSubmit:undefined}
+            onRightPress={isValid ? handleSubmit : undefined}
           />
         ),
       })
-    }, [isValid,handleSubmit])
-    
+    }, [isValid, handleSubmit])
+
     return (
       <Screen
         preset="scroll"
-        safeAreaEdges={["bottom"]}
-        contentContainerStyle={$screenContentContainer}
+        style={$root}
+        contentContainerStyle={{marginHorizontal:10, paddingBottom:200}}
       >
         <DatePicker
           date={doneAt}
-          onDateChange={(date) =>{ console.log(date), setDoneAt(date) }}
+          onDateChange={(date) => {
+            console.log(date), setDoneAt(date)
+          }}
           status={errors?.doneAt ? "error" : undefined}
           label="Name"
           labelTx="tankhahChargeScreen.dateLabel"
@@ -250,9 +263,9 @@ export const TankhahSpendFormScreen: FC<SpendStackScreenProps<"TankhahSpendForm"
             setRecipient(text)
           }}
           label="Name"
-          labelTx="tankhahSpendFormScreen.nameLabel"
+          labelTx="tankhahSpendFormScreen.recipientLabel"
           placeholder="John Doe"
-          placeholderTx="tankhahSpendFormScreen.namePlaceholder"
+          placeholderTx="tankhahSpendFormScreen.recipientPlaceholder"
         />
         {/* </View> */}
         <ButtonSelect
@@ -334,16 +347,6 @@ export const TankhahSpendFormScreen: FC<SpendStackScreenProps<"TankhahSpendForm"
           placeholder="John Doe"
           placeholderTx="tankhahSpendFormScreen.groupPlaceholder"
         />
-        <TextField
-          value={description}
-          onChangeText={(value) => setDescription(value)}
-          multiline
-          // status="error"
-          label="Name"
-          labelTx="tankhahChargeScreen.descriptionLabel"
-          placeholder="John Doe"
-          placeholderTx="tankhahChargeScreen.descriptionPlaceholder"
-        />
         <View style={{ margin: 20 }}>
           <Text preset="formLabel">پیوست ها</Text>
           <View style={{ display: "flex", flexDirection: "row", flexWrap: "wrap" }}>
@@ -393,21 +396,29 @@ export const TankhahSpendFormScreen: FC<SpendStackScreenProps<"TankhahSpendForm"
             </TouchableOpacity>
           </View>
         </View>
-
+        <TextField
+          value={description}
+          onChangeText={(value) => setDescription(value)}
+          multiline
+          // status="error"
+          label="Name"
+          labelTx="tankhahChargeScreen.descriptionLabel"
+          placeholder="John Doe"
+          placeholderTx="tankhahChargeScreen.descriptionPlaceholder"
+        />
       </Screen>
     )
   },
 )
 
 // #region Styles
-const $screenContentContainer: ViewStyle = {
-  // flex: 1,
-  marginHorizontal: 10
+const $root: ViewStyle = {
+  flex: 1,
+  // marginHorizontal: 10,
   // margin: 10,
   // marginTop: 20,
   // backgroundColor: "gray",
   // padding: 20,
-
 }
 
 const $iconBtn: ViewStyle | TextStyle = {

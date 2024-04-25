@@ -8,13 +8,10 @@ import { Fund, Spend } from "app/models/realm/models"
 import { colors } from "app/theme"
 import { subMonths, addDays } from "date-fns"
 import { PieChart } from "react-native-gifted-charts"
-import { currencyFormatter, formatDataIR } from "app/utils/formatDate"
-import { format } from "date-fns-jalali/format"
+import { currencyFormatter, formatDateIR } from "app/utils/formatDate"
 import { ScrollView } from "react-native-gesture-handler"
 import { useNavigation } from "@react-navigation/native"
 import { SpendStackScreenProps } from "app/navigators/SpendNavigator"
-// import { useNavigation } from "@react-navigation/native"
-// import { useStores } from "app/models"
 
 const PieCharColors = [
   { color: "#009FFF", gradientCenterColor: "#006DFF" },
@@ -225,7 +222,7 @@ export const TankhahHomeScreen: FC<SpendStackScreenProps<"TankhahHome">> = obser
                   >
                     <View style={$detail}>
                       <Text preset="formLabel">تاریخ عملیات</Text>
-                      <Text preset="formLabel">{format(j.item.doneAt, "yyyy/MM/dd")}</Text>
+                      <Text preset="formLabel">{formatDateIR(j.item.doneAt)}</Text>
                     </View>
                     <View style={$detail}>
                       <Text preset="formLabel">دریافت کننده</Text>

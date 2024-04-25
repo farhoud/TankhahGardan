@@ -22,9 +22,10 @@ import {
 import { isRTL, translate } from "../i18n"
 import { colors, spacing, typography } from "../theme"
 import { Text, TextProps } from "./Text"
-import { format, newDate, getYear, getDate, getMonth } from "date-fns-jalali"
+import { newDate, getYear, getDate, getMonth } from "date-fns-jalali"
 import { Icon } from "./Icon"
 import { Button } from "./Button"
+import { formatDateIR } from "app/utils/formatDate"
 
 export interface TextFieldAccessoryProps {
   style: StyleProp<any>
@@ -234,7 +235,7 @@ export const DatePicker = forwardRef(function TextField(
 
         <TextInput
           ref={input}
-          value={format(_date, "yyyy/MM/dd")}
+          value={formatDateIR(_date)}
           underlineColorAndroid={colors.transparent}
           textAlignVertical="top"
           placeholder={placeholderContent}
@@ -486,7 +487,7 @@ const $dpkContainer: ViewStyle = {
 
 const $dpkContentContainer: ViewStyle = {
   display: "flex",
-  flexDirection: "row",
+  flexDirection: "row-reverse",
 }
 
 const $dpkContentActions: ViewStyle = {}
@@ -500,7 +501,8 @@ const $dpkController: ViewStyle = {
 }
 
 const $dpkInput = {
-  fontSize: 16,
+  fontSize: 18,
+  fontFamily:"IRANSansXFaNum-Regular"
 }
 
 const $dpkIconBtn: ViewStyle = { padding: 10, borderRadius: 180 }

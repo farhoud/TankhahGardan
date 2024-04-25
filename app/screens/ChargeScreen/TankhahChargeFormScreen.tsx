@@ -1,14 +1,14 @@
 import { observer } from "mobx-react-lite"
 import React, { FC, useEffect, useLayoutEffect, useState } from "react"
-import { View, ViewStyle } from "react-native"
-import { Screen, TextField, Button, Header } from "../../components"
+import { ViewStyle } from "react-native"
+import { Screen, TextField, Header } from "../../components"
 import { DatePicker } from "app/components/DatePicker"
 import { isNumber } from "app/utils/validation"
 import { useObject, useRealm } from "@realm/react"
 import { Fund } from "app/models/realm/models"
 import { currencyFormatter } from "app/utils/formatDate"
 import { StackNavigation } from "app/navigators"
-import { useNavigation } from "@react-navigation/native"
+import { CommonActions, useNavigation } from "@react-navigation/native"
 import { BSON, UpdateMode } from "realm"
 import { ChargeStackScreenProps } from "app/navigators/ChargeNavigator"
 
@@ -52,7 +52,20 @@ export const TankhahChargeFromScreen: FC<ChargeStackScreenProps<"ChargeForm">> =
           )
           console.log(res)
         })
+        goBack()
+      }
+    }
+
+    const goBack = () => {
+      if (navigation.canGoBack()) {
         navigation.goBack()
+      } else {
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: "Demo", params: { screen: "ChargeList", params: {} } }],
+          }),
+        )
       }
     }
 
@@ -77,7 +90,7 @@ export const TankhahChargeFromScreen: FC<ChargeStackScreenProps<"ChargeForm">> =
           <Header
             title="شارژ"
             leftIcon="back"
-            onLeftPress={() => navigation.goBack()}
+            onLeftPress={() => goBack()}
             rightTx="common.save"
             onRightPress={isValid ? handleSubmit : undefined}
           />

@@ -1,30 +1,21 @@
 import React, {
-  ComponentType,
-  forwardRef,
-  Ref,
   useEffect,
-  useImperativeHandle,
-  useRef,
   useState,
 } from "react"
 import {
-  Keyboard,
   Modal,
-  ModalProps,
   StyleProp,
   TextInput,
-  TextInputProps,
   TextStyle,
   TouchableOpacity,
   View,
   ViewStyle,
 } from "react-native"
-import { isRTL, translate } from "../i18n"
-import { colors, spacing, typography } from "../theme"
-import { Text, TextProps } from "./Text"
-import { format, newDate, getYear, getDate, getMonth } from "date-fns-jalali"
+import { Text } from "./Text"
+import { newDate, getYear, getDate, getMonth } from "date-fns-jalali"
 import { Icon } from "./Icon"
 import { Button } from "./Button"
+import { formatDateIR } from "app/utils/formatDate"
 
 export interface DateRangePickerProps {
   start?: Date
@@ -48,17 +39,17 @@ export interface DateRangePickerProps {
  * @returns {JSX.Element} The rendered `TextField` component.
  */
 export function DateRangePicker(props: DateRangePickerProps) {
-  const { start, end, onStartChange, onEndChange, ...rest } = props
+  const { start, end, onStartChange, onEndChange } = props
   const [visible, setVisible] = useState(false)
 
   const formatLabel = () => {
-    const startStr = start ? format(start, "yy/MM/dd") : "ندارد"
-    const endStr = end ? format(end, "yy/MM/dd") : "ندارد"
+    const startStr = start ? formatDateIR(start) : "ندارد"
+    const endStr = end ? formatDateIR(end) : "ندارد"
     return (
       <Text
-        preset="subheading"
+        preset="formLabel"
         style={{ direction: "rtl", textAlign: "right" }}
-        text={`از ${startStr} تا ${endStr}`.replace(/\d/g, (d:string) => "۰۱۲۳۴۵۶۷۸۹"[Number(d)])}
+        text={`${startStr} تا ${endStr}`}
       />
     )
   }

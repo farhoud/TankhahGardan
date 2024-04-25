@@ -1,17 +1,16 @@
 import React, { FC, useLayoutEffect, useState } from "react"
 import { observer } from "mobx-react-lite"
 import { View, ViewStyle } from "react-native"
-import { AppStackScreenProps, StackNavigation } from "app/navigators"
+import { StackNavigation } from "app/navigators"
 import { AutoImage, Header, Screen, Text } from "app/components"
-import { useNavigation } from "@react-navigation/native"
+import { CommonActions, useNavigation } from "@react-navigation/native"
 import { Spend } from "app/models/realm/models"
 import { useObject } from "@realm/react"
-import { currencyFormatter, formatDataIR } from "app/utils/formatDate"
+import { currencyFormatter, formatDateIR } from "app/utils/formatDate"
 import { BSON } from "realm"
 import ImageView from "react-native-image-viewing"
 import { TouchableOpacity } from "react-native-gesture-handler"
 import { SpendStackScreenProps } from "app/navigators/SpendNavigator"
-// import { useStores } from "app/models"
 
 export const TankhahSpendItemScreen: FC<SpendStackScreenProps<"TankhahSpendItem">> = observer(
   function TankhahSpendItemScreen(_props) {
@@ -25,6 +24,19 @@ export const TankhahSpendItemScreen: FC<SpendStackScreenProps<"TankhahSpendItem"
 
     const spend = useObject(Spend, new BSON.ObjectID(itemId))
 
+    const goBack = () => {
+      if (navigation.canGoBack()) {
+        navigation.goBack()
+      } else {
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: "Demo", params: { screen: "TankhahHome", params: {} } }],
+          }),
+        )
+      }
+    }
+
     useLayoutEffect(() => {
       navigation.setOptions({
         headerShown: true,
@@ -32,7 +44,7 @@ export const TankhahSpendItemScreen: FC<SpendStackScreenProps<"TankhahSpendItem"
           <Header
             title="خرج"
             leftIcon="back"
-            onLeftPress={() => navigation.goBack()}
+            onLeftPress={() => goBack()}
             rightTx="common.edit"
             onRightPress={() => {
               navigation.navigate("Demo", {
@@ -52,7 +64,7 @@ export const TankhahSpendItemScreen: FC<SpendStackScreenProps<"TankhahSpendItem"
       <Screen style={$root} preset="scroll" safeAreaEdges={["bottom"]}>
         <View style={$row}>
           <Text tx="spend.doneAt" />
-          <Text text={spend?.doneAt && formatDataIR(spend?.doneAt)} />
+          <Text text={spend?.doneAt && formatDateIR(spend?.doneAt)} />
         </View>
         <View style={$row}>
           <Text tx="spend.recipient" />

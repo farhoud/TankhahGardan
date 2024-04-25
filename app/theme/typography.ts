@@ -16,6 +16,8 @@ export const customFontsToLoad = {
   spaceGroteskMedium,
   spaceGroteskSemiBold,
   spaceGroteskBold,
+  "IRANSansXFaNum-Regular": require('../../assets/fonts/IRANSansXFaNum-Regular.ttf'),
+  "IRANSansXFaNum-Bold": require('../../assets/fonts/IRANSansXFaNum-Bold.ttf'),
 }
 
 const fonts = {
@@ -49,6 +51,13 @@ const fonts = {
     // Android only font.
     normal: "monospace",
   },
+  iranSans: {
+    normal: "IRANSansXFaNum-Regular",
+    bold: "IRANSansXFaNum-Bold",
+    thin: "IRANSansXFaNum-Regular",
+    light: "IRANSansXFaNum-Regular",
+    medium: "IRANSansXFaNum-Regular",
+  }
 }
 
 export const typography = {
@@ -59,13 +68,13 @@ export const typography = {
   /**
    * The primary font. Used in most places.
    */
-  primary: fonts.spaceGrotesk,
+  primary: fonts.iranSans,
   /**
    * An alternate font used for perhaps titles and stuff.
    */
-  secondary: Platform.select({ ios: fonts.helveticaNeue, android: fonts.sansSerif }),
+  secondary: Platform.select({ ios: fonts.iranSans, android: fonts.iranSans }),
   /**
    * Lets get fancy with a monospace font!
    */
-  code: Platform.select({ ios: fonts.courier, android: fonts.monospace }),
+  code: Platform.select({ ios: fonts.iranSans, android: fonts.iranSans }),
 }

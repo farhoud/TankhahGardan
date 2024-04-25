@@ -5,8 +5,7 @@ import { Button, Header, Icon,ListView, Screen, Text } from "app/components"
 import { useNavigation } from "@react-navigation/native"
 import { useQuery } from "@realm/react"
 import { Fund } from "app/models/realm/models"
-import { format } from "date-fns-jalali"
-import { currencyFormatter } from "app/utils/formatDate"
+import { currencyFormatter, formatDateIR } from "app/utils/formatDate"
 import { TouchableOpacity } from "react-native-gesture-handler"
 import { colors } from "app/theme"
 import { StackNavigation } from "app/navigators"
@@ -52,7 +51,7 @@ export const TankhahChargeListScreen: FC<ChargeStackScreenProps<"ChargeList">> =
                   <View style={{ width: "100%" }}>
                     <View style={$detail}>
                       <Text preset="formLabel">تاریخ عملیات</Text>
-                      <Text preset="formLabel">{format(info.item.doneAt, "yyyy/MM/dd")}</Text>
+                      <Text preset="formLabel">{formatDateIR(info.item.doneAt)}</Text>
                     </View>
                     <View style={$detail}>
                       <Text preset="formLabel">مبلغ</Text>

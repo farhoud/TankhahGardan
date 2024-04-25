@@ -10,7 +10,7 @@ import parseISO from "date-fns/parseISO"
 import ar from "date-fns/locale/ar-SA"
 import ko from "date-fns/locale/ko"
 import en from "date-fns/locale/en-US"
-import {FormatOptions, format as formatFa} from "date-fns-jalali"
+import { FormatOptions, format as formatFa } from "date-fns-jalali"
 
 type Options = Parameters<typeof format>[2]
 
@@ -28,9 +28,9 @@ export const formatDate = (date: string, dateFormat?: string, options?: Options)
   return format(parseISO(date), dateFormat ?? "MMM dd, yyyy", dateOptions)
 }
 
-
-export const formatDataIR = (date:Date, dateFormat?: string, options?:FormatOptions) => {
-  return formatFa(date, dateFormat ?? "yyyy MMM dd", options)
+export const formatDateIR = (date: Date, dateFormat?: string, options?: FormatOptions) => {
+  return formatFa(date, dateFormat ?? "yy٫MM٫dd", options)
+    
 }
 
 export const currencyFormatter = new Intl.NumberFormat("fa-IR", {

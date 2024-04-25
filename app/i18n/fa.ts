@@ -18,7 +18,8 @@ const fa = {
     back: "بازگشت",
     logOut: "خروج",
     edit: "تغییر",
-    save: "ذخیره"
+    save: "ذخیره",
+    add: "اضافه",
   },
   welcomeScreen: {
     postscript:
@@ -73,9 +74,9 @@ const fa = {
     dateHelper: "تاریخ درست وارد نشده"
   },
   tankhahSpendFormScreen: {
-    nameLabel: "نام",
-    namePlaceholder:"",
-    nameHelper: "",
+    recipientLabel: "دریافت کننده",
+    recipientPlaceholder:"دریافت کننده را وارد کنید",
+    recipientHelper: "دریافت کننده درست وارد نشده",
     dateLabel: "تاریخ",
     datePlaceholder: "تاریخ را وارد کنید",
     dateHelper: "مبلغ درست وارد نشده",

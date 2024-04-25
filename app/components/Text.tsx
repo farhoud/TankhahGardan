@@ -52,7 +52,7 @@ export interface TextProps extends RNTextProps {
  * @returns {JSX.Element} The rendered `Text` component.
  */
 export function Text(props: TextProps) {
-  const { weight, size, tx, txOptions, text, children, style: $styleOverride, ...rest } = props
+    const { weight, size, tx, txOptions, text, children, style: $styleOverride, ...rest } = props
 
   const i18nText = tx && translate(tx, txOptions)
   const content = i18nText || text || children
@@ -78,9 +78,9 @@ const $sizeStyles = {
   xl: { fontSize: 24, lineHeight: 34 } satisfies TextStyle,
   lg: { fontSize: 20, lineHeight: 32 } satisfies TextStyle,
   md: { fontSize: 18, lineHeight: 26 } satisfies TextStyle,
-  sm: { fontSize: 16, lineHeight: 24 } satisfies TextStyle,
-  xs: { fontSize: 14, lineHeight: 21 } satisfies TextStyle,
-  xxs: { fontSize: 12, lineHeight: 18 } satisfies TextStyle,
+  sm: { fontSize: 14, lineHeight: 24 } satisfies TextStyle,
+  xs: { fontSize: 12, lineHeight: 21 } satisfies TextStyle,
+  xxs: { fontSize: 10, lineHeight: 18 } satisfies TextStyle,
 }
 
 const $fontWeightStyles = Object.entries(typography.primary).reduce((acc, [weight, fontFamily]) => {
