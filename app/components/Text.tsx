@@ -1,14 +1,16 @@
 import i18n from "i18n-js"
 import React from "react"
-import { StyleProp, Text as RNText, TextProps as RNTextProps, TextStyle } from "react-native"
+import { StyleProp, TextStyle} from "react-native"
+import { Text as RNPText, TextProps as RNPTextProps } from "react-native-paper"
 import { isRTL, translate, TxKeyPath } from "../i18n"
 import { colors, typography } from "../theme"
+import { VariantProp } from "react-native-paper/lib/typescript/components/Typography/types"
 
 type Sizes = keyof typeof $sizeStyles
 type Weights = keyof typeof typography.primary
 type Presets = keyof typeof $presets
 
-export interface TextProps extends RNTextProps {
+export interface TextProps extends Omit<RNPTextProps<VariantProp<never>>,"children"> {
   /**
    * Text which is looked up via i18n.
    */
@@ -27,18 +29,6 @@ export interface TextProps extends RNTextProps {
    */
   style?: StyleProp<TextStyle>
   /**
-   * One of the different types of text presets.
-   */
-  preset?: Presets
-  /**
-   * Text weight modifier.
-   */
-  weight?: Weights
-  /**
-   * Text size modifier.
-   */
-  size?: Sizes
-  /**
    * Children components.
    */
   children?: React.ReactNode
@@ -52,24 +42,24 @@ export interface TextProps extends RNTextProps {
  * @returns {JSX.Element} The rendered `Text` component.
  */
 export function Text(props: TextProps) {
-    const { weight, size, tx, txOptions, text, children, style: $styleOverride, ...rest } = props
+    const { tx, txOptions, text, children, style: $styleOverride, ...rest } = props
 
   const i18nText = tx && translate(tx, txOptions)
   const content = i18nText || text || children
 
-  const preset: Presets = props.preset ?? "default"
+  // const preset: Presets = props.preset ?? "default"
   const $styles: StyleProp<TextStyle> = [
-    $rtlStyle,
-    $presets[preset],
-    weight && $fontWeightStyles[weight],
-    size && $sizeStyles[size],
+    // $rtlStyle,
+    // $presets[preset],
+    // weight && $fontWeightStyles[weight],
+    // size && $sizeStyles[size],
     $styleOverride,
   ]
 
   return (
-    <RNText {...rest} style={$styles}>
+    <RNPText {...rest} style={$styles}>
       {content}
-    </RNText>
+    </RNPText>
   )
 }
 

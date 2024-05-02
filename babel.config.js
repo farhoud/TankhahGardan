@@ -12,7 +12,9 @@ module.exports = function(api) {
   return {
     presets: ["babel-preset-expo"],
     env: {
-      production: {},
+      production: {
+        plugins: ['react-native-paper/babel'],
+      },
     },
     plugins,
   };

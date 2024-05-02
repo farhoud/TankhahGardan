@@ -1,8 +1,8 @@
-import React, { FC, useMemo, useState } from "react"
+import React, { FC, useCallback, useMemo, useState } from "react"
 import { observer } from "mobx-react-lite"
-import { TouchableOpacity, View, ViewStyle } from "react-native"
+import { TouchableOpacity, View, ViewStyle, useWindowDimensions } from "react-native"
 import { StackNavigation } from "app/navigators"
-import { Button, DateRangePicker, Icon, ListView, Screen, Text } from "app/components"
+import { DateRangePicker, ListView, Screen, Text } from "app/components"
 import { useQuery, useRealm } from "@realm/react"
 import { Fund, Spend } from "app/models/realm/models"
 import { colors } from "app/theme"
@@ -11,7 +11,10 @@ import { PieChart } from "react-native-gifted-charts"
 import { currencyFormatter, formatDateIR } from "app/utils/formatDate"
 import { ScrollView } from "react-native-gesture-handler"
 import { useNavigation } from "@react-navigation/native"
-import { SpendStackScreenProps } from "app/navigators/SpendNavigator"
+import { TankhahTabScreenProps } from "app/navigators/TankhahTabNavigator"
+import { Chip, Surface, Icon, Button, useTheme, Divider, FAB } from "react-native-paper"
+import { DatePicker } from "app/components/DatePicker"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 
 const PieCharColors = [
   { color: "#009FFF", gradientCenterColor: "#006DFF" },
@@ -20,11 +23,12 @@ const PieCharColors = [
   { color: "#FFA5BA", gradientCenterColor: "#FF7F97" },
 ]
 
-export const TankhahHomeScreen: FC<SpendStackScreenProps<"TankhahHome">> = observer(
+export const TankhahHomeScreen: FC<TankhahTabScreenProps<"TankhahHome">> = observer(
   function TankhahHomeScreen() {
     // Pull in one of our MST stores
     // const { someStore, anotherStore } = useStores()
     const navigation = useNavigation<StackNavigation>()
+    const theme = useTheme()
     const realm = useRealm()
     const totalFund = useQuery(Fund).sum("amount")
     const totalSpend = useQuery(Spend).sum("total")
@@ -74,184 +78,240 @@ export const TankhahHomeScreen: FC<SpendStackScreenProps<"TankhahHome">> = obser
       return pieData
     }, [selectedGroup, spendsChartBaseData])
 
-    const renderDot = (color: string) => {
-      return (
-        <View
-          style={{
-            height: 10,
-            width: 10,
-            borderRadius: 5,
-            backgroundColor: color,
-            marginRight: 10,
-          }}
-        />
-      )
-    }
+    // const renderDot = useCallback(color: string) => {
+    //   return (
+    //     <View
+    //       style={{
+    //         height: 10,
+    //         width: 10,
+    //         borderRadius: 5,
+    //         backgroundColor: color,
+    //         marginRight: 10,
+    //       }}
+    //     />
+    //   )
+    // }
 
     // Pull in navigation via hook
     // const navigation = useNavigation()
     return (
       <>
-        <Screen style={$root} preset="fixed">
+        <Screen style={$root} safeAreaEdges={["top", "bottom"]} preset="fixed">
           <View>
-            <View style={$sectionContainer}>
-              <Text preset="subheading">{"موجودی"}</Text>
-              <Text preset="subheading">{currencyFormatter.format(totalFund - totalSpend)}</Text>
-            </View>
-          </View>
-          <View
-            style={{
-              // flex:1,
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <View>
-              <PieChart
-                data={spendsChartData}
-                onPress={(s: any, d: any) => {
-                  console.log(s, d)
-                }}
-                donut
-                showGradient
-                sectionAutoFocus
-                radius={120}
-                innerRadius={100}
-                innerCircleColor={"#232B5D"}
-                showValuesAsLabels
-                centerLabelComponent={() => {
-                  return (
-                    <View style={{ justifyContent: "center", alignItems: "center" }}>
-                      <Text style={{ fontSize: 22, color: "white", fontWeight: "bold" }}>
-                        {currencyFormatter.format(spendsList.sum("amount"))}
-                      </Text>
-
-                      <Text
-                        style={{ fontSize: 14, color: "white" }}
-                        text={" مخارج " + (groupsNames[selectedGroup] ?? "کل")}
-                      />
-                    </View>
-                  )
-                }}
-              />
-              <View style={{ display: "flex" }}>
-                <DateRangePicker
-                  start={startDate}
-                  end={endDate}
-                  onEndChange={(value) => {
-                    setEndDate(value)
-                  }}
-                  onStartChange={(value) => {
-                    setStartDate(value)
-                  }}
-                ></DateRangePicker>
-              </View>
-            </View>
-            <ScrollView style={{ flex: 1, marginRight: 10, maxHeight: 300 }}>
-              <View
-                style={{
-                  padding: 0,
-                  margin: 0,
-                }}
-              >
-                <Button
-                  preset={-1 === selectedGroup ? "filled" : "default"}
-                  style={{ width: "100%" }}
-                  onPress={() => {
-                    setSelectedGroup(-1)
+            <Surface>
+              <Surface elevation={5}>
+                <View style={{ margin: 3, padding: 3 }}>
+                  <Text variant="bodyMedium" style={{ textAlign: "center" }}>
+                    {currencyFormatter.format(totalFund - totalSpend) + " مانده"}
+                  </Text>
+                </View>
+              </Surface>
+              <View style={{ display: "flex", flexDirection: "row" }}>
+                <View
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    paddingLeft: 10,
                   }}
                 >
-                  همه
-                </Button>
+                  <DatePicker
+                    date={startDate}
+                    onDateChange={(value) => {
+                      setStartDate(value)
+                    }}
+                    action={({ open, close, value }) => {
+                      return (
+                        <Button
+                          icon={(props) => (
+                            <Icon
+                              source="calendar-start"
+                              size={26}
+                              color={theme.colors.inverseSurface}
+                            />
+                          )}
+                          dark={false}
+                          mode="contained-tonal"
+                          onPress={open}
+                        >
+                          <Text
+                            variant="bodyLarge"
+                            style={{ textAlign: "center" }}
+                            text={formatDateIR(value)}
+                          />
+                        </Button>
+                      )
+                    }}
+                  />
+                  <DatePicker
+                    date={endDate}
+                    onDateChange={(value) => {
+                      setEndDate(value)
+                    }}
+                    action={({ open, close, value }) => {
+                      return (
+                        <Button
+                          style={{ marginTop: "10%" }}
+                          icon={(props) => (
+                            <Icon
+                              source="calendar-end"
+                              size={26}
+                              color={theme.colors.inverseSurface}
+                            />
+                          )}
+                          dark={false}
+                          mode="contained-tonal"
+                          onPress={open}
+                        >
+                          <Text
+                            variant="bodyLarge"
+                            style={{ textAlign: "center" }}
+                            text={formatDateIR(value)}
+                          />
+                        </Button>
+                      )
+                    }}
+                  />
+                </View>
+                <PieChart
+                  data={spendsChartData}
+                  onPress={(s: any, d: any) => {
+                    console.log(s, d)
+                  }}
+                  donut
+                  showGradient
+                  sectionAutoFocus
+                  radius={100}
+                  innerRadius={80}
+                  innerCircleColor={"#232B5D"}
+                  showValuesAsLabels
+                  centerLabelComponent={() => {
+                    return (
+                      <View style={{ justifyContent: "center", alignItems: "center" }}>
+                        <Text style={{ fontSize: 22, color: "white", fontWeight: "bold" }}>
+                          {currencyFormatter.format(spendsList.sum("amount"))}
+                        </Text>
+
+                        <Text
+                          style={{ fontSize: 14, color: "white" }}
+                          text={" مخارج " + (groupsNames[selectedGroup] ?? "کل")}
+                        />
+                      </View>
+                    )
+                  }}
+                />
+              </View>
+              <View
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  flexWrap: "wrap",
+                }}
+              >
+                <View style={{ margin: 2 }}>
+                  <Chip
+                    textStyle={{ fontSize: 10 }}
+                    maxFontSizeMultiplier={1}
+                    showSelectedOverlay
+                    selected={-1 === selectedGroup}
+                    onPress={() => {
+                      setSelectedGroup(-1)
+                    }}
+                  >
+                    همه
+                  </Chip>
+                </View>
                 {groupsNames.map((i, index) => {
                   return (
-                    <Button
-                      key={index}
-                      preset={index === selectedGroup ? "filled" : "default"}
-                      style={{ width: "100%" }}
-                      onPress={() => {
-                        setSelectedGroup(index)
-                      }}
-                      LeftAccessory={() => {
-                        return renderDot(spendsChartData[index].color)
-                      }}
-                    >
-                      {i}
-                    </Button>
+                    <View key={index} style={{ margin: 2 }}>
+                      <Chip
+                        textStyle={{ fontSize: 10 }}
+                        maxFontSizeMultiplier={1}
+                        showSelectedOverlay
+                        
+                        selected={index === selectedGroup}
+                        // style={{ width: "100%" }}
+                        onPress={() => {
+                          setSelectedGroup(index)
+                        }}
+                        icon={(props) => (
+                          <Icon
+                            {...props}
+                            source={index === selectedGroup ? "check-circle" : "circle"}
+                            size={10}
+                            color={spendsChartData[index].color}
+                          />
+                        )}
+                      >
+                        {i}
+                      </Chip>
+                    </View>
                   )
                 })}
               </View>
-            </ScrollView>
+            </Surface>
           </View>
 
-          <ListView
-            data={spendsList.slice(0, spendsList.length)}
-            style={{ marginBottom: 350 }}
-            renderItem={(j) => {
-              return (
-                <TouchableOpacity
-                  onPress={() => {
-                    navigation.navigate("Demo", {
-                      screen: "SpendStack",
-                      params: {
-                        screen: "TankhahSpendItem",
-                        params: { itemId: j.item._id.toHexString() },
-                      },
-                    })
-                  }}
-                  onLongPress={() => {
-                    navigation.navigate("Demo", {
-                      screen: "SpendStack",
-                      params: {
-                        screen: "TankhahSpendForm",
-                        params: { itemId: j.item._id.toHexString() },
-                      },
-                    })
-                  }}
-                >
-                  <View
-                    style={{
-                      display: "flex",
-                      elevation: 5,
-                      margin: 2,
-                      padding: 10,
-                      backgroundColor: "#EAEAEA",
+          <View style={{ height: "61%" }}>
+            <ListView
+              // contentContainerStyle={{flexGrow:1}}
+              data={spendsList.slice(0, spendsList.length)}
+              renderItem={(j) => {
+                return (
+                  
+                  <TouchableOpacity
+                    onPress={() => {
+                      navigation.navigate("TankhahSpendItem", {
+                        itemId: j.item._id.toHexString(),
+                      })
+                    }}
+                    onLongPress={() => {
+                      navigation.navigate("TankhahSpendForm", {
+                        itemId: j.item._id.toHexString(),
+                      })
                     }}
                   >
-                    <View style={$detail}>
-                      <Text preset="formLabel">تاریخ عملیات</Text>
-                      <Text preset="formLabel">{formatDateIR(j.item.doneAt)}</Text>
-                    </View>
-                    <View style={$detail}>
-                      <Text preset="formLabel">دریافت کننده</Text>
-                      <Text>{j.item.recipient ?? "ثبت نشده"}</Text>
-                    </View>
-                    <View style={$detail}>
-                      <Text preset="formLabel">مبلغ</Text>
-                      <Text preset="bold">{currencyFormatter.format(j.item.amount)}</Text>
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              )
-            }}
-          ></ListView>
+                    <Surface
+                      style={{
+                        // display: "flex",
+                        // elevation: 5,
+                        // margin: 2,
+                        paddingHorizontal: 20,
+                        paddingVertical: 10,
+                        marginBottom:2
+                        // backgroundColor: "#EAEAEA",
+                      }}
+                      elevation={2}
+                    >
+                      <View style={$detail}>
+                        <Text variant="labelMedium">تاریخ عملیات</Text>
+                        <Text variant="labelMedium">{formatDateIR(j.item.doneAt)}</Text>
+                      </View>
+                      <View style={$detail}>
+                        <Text variant="labelMedium">دریافت کننده</Text>
+                        <Text>{j.item.recipient ?? "ثبت نشده"}</Text>
+                      </View>
+                      <View style={$detail}>
+                        <Text variant="labelMedium">مبلغ</Text>
+                        <Text variant="bodyLarge">{currencyFormatter.format(j.item.amount)}</Text>
+                      </View>
+                    </Surface>
+                  </TouchableOpacity>
+                )
+              }}
+            ></ListView>
+          </View>
         </Screen>
-        <Button
-          style={{ position: "absolute", bottom: 10, left: 10, borderRadius: 380 }}
+        <FAB
+          style={{ position: "absolute", bottom: 0, left: 0, margin: 16 }}
           onPress={() => {
-            navigation.navigate("Demo", {
-              screen: "SpendStack",
-              params: {
-                screen: "TankhahSpendForm",
-                params: {},
-              },
-            })
+            navigation.navigate("TankhahSpendForm", {})
           }}
+          icon="plus"
         >
-          <Icon icon={"add"}></Icon>
-        </Button>
+          {/* <Icon icon={"add"}></Icon> */}
+        </FAB>
       </>
     )
   },
@@ -259,7 +319,7 @@ export const TankhahHomeScreen: FC<SpendStackScreenProps<"TankhahHome">> = obser
 
 const $root: ViewStyle = {
   flex: 1,
-  marginTop: 50,
+  // marginTop: 50,
 }
 
 const $detail: ViewStyle = {

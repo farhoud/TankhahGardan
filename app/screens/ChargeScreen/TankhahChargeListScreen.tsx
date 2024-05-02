@@ -1,18 +1,17 @@
 import React, { FC, useState } from "react"
 import { observer } from "mobx-react-lite"
-import { View, ViewStyle } from "react-native"
-import { Button, Header, Icon,ListView, Screen, Text } from "app/components"
+import { ViewStyle } from "react-native"
+import { ListView, Screen, Text } from "app/components"
 import { useNavigation } from "@react-navigation/native"
 import { useQuery } from "@realm/react"
 import { Fund } from "app/models/realm/models"
 import { currencyFormatter, formatDateIR } from "app/utils/formatDate"
-import { TouchableOpacity } from "react-native-gesture-handler"
-import { colors } from "app/theme"
 import { StackNavigation } from "app/navigators"
-import { ChargeStackScreenProps } from "app/navigators/ChargeNavigator"
+import { Appbar, Divider, FAB, List } from "react-native-paper"
+import { TankhahTabScreenProps } from "app/navigators/TankhahTabNavigator"
 // import { useStores } from "app/models"
 
-export const TankhahChargeListScreen: FC<ChargeStackScreenProps<"ChargeList">> = observer(
+export const TankhahChargeListScreen: FC<TankhahTabScreenProps<"ChargeList">> = observer(
   function TankhahChargeListScreen() {
     // Pull in one of our MST stores
     // const { someStore, anotherStore } = useStores()
@@ -24,65 +23,40 @@ export const TankhahChargeListScreen: FC<ChargeStackScreenProps<"ChargeList">> =
 
     return (
       <>
-        <Header title="شارژ"></Header>
+        <Appbar.Header>
+          <Appbar.Content title={"شارژها"} />
+        </Appbar.Header>
         <Screen style={$root} preset="fixed">
           <ListView
             data={funds.slice(0, funds.length)}
             renderItem={(info) => {
               return (
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: colors.palette.neutral300,
-                    borderBottomWidth: 0.5,
-                  }}
-                  onPress={() => {
-                    setShowIndex((prev) => (prev === info.index ? undefined : info.index))
-                  }}
-                  onLongPress={() => {
-                    navigation.navigate("Demo", {
-                      screen: "ChargeStack",
-                      params: {
-                        screen: "ChargeForm",
-                        params: { itemId: info.item._id.toHexString() },
-                      },
-                    })
-                  }}
-                >
-                  <View style={{ width: "100%" }}>
-                    <View style={$detail}>
-                      <Text preset="formLabel">تاریخ عملیات</Text>
-                      <Text preset="formLabel">{formatDateIR(info.item.doneAt)}</Text>
-                    </View>
-                    <View style={$detail}>
-                      <Text preset="formLabel">مبلغ</Text>
-                      <Text preset="formLabel">{currencyFormatter.format(info.item.amount)}</Text>
-                    </View>
-                    {showIndex === info.index && (
-                      <View style={$detail}>
-                        <Text preset="formLabel">توضیحات</Text>
-                        <Text preset="formLabel">{info.item.description || "ندارد"}</Text>
-                      </View>
+                <>
+                  <List.Item
+                    onPress={() => {
+                      navigation.navigate("ChargeForm", { itemId: info.item._id.toHexString() })
+                    }}
+                    title={currencyFormatter.format(info.item.amount)}
+                    description={info.item.description}
+                    right={() => (
+                      <>{<Text variant="labelMedium">{formatDateIR(info.item.doneAt)}</Text>}</>
                     )}
-                  </View>
-                </TouchableOpacity>
+                  ></List.Item>
+                  <Divider />
+                </>
               )
             }}
           ></ListView>
         </Screen>
-        <Button
-          style={{ position: "absolute", bottom: 10, left: 10, borderRadius: 380 }}
+        <FAB
+          style={{ position: "absolute", bottom: 0, left: 0, margin: 16 }}
           onPress={() => {
-            navigation.navigate("Demo", {
-              screen: "ChargeStack",
-              params: {
-                screen: "ChargeForm",
-                params: {},
-              },
-            })
+            navigation.navigate("ChargeForm", {})
           }}
+          icon="plus"
         >
-          <Icon icon={"add"}></Icon>
-        </Button>
+          {/* <Icon icon={"add"}></Icon> */}
+        </FAB>
       </>
     )
   },

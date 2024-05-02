@@ -1,6 +1,8 @@
+import { createRealmContext } from "@realm/react"
 import Realm, { BSON, ObjectSchema } from "realm"
 
-export type PaymentMethod = "satna" | "paya" | "cash" | "ctc"
+export type PaymentMethod = "satna" | "paya" | "cash" | "ctc" | "pose" | "other"
+export type PaymentType = "buy" | "transfer"
 // Define your object model
 export class Profile extends Realm.Object<Profile> {
   _id!: BSON.ObjectId
@@ -63,4 +65,46 @@ export class Spend extends Realm.Object<Spend> {
     },
     primaryKey: "_id",
   }
+}
+
+export class ReceiptItem extends Realm.Object<ReceiptItem> {
+  _id!: BSON.ObjectId
+  title!: string
+  searchable!: boolean
+  defaultPrice?: number
+  description?: string
+  static schema: ObjectSchema = {
+    name: "ReceiptItem",
+    properties: {
+      _id: { type: "objectId", default: () => new Realm.BSON.ObjectID() },
+      title: { type: "string", indexed: true },
+      searchable: { type: "bool", indexed: true },
+      description: { type: "string", indexed: true, optional: true },
+      defaultPrice: { type: "float", optional: true },
+    },
+    primaryKey: "_id",
+  }
+}
+
+export const realmConfig: Realm.Configuration = {
+  schema: [Fund, Spend, ReceiptItem],
+  // Increment the 'schemaVersion', since 'fullName' has replaced
+  // 'firstName' and 'lastName' in the schema.
+  // The initial schemaVersion is 0.
+  schemaVersion: 2,
+  // onMigration: (oldRealm: Realm, newRealm: Realm) => {
+  //   // only apply this change if upgrading schemaVersion
+  //   if (oldRealm.schemaVersion < 1) {
+  //     const oldObjects: Realm.Results<OldObjectModel> =
+  //       oldRealm.objects(OldObjectModel);
+  //     const newObjects: Realm.Results<Person> = newRealm.objects(Person);
+  //     // loop through all objects and set the fullName property in the
+  //     // new schema
+  //     for (const objectIndex in oldObjects) {
+  //       const oldObject = oldObjects[objectIndex];
+  //       const newObject = newObjects[objectIndex];
+  //       newObject.fullName = `${oldObject.firstName} ${oldObject.lastName}`;
+  //     }
+  //   }
+  // },
 }

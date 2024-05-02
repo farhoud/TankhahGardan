@@ -26,14 +26,20 @@ import { useInitialRootStore } from "./models"
 import { AppNavigator, useNavigationPersistence } from "./navigators"
 import { ErrorBoundary } from "./screens/ErrorScreen/ErrorBoundary"
 import * as storage from "./utils/storage"
-import { customFontsToLoad } from "./theme"
+import { customFontsToLoad, fontConfig } from "./theme"
 import Config from "./config"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { ViewStyle } from "react-native"
 import { RealmProvider } from "@realm/react"
-import { Fund, Spend } from "./models/realm/models"
+import { Fund, realmConfig, Spend } from "./models/realm/models"
+import { PaperProvider, configureFonts, MD3DarkTheme } from "react-native-paper"
 
 export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
+
+const theme = {
+  ...MD3DarkTheme,
+  fonts: configureFonts({config: fontConfig}),
+};
 
 // Web linking configuration
 const prefix = Linking.createURL("/")
@@ -100,18 +106,20 @@ function App(props: AppProps) {
 
   // otherwise, we're ready to render the app
   return (
-    <RealmProvider schema={[Fund,Spend]}>
-      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+    <RealmProvider {...realmConfig}>
+      {/* <SafeAreaProvider initialMetrics={initialWindowMetrics}> */}
         <ErrorBoundary catchErrors={Config.catchErrors}>
           <GestureHandlerRootView style={$container}>
-            <AppNavigator
-              linking={linking}
-              initialState={initialNavigationState}
-              onStateChange={onNavigationStateChange}
-            />
+            <PaperProvider theme={theme}>
+              <AppNavigator
+                linking={linking}
+                initialState={initialNavigationState}
+                onStateChange={onNavigationStateChange}
+              />
+            </PaperProvider>
           </GestureHandlerRootView>
         </ErrorBoundary>
-      </SafeAreaProvider>
+      {/* </SafeAreaProvider> */}
     </RealmProvider>
   )
 }

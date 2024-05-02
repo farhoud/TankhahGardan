@@ -14,6 +14,7 @@ import {
 } from "react-native"
 import { colors } from "../theme"
 import { ExtendedEdge, useSafeAreaInsetsStyle } from "../utils/useSafeAreaInsetsStyle"
+import { useTheme } from "react-native-paper"
 
 interface BaseScreenProps {
   /**
@@ -227,13 +228,16 @@ function ScreenWithScrolling(props: ScreenProps) {
  */
 export function Screen(props: ScreenProps) {
   const {
-    backgroundColor = colors.background,
     KeyboardAvoidingViewProps,
     keyboardOffset = 0,
     safeAreaEdges,
     StatusBarProps,
     statusBarStyle = "dark",
   } = props
+  
+  const theme = useTheme()
+
+  const backgroundColor = props.backgroundColor || theme.colors.background
 
   const $containerInsets = useSafeAreaInsetsStyle(safeAreaEdges)
 

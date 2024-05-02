@@ -78,3 +78,8 @@ export const typography = {
    */
   code: Platform.select({ ios: fonts.iranSans, android: fonts.iranSans }),
 }
+
+
+export const fontConfig = {
+  fontFamily: "IRANSansXFaNum-Regular"
+};

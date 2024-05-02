@@ -1,49 +1,18 @@
-import React, {
-  ComponentType,
-  forwardRef,
-  Ref,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from "react"
-import {
-  StyleProp,
-  TextInput,
-  TextInputProps,
-  TextStyle,
-  TouchableOpacity,
-  View,
-  ViewStyle,
-} from "react-native"
-import { isRTL, translate } from "../i18n"
-import { colors, spacing, typography } from "../theme"
-import { Text, TextProps, ListItem, ListView, Icon } from "."
-
-export interface TextFieldAccessoryProps {
-  style: StyleProp<any>
-  status: TextFieldProps["status"]
-  multiline: boolean
-  editable: boolean
-}
+import React, { forwardRef, Ref, useImperativeHandle, useMemo, useRef, useState } from "react"
+import { StyleProp, TextStyle, TextInput as RNTextInput, ViewStyle } from "react-native"
+import { TextProps, TextField, TextFieldProps } from "."
+import { Menu } from "react-native-paper"
 
 export interface Option {
-  key: string
-  title: string
+  value: string
+  label: string
 }
 
-export interface TextFieldProps extends Omit<TextInputProps, "ref" | "value" | "onChange"> {
-  value: Option
-  onChange: (item: Option) => void
-  /**
-   * Suggestion List
-   */
-  suggestions?: Array<Option>
-  onDropdownChange: (state: "opened" | "closed") => void
-  /**
-   * A style modifier for different input states.
-   */
-  status?: "error" | "disabled"
+export interface SelectProps extends Omit<TextFieldProps, "ref" | "value" | "onChange"> {
+  value?: string
+  onSelect?: (item: string) => void
+  options?: Array<Option>
+  onDropdownChange?: (state: "opened" | "closed") => void
   /**
    * The label text to display if not using `labelTx`.
    */
@@ -99,275 +68,83 @@ export interface TextFieldProps extends Omit<TextInputProps, "ref" | "value" | "
    * Style overrides for the container
    */
   containerStyle?: StyleProp<ViewStyle>
-  /**
-   * Style overrides for the input wrapper
-   */
-  inputWrapperStyle?: StyleProp<ViewStyle>
-  /**
-   * An optional component to render on the right side of the input.
-   * Example: `RightAccessory={(props) => <Icon icon="ladybug" containerStyle={props.style} color={props.editable ? colors.textDim : colors.text} />}`
-   * Note: It is a good idea to memoize this.
-   */
-  RightAccessory?: ComponentType<TextFieldAccessoryProps>
-  /**
-   * An optional component to render on the left side of the input.
-   * Example: `LeftAccessory={(props) => <Icon icon="ladybug" containerStyle={props.style} color={props.editable ? colors.textDim : colors.text} />}`
-   * Note: It is a good idea to memoize this.
-   */
-  LeftAccessory?: ComponentType<TextFieldAccessoryProps>
 }
 
 /**
  * A component that allows for the entering and editing of text.
  * @see [Documentation and Examples]{@link https://docs.infinite.red/ignite-cli/boilerplate/components/TextField/}
- * @param {TextFieldProps} props - The props for the `TextField` component.
+ * @param {SelectProps} props - The props for the `TextField` component.
  * @returns {JSX.Element} The rendered `TextField` component.
  */
-export const AutoComplete = forwardRef(function TextField(
-  props: TextFieldProps,
-  ref: Ref<TextInput>,
-) {
+export const Select = forwardRef(function Select(props: SelectProps, ref: Ref<RNTextInput>) {
   const {
     value,
-    onChange,
-    labelTx,
-    label,
-    labelTxOptions,
-    placeholderTx,
-    placeholder,
-    placeholderTxOptions,
-    helper,
-    helperTx,
-    helperTxOptions,
-    status,
-    RightAccessory,
-    LeftAccessory,
-    HelperTextProps,
-    LabelTextProps,
+    onSelect,
+    options,
+    onDropdownChange,
+    editable,
     style: $inputStyleOverride,
     containerStyle: $containerStyleOverride,
-    inputWrapperStyle: $inputWrapperStyleOverride,
-    onDropdownChange,
     ...TextInputProps
   } = props
-  const input = useRef<TextInput>(null)
-
-  const disabled = TextInputProps.editable === false || status === "disabled"
+  const input = useRef<RNTextInput>(null)
 
   const [visible, setVisible] = useState(false)
 
-  const placeholderContent = placeholderTx
-    ? translate(placeholderTx, placeholderTxOptions)
-    : placeholder
+  useImperativeHandle(ref, () => input.current as RNTextInput)
 
-  const $containerStyles = [$containerStyleOverride, visible ? { zIndex: 1000 } : { zIndex: 0 }]
-
-  const $labelStyles = [$labelStyle, LabelTextProps?.style]
-
-  const $inputWrapperStyles = [
-    $inputWrapperStyle,
-    status === "error" && { borderColor: colors.error },
-    TextInputProps.multiline && { minHeight: 112 },
-    LeftAccessory && { paddingStart: 0 },
-    RightAccessory && { paddingEnd: 0 },
-    $inputWrapperStyleOverride,
-  ]
-
-  const $inputStyles: StyleProp<TextStyle> = [
-    $inputStyle,
-    disabled && { color: colors.textDim },
-    isRTL && { textAlign: "right" as TextStyle["textAlign"] },
-    TextInputProps.multiline && { height: "auto" },
-    $inputStyleOverride,
-  ]
-
-  const $helperStyles = [
-    $helperStyle,
-    status === "error" && { color: colors.error },
-    HelperTextProps?.style,
-  ]
-
-  /**
-   *
-   */
-  function focusInput() {
-    if (disabled) return
-
-    input.current?.focus()
-  }
-
-  useImperativeHandle(ref, () => input.current as TextInput)
-
-  function selectSuggestion(text: string) {
-    // console.log(text)
-    // input.current?.setNativeProps({text})
-    // input.current?.setState(()=>{text})
-    // props.onSelect(text)
+  function handleSelectOption(opt: Option) {
     setVisible(false)
+    onSelect && onSelect(opt.value)
   }
 
-  useEffect(() => {
-    onDropdownChange(visible ? "opened" : "closed")
-  }, [visible])
+  function handleOpenMenu() {
+    setVisible(true)
+    onDropdownChange && onDropdownChange("opened")
+  }
+
+  function handleCloseMenu() {
+    setVisible(false)
+    onDropdownChange && onDropdownChange("closed")
+  }
+
+  const valueMap = useMemo(()=>{
+    const keyMap:Record<string,string>= {}
+    if(!options){
+      return keyMap
+    }
+    for(const item of options){
+      keyMap[item.value]=item.label
+    }
+    return keyMap
+  },[options])
 
   return (
-    <TouchableOpacity
-      activeOpacity={1}
-      style={$containerStyles}
-      onPress={focusInput}
-      accessibilityState={{ disabled }}
-    >
-      {!!(label || labelTx) && (
-        <Text
-          preset="formLabel"
-          text={label}
-          tx={labelTx}
-          txOptions={labelTxOptions}
-          {...LabelTextProps}
-          style={$labelStyles}
-        />
-      )}
-
-      <View style={$inputWrapperStyles}>
-        {!!LeftAccessory && (
-          <LeftAccessory
-            style={$leftAccessoryStyle}
-            status={status}
-            editable={!disabled}
-            multiline={TextInputProps.multiline ?? false}
-          />
-        )}
-        <TouchableOpacity
-          activeOpacity={1}
-          style={$leftAccessoryStyle}
-          onPress={() => {
-            setVisible(!visible)
-          }}
-          accessibilityState={{ disabled }}
-        >
-          <Icon
-            icon={"caretDown"}
-            style={{ transform: [{ rotate: visible ? "0deg" : "180deg" }] }}
-          ></Icon>
-        </TouchableOpacity>
-
-        <TextInput
-          onPressOut={() => setVisible(true)}
+    <Menu
+      visible={visible}
+      onDismiss={handleCloseMenu}
+      anchor={
+        <TextField
+          value={value&&valueMap[value]}
+          showSoftInputOnFocus={false}
           ref={input}
-          underlineColorAndroid={colors.transparent}
-          textAlignVertical="top"
-          placeholder={placeholderContent}
-          placeholderTextColor={colors.textDim}
+          onPressIn={handleOpenMenu}
+          editable={!!options?.length}
+          mode={TextInputProps.mode || "outlined"}
           {...TextInputProps}
-          editable={!disabled}
-          style={[$inputStyles, { textAlign: "right", direction: "rtl" }]}
-          onBlur={() => setVisible(false)}
-          onFocus={() => setVisible(true)}
-          // onPressOut={()=> setVisible(false)}
-        />
-
-        {!!RightAccessory && (
-          <RightAccessory
-            style={$rightAccessoryStyle}
-            status={status}
-            editable={!disabled}
-            multiline={TextInputProps.multiline ?? false}
+        ></TextField>
+      }
+      style={{ width: "95%" }}
+    >
+      {options?.map((option) => {
+        return (
+          <Menu.Item
+            key={option.value}
+            onPress={() => handleSelectOption(option)}
+            title={option.label}
           />
-        )}
-      </View>
-      {visible && (
-        <View style={$overlay}>
-          <ListView
-            keyboardShouldPersistTaps="always"
-            contentContainerStyle={{ backgroundColor: "#FFFFFF" }}
-            data={props.suggestions}
-            renderItem={({ item }) => (
-              <ListItem
-                onPress={() => selectSuggestion(item.title)}
-                textStyle={{ textAlign: "center" }}
-                text={item.title}
-              >
-                {" "}
-              </ListItem>
-            )}
-          ></ListView>
-        </View>
-      )}
-      {!!(helper || helperTx) && (
-        <Text
-          preset="formHelper"
-          text={helper}
-          tx={helperTx}
-          txOptions={helperTxOptions}
-          {...HelperTextProps}
-          style={$helperStyles}
-        />
-      )}
-    </TouchableOpacity>
+        )
+      })}
+    </Menu>
   )
 })
-
-const $labelStyle: TextStyle = {
-  marginBottom: spacing.xs,
-}
-
-const $inputWrapperStyle: ViewStyle = {
-  flexDirection: "row",
-  alignItems: "flex-start",
-  borderWidth: 1,
-  borderRadius: 4,
-  backgroundColor: colors.palette.neutral200,
-  borderColor: colors.palette.neutral400,
-  overflow: "hidden",
-}
-
-const $inputStyle: TextStyle = {
-  flex: 1,
-  alignSelf: "stretch",
-  fontFamily: typography.primary.normal,
-  color: colors.text,
-  fontSize: 16,
-  height: 24,
-  // https://github.com/facebook/react-native/issues/21720#issuecomment-532642093
-  paddingVertical: 0,
-  paddingHorizontal: 0,
-  marginVertical: spacing.xs,
-  marginHorizontal: spacing.sm,
-}
-
-const $helperStyle: TextStyle = {
-  marginTop: spacing.xs,
-}
-
-const $rightAccessoryStyle: ViewStyle = {
-  marginEnd: spacing.xs,
-  height: 40,
-  justifyContent: "center",
-  alignItems: "center",
-}
-const $leftAccessoryStyle: ViewStyle = {
-  marginStart: spacing.xs,
-  height: 40,
-  justifyContent: "center",
-  alignItems: "center",
-}
-
-const $overlay: ViewStyle | TextStyle = {
-  position: "absolute",
-  top: 70,
-  right: 0,
-  left: 0,
-  margin: 2,
-  backgroundColor: "white",
-  // borderRadius: 0,20,0,20
-  // padding: 35,
-  // alignItems: "center",
-  shadowColor: "#000",
-  shadowOffset: {
-    width: 0,
-    height: 2,
-  },
-  shadowOpacity: 0.25,
-  shadowRadius: 4,
-  elevation: 5,
-}

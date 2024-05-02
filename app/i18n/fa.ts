@@ -1,5 +1,5 @@
 const fa = {
-  spend : {
+  spend: {
     recipient: "دریافت کننده",
     group: "گروه",
     attachments: "پیوستها",
@@ -18,12 +18,12 @@ const fa = {
     back: "بازگشت",
     logOut: "خروج",
     edit: "تغییر",
-    save: "ذخیره",
+    save: "ثبت",
     add: "اضافه",
+    new: "جدید"
   },
   welcomeScreen: {
-    postscript:
-      "پیست: اپت اسولا این شکلی نیست",
+    postscript: "پیست: اپت اسولا این شکلی نیست",
     readyForLaunch: "آپلیکشین شما آماده اجراست!",
     exciting: "(اوه، این هیجان انگیز است!)",
     letsGo: "بزن بریم!",
@@ -38,7 +38,8 @@ const fa = {
   emptyStateComponent: {
     generic: {
       heading: "خیلی خالی... خیلی غمگین",
-      content: "هنوز هیچ داده ای پیدا نشده است. برای بازخوانی یا بارگیری مجدد برنامه، روی دکمه کلیک کنید.",
+      content:
+        "هنوز هیچ داده ای پیدا نشده است. برای بازخوانی یا بارگیری مجدد برنامه، روی دکمه کلیک کنید.",
       button: "بیایید دوباره این را امتحان کنیم",
     },
   },
@@ -71,11 +72,13 @@ const fa = {
     descriptionHelper: "مبلغ درست وارد نشده",
     dateLabel: "تاریخ",
     datePlaceholder: "تاریخ را وارد کنید",
-    dateHelper: "تاریخ درست وارد نشده"
+    dateHelper: "تاریخ درست وارد نشده",
   },
   tankhahSpendFormScreen: {
+    titleLabel: "عنوان",
+    titlePlaceholder: "عنوان را وارد کنید",
     recipientLabel: "دریافت کننده",
-    recipientPlaceholder:"دریافت کننده را وارد کنید",
+    recipientPlaceholder: "دریافت کننده را وارد کنید",
     recipientHelper: "دریافت کننده درست وارد نشده",
     dateLabel: "تاریخ",
     datePlaceholder: "تاریخ را وارد کنید",
@@ -83,7 +86,7 @@ const fa = {
     descriptionLabel: "توضیحات",
     descriptionPlaceholder: "توضیحات را وارد کنید",
     descriptionHelper: "توضیحات درست وارد نشده",
-    feesLabel:"کارمزد بانک",
+    feesLabel: "کارمزد بانک",
     feesPlaceholder: "کارمزد بانک را وارد کنید",
     trackingNumLabel: "شماره پیگیری",
     trackingNumPlaceholder: "شماره پیگیری را وارد کنید",
@@ -91,7 +94,17 @@ const fa = {
     destPlaceholder: "شماره حساب یا کارت مورد نظر را وارد کنید",
     groupLabel: "گروه",
     groupPlaceholder: "گروه را وارد کنید",
-  }
+  },
+  receiptItemForm: {
+    titleLabel: "عنوان",
+    titlePlaceholder: "(الزامی) عنوان را وارد کنید",
+    titleHelper: "فیلد عنوان اجباریست",
+    descriptionLabel: "توضیحات",
+    descriptionPlaceholder: "توضیحات را وارد کنید",
+    defaultPriceLabel: "قیمت پیش فرض را وارد کنید",
+    defaultPricePlaceholder: "قیمت پیش فرض درست وارد نشده",
+    searchableLabel: "قابل جستجو",
+  },
 }
 
 export default fa

@@ -37,3 +37,16 @@ export const currencyFormatter = new Intl.NumberFormat("fa-IR", {
   style: "currency",
   currency: "IRR",
 })
+
+
+export const tomanFormatter = (value:number) =>{
+  const [hole,fraction="0"] = (value/10).toString().split('.')
+  return hole.toString().split('').reverse().reduce((acc,curr, index)=>{
+    let res = curr + acc
+    if((index+1)%3 === 0){
+      return "٫" + res
+    }
+    return res
+  }).replace(/^\٫/, '') + `.${fraction} تومان`
+  
+}

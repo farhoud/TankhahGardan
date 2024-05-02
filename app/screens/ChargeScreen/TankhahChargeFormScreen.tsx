@@ -1,18 +1,20 @@
 import { observer } from "mobx-react-lite"
-import React, { FC, useEffect, useLayoutEffect, useState } from "react"
-import { ViewStyle } from "react-native"
-import { Screen, TextField, Header } from "../../components"
+import React, { FC, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { TextInput, ViewStyle } from "react-native"
+import { Screen, TextField, Header, Text } from "../../components"
 import { DatePicker } from "app/components/DatePicker"
 import { isNumber } from "app/utils/validation"
 import { useObject, useRealm } from "@realm/react"
 import { Fund } from "app/models/realm/models"
-import { currencyFormatter } from "app/utils/formatDate"
-import { StackNavigation } from "app/navigators"
+import { currencyFormatter, tomanFormatter } from "app/utils/formatDate"
+import { AppStackScreenProps, StackNavigation } from "app/navigators"
 import { CommonActions, useNavigation } from "@react-navigation/native"
 import { BSON, UpdateMode } from "realm"
 import { ChargeStackScreenProps } from "app/navigators/ChargeNavigator"
+import { Appbar, Button, Icon } from "react-native-paper"
+import MaskInput, { createNumberMask } from "react-native-mask-input"
 
-export const TankhahChargeFromScreen: FC<ChargeStackScreenProps<"ChargeForm">> = observer(
+export const TankhahChargeFromScreen: FC<AppStackScreenProps<"ChargeForm">> = observer(
   function TankhahChargeScreen(_props) {
     const itemId = _props.route.params?.itemId
     const navigation = useNavigation<StackNavigation>()
@@ -23,6 +25,9 @@ export const TankhahChargeFromScreen: FC<ChargeStackScreenProps<"ChargeForm">> =
     const [errors, setErrors] = useState<Record<string, string>>()
     const realm = useRealm()
     const data = useObject(Fund, new BSON.ObjectID(itemId))
+
+    const refAmount = useRef<TextInput>(null)
+    const refDescription = useRef<TextInput>(null)
 
     const validateForm = () => {
       let errors: Record<string, string> = {}
@@ -36,6 +41,13 @@ export const TankhahChargeFromScreen: FC<ChargeStackScreenProps<"ChargeForm">> =
       setErrors(errors)
       setIsValid(Object.keys(errors).length === 0)
     }
+
+    const amountHelper = useMemo(() => {
+      if (!amount) {
+        return "فیلد الزامیست"
+      }
+      return errors?.amount ? errors?.amount : tomanFormatter(Number(amount))
+    }, [amount, errors?.amount])
 
     const handleSubmit = () => {
       if (isValid) {
@@ -63,11 +75,18 @@ export const TankhahChargeFromScreen: FC<ChargeStackScreenProps<"ChargeForm">> =
         navigation.dispatch(
           CommonActions.reset({
             index: 0,
-            routes: [{ name: "Demo", params: { screen: "ChargeList", params: {} } }],
+            routes: [{ name: "TankhahTabs", params: { screen: "ChargeList", params: {} } }],
           }),
         )
       }
     }
+
+    const dollarMask = createNumberMask({
+      prefix: ["﷼", " "],
+      delimiter: "٫",
+      separator: ".",
+      precision: 0,
+    })
 
     useEffect(() => {
       if (data) {
@@ -87,13 +106,25 @@ export const TankhahChargeFromScreen: FC<ChargeStackScreenProps<"ChargeForm">> =
       navigation.setOptions({
         headerShown: true,
         header: () => (
-          <Header
-            title="شارژ"
-            leftIcon="back"
-            onLeftPress={() => goBack()}
-            rightTx="common.save"
-            onRightPress={isValid ? handleSubmit : undefined}
-          />
+          <Appbar.Header>
+            <Appbar.BackAction onPress={goBack}></Appbar.BackAction>
+            <Appbar.Content title={false} />
+            <Appbar.Content title={false} />
+            <Appbar.Content title={false} />
+            <Appbar.Content
+              title={
+                <Button
+                  disabled={!isValid}
+                  style={{}}
+                  onPress={isValid ? handleSubmit : undefined}
+                  mode="contained"
+                  compact
+                >
+                  ثبت
+                </Button>
+              }
+            />
+          </Appbar.Header>
         ),
       })
     }, [isValid, handleSubmit])
@@ -104,35 +135,42 @@ export const TankhahChargeFromScreen: FC<ChargeStackScreenProps<"ChargeForm">> =
         // safeAreaEdges={["top"]}
         contentContainerStyle={$screenContentContainer}
       >
-        <TextField
-          value={amount.toString()}
-          onChangeText={(value) => {
-            setAmount(Number(value) || 0)
-          }}
-          keyboardType="numeric"
-          status={errors?.amount ? "error" : undefined}
-          label="Name"
-          helper={errors?.amount ? errors?.amount : currencyFormatter.format(Number(amount))}
-          labelTx="tankhahChargeScreen.amountLabel"
-          placeholder="John Doe"
-          placeholderTx="tankhahChargeScreen.amountPlaceholder"
-        />
-
         <DatePicker
           date={doneAt}
           onDateChange={(date) => setDoneAt(date)}
-          // status="error"
-          status={errors?.doneAt ? "error" : undefined}
-          label="Name"
+          onDone={() => {
+            refAmount && refAmount.current?.focus()
+          }}
+          error={!!errors?.doneAt}
           labelTx="tankhahChargeScreen.dateLabel"
           placeholderTx="tankhahChargeScreen.datePlaceholder"
         />
 
         <TextField
+          ref={refAmount}
+          value={amount ? amount.toString() : ""}
+          autoFocus
+          onSubmitEditing={() => {
+            refDescription && refDescription.current?.focus()
+          }}
+          keyboardType="numeric"
+          error={!!amount && !!errors?.amount}
+          label="Name"
+          helper={amountHelper}
+          labelTx="tankhahChargeScreen.amountLabel"
+          // placeholder="John Doe"
+          placeholderTx="tankhahChargeScreen.amountPlaceholder"
+          render={(props) => <MaskInput {...props} mask={dollarMask} onChangeText={(masked, unmasked)=>{
+            setAmount(Number(unmasked) || 0)
+          }} />}
+        />
+
+        <TextField
+          ref={refDescription}
           value={description}
           onChangeText={(value) => setDescription(value)}
           multiline
-          status={errors?.description ? "error" : undefined}
+          error={!!errors?.description}
           label="Name"
           labelTx="tankhahChargeScreen.descriptionLabel"
           placeholder="John Doe"
@@ -147,5 +185,7 @@ export const TankhahChargeFromScreen: FC<ChargeStackScreenProps<"ChargeForm">> =
 const $screenContentContainer: ViewStyle = {
   flex: 1,
   // marginTop: 100,
-  marginHorizontal: 10,
+  paddingHorizontal: 10,
+  display: "flex",
+  flexDirection: "column",
 }

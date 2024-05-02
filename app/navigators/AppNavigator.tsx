@@ -5,11 +5,13 @@
  * and a "main" flow which the user will use once logged in.
  */
 import {
+  CommonActions,
   DarkTheme,
   DefaultTheme,
   NavigationContainer,
   NavigationProp,
   NavigatorScreenParams,
+  useNavigation,
 } from "@react-navigation/native"
 import { createNativeStackNavigator, NativeStackScreenProps } from "@react-navigation/native-stack"
 import { observer } from "mobx-react-lite"
@@ -19,9 +21,11 @@ import * as Screens from "app/screens"
 import Config from "../config"
 import { useStores } from "../models"
 // import { DemoNavigator, DemoTabParamList } from "./DemoNavigator"
-import { TankhahNavigator, TankhahTabParamList } from "./TankhahNavigator"
+import { TankhahTabNavigator, TankhahTabParamList } from "./TankhahTabNavigator"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 import { colors } from "app/theme"
+import { Appbar } from "react-native-paper"
+import { TankhahSpendFormScreen as TestScreen } from "app/screens/SpendScreen/SpendFormScreen/TankhahSpendFormScreen"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -39,12 +43,17 @@ import { colors } from "app/theme"
 export type AppStackParamList = {
   Welcome: undefined
   Login: undefined
-  Demo: NavigatorScreenParams<TankhahTabParamList>
+  TankhahTabs: NavigatorScreenParams<TankhahTabParamList>
+  TankhahSpendItem: { itemId: string }
+  TankhahSpendForm: { itemId?: string }
+  ChargeForm: { itemId?: string }
   // 🔥 Your screens go here
   // TankhahHome: undefined
   // TankhahDepositFrom: { itemId?: string }
   // TankhahSpendItem: { itemId: string }
   // TankhahWithdraw: { itemId?: string }
+  TestScreen: undefined
+  BuyItemForm: undefined
   // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
 
@@ -68,15 +77,29 @@ const AppStack = observer(function AppStack() {
   const {
     authenticationStore: { isAuthenticated },
   } = useStores()
+  const navigation = useNavigation<StackNavigation>()
+  const goBack = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack()
+    } else {
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: "TankhahTabs", params: { screen: "TankhahHome", params: {} } }],
+        }),
+      )
+    }
+  }
 
   return (
     <Stack.Navigator
       screenOptions={{ headerShown: false, navigationBarColor: colors.background }}
-      initialRouteName={isAuthenticated ? "Demo" : "Login"}
+      // initialRouteName={isAuthenticated ? "TankhahTabs" : "Login"}
+      initialRouteName="TestScreen"
     >
       {isAuthenticated ? (
         <>
-          <Stack.Screen name="Demo" component={TankhahNavigator} />
+          <Stack.Screen name="TankhahTabs" component={TankhahTabNavigator} />
         </>
       ) : (
         <>
@@ -84,11 +107,31 @@ const AppStack = observer(function AppStack() {
         </>
       )}
 
+      <Stack.Group>
+        <Stack.Screen name="TankhahSpendItem" component={Screens.TankhahSpendItemScreen} />
+        <Stack.Screen
+          name="TankhahSpendForm"
+          component={Screens.TankhahSpendFormScreen}
+          options={{
+            headerShown: true,
+            header: () => (
+              <Appbar.Header>
+                <Appbar.BackAction onPress={goBack} />
+                <Appbar.Content title="خرج" />
+              </Appbar.Header>
+            ),
+          }}
+        />
+      </Stack.Group>
+      <Stack.Group>
+        <Stack.Screen name="ChargeForm" component={Screens.TankhahChargeFromScreen} />
+
+      </Stack.Group>
+
+
       {/** 🔥 Your screens go here */}
-      {/* <Stack.Screen name="TankhahHome" component={Screens.TankhahHomeScreen} /> */}
-      {/* <Stack.Screen name="TankhahDepositFrom" component={Screens.TankhahDepositFromScreen} /> */}
-      {/* <Stack.Screen name="TankhahSpendItem" component={Screens.TankhahSpendItemScreen} /> */}
-      {/* <Stack.Screen name="TankhahWithdraw" component={TankhahWithdrawScreen} /> */}
+      <Stack.Screen name="BuyItemForm" component={Screens.BuyItemFormScreen} options={{presentation: 'modal'}}/>
+      <Stack.Screen name="TestScreen" component={TestScreen} />
       {/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
     </Stack.Navigator>
   )
