@@ -32,12 +32,12 @@ interface BuyItemFormScreenProps extends AppStackScreenProps<"BuyItemForm"> {}
 export const BuyItemFormScreen: FC<BuyItemFormScreenProps> = observer(function BuyItemFormScreen() {
   // Pull in one of our MST stores
   const {
-    spendFormStore: { receiptItemsArray: selectedItems, addReceiptItem, removeReceiptItem },
+    spendFormStore: { receiptItemsArray: selectedItems, addReceiptItem },
   } = useStores()
 
   // Pull in navigation via hook
   const navigation = useNavigation()
-  const theme = useTheme()
+
   const realm = useRealm()
   // Modal actions
   const [modalVisibility, setModalVisibility] = useState(false)
@@ -133,8 +133,6 @@ export const BuyItemFormScreen: FC<BuyItemFormScreenProps> = observer(function B
     )
   }
 
-
-
   useEffect(() => {
     clearModalForm()
   }, [openedItem])
@@ -146,24 +144,18 @@ export const BuyItemFormScreen: FC<BuyItemFormScreenProps> = observer(function B
   const searchResultBase = useQuery(
     ReceiptItem,
     (ReceiptItem) => {
-      const query =
-        "(title CONTAINS $0 OR description CONTAINS $0) AND searchable == $1 " 
-        // `AND (NOT _id IN {${selectedItems.map((_, index) => `$${index + 2}`).join(",")}})`
-      return ReceiptItem.filtered(
-        query,
-        searchQuery,
-        true
-      )
+      const query = "(title CONTAINS $0 OR description CONTAINS $0) AND searchable == $1 "
+      // `AND (NOT _id IN {${selectedItems.map((_, index) => `$${index + 2}`).join(",")}})`
+      return ReceiptItem.filtered(query, searchQuery, true)
     },
     [searchQuery],
   )
 
-  const searchResult = useMemo(()=>{
-    const selectedIds = selectedItems.map(([_,i])=>i._id)
-    return searchResultBase.filter((i)=>!selectedIds.includes(i._id.toHexString()))
-  },[searchResultBase,selectedItems])
+  const searchResult = useMemo(() => {
+    const selectedIds = selectedItems.map(([_, i]) => i._id)
+    return searchResultBase.filter((i) => !selectedIds.includes(i._id.toHexString()))
+  }, [searchResultBase, selectedItems])
 
-  const [expandedItem,setExpandedItem] = useState(0)
   return (
     <Screen style={$root} safeAreaEdges={["top"]} preset="fixed">
       <Surface>
@@ -181,7 +173,7 @@ export const BuyItemFormScreen: FC<BuyItemFormScreenProps> = observer(function B
         />
         <List.Section>
           <List.Subheader>انتخاب شده ها</List.Subheader>
-          <SelectedReceiptList expandedIndex={expandedItem} onExpandedIndexChange={(index)=>setExpandedItem(index)} listViewStyle={{ maxHeight: "40%", minHeight: 280 }} />
+          <SelectedReceiptList listViewStyle={{ maxHeight: "40%", minHeight: 280 }} />
 
           <List.Subheader>نتایج جستجو</List.Subheader>
           {searchResult && (
@@ -199,7 +191,7 @@ export const BuyItemFormScreen: FC<BuyItemFormScreenProps> = observer(function B
                     }}
                     onPress={() => {
                       addReceiptItem(info.item)
-                      setExpandedItem(0)
+              
                     }}
                   />
                   <Divider />

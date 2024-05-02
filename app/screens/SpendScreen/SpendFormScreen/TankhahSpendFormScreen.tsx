@@ -1,31 +1,17 @@
 import * as React from "react"
 import {
-  Animated,
   View,
-  TouchableWithoutFeedback,
-  StyleSheet,
-  useWindowDimensions,
-  ViewStyle,
   KeyboardAvoidingView,
 } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { TabView, SceneMap, NavigationState, SceneRendererProps } from "react-native-tab-view"
+import { TabView, SceneMap } from "react-native-tab-view"
 import { BasicFormScreen } from "./BasicFormScreen"
 import { observer } from "mobx-react-lite"
-import { IconButton, useTheme, Icon, Appbar } from "react-native-paper"
-import { useCallback } from "react"
-import { Text } from "app/components"
+import { Appbar } from "react-native-paper"
 import { useNavigation } from "@react-navigation/native"
 import { BuyFormScreen } from "./BuyFormScreen"
 import { MoneyFormScreen } from "./MoneyFormScreen"
 import { StepBar } from "./StepBar"
-
-type Route = {
-  key: string
-  title: string
-}
-
-type State = NavigationState<Route>
 
 const routes = [
   { key: "contacts", title: "پایه" },
@@ -82,12 +68,6 @@ export const TankhahSpendFormScreen = observer(function TankhahSpendFormScreen()
           renderTabBar={StepBar}
           tabBarPosition="bottom"
           onIndexChange={setIndex}
-          onSwipeEnd={() => {
-            console.log("ended")
-          }}
-          onSwipeStart={() => {
-            console.log("enStart")
-          }}
         />
       </View>
     </KeyboardAvoidingView>

@@ -97,7 +97,6 @@ export function StepBar(props: StepBarProps) {
                   icon={`numeric-${index + 1}-circle`}
                   iconColor={colors.primary}
                   size={30}
-                  // onPress={() => console.log("Pressed")}
                 />
 
                 <View style={[$dash, $endDashActive]}></View>
@@ -121,7 +120,7 @@ export function StepBar(props: StepBarProps) {
           <TouchableWithoutFeedback
             key={route.key}
             onPress={() => {
-              console.log("pressed"), props.jumpTo(route.key)
+              props.jumpTo(route.key)
             }}
           >
             {renderItem(props)({ route, index })}

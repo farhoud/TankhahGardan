@@ -1,4 +1,4 @@
-import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
+import { Instance, SnapshotIn, SnapshotOut, types, unprotect } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { PaymentMethod, PaymentType, ReceiptItem } from "./realm/models"
 import { ReceiptItemModel } from "./ReceiptItem"
@@ -28,6 +28,7 @@ export const SpendFormStoreModel = types
     trackingNum: types.string,
     description: types.maybe(types.string),
     receiptItems: types.map(ReceiptItemModel),
+    expandedItemKey: types.optional(types.string, ""),
   })
   .actions(withSetPropAction)
   .views((self) => ({
@@ -36,20 +37,34 @@ export const SpendFormStoreModel = types
     },
     get receiptItemsArray() {
       const res = []
-      for(const data of self.receiptItems){
+      for (const data of self.receiptItems) {
         res.unshift(data)
       }
       return res
-    }
+    },
+    itemByKeys(key: string) {
+      return self.receiptItems.get(key)
+    },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
     addReceiptItem(item: ReceiptItem) {
-      const { title, searchable, defaultPrice } = item
-      self.receiptItems.put({ _id: item._id.toHexString(), title, searchable, defaultPrice })
+      const { title, searchable, defaultPrice, description } = item
+      const s = self.receiptItems.put({
+        _id: item._id.toHexString(),
+        title,
+        searchable,
+        defaultPrice,
+        description:description||undefined,
+      })
+      this.expand(item._id.toHexString())
     },
-    removeReceiptItem(key:string){
+    removeReceiptItem(key: string) {
       self.receiptItems.delete(key)
-    }
+    },
+    expand(key: string) {
+      if (self.expandedItemKey === key) self.expandedItemKey = ""
+      else self.expandedItemKey = key
+    },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export interface SpendFormStore extends Instance<typeof SpendFormStoreModel> {}

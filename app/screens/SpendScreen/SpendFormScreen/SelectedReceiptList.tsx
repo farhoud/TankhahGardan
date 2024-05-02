@@ -1,50 +1,26 @@
-import { CurrencyField, ListView, TextField } from "app/components"
+import { CurrencyField, ListView, TextField, Text } from "app/components"
 import { observer } from "mobx-react-lite"
-import { FC, useState } from "react"
+import { FC, useMemo } from "react"
 import { useStores } from "app/models"
-import { GestureHandlerGestureEvent, RectButton, Swipeable } from "react-native-gesture-handler"
-import { Divider, IconButton, List, Surface, useTheme } from "react-native-paper"
+import { RectButton, Swipeable } from "react-native-gesture-handler"
+import { Divider, Icon, IconButton, List, Surface, useTheme } from "react-native-paper"
 import { Animated, GestureResponderEvent, View, ViewStyle } from "react-native"
 
 type AnimatedInterpolation = Animated.AnimatedInterpolation<string | number>
 
 interface Props {
   listViewStyle?: ViewStyle
-  expandedIndex?: number
-  onExpandedIndexChange?: (index:number)=>void
 }
 
 export const SelectedReceiptList: FC<Props> = observer(function SelectedReceiptList(props) {
-  const {listViewStyle, expandedIndex, onExpandedIndexChange} = props
+  const { listViewStyle } = props
   const {
-    spendFormStore: { receiptItemsArray: selectedItems, addReceiptItem, removeReceiptItem },
+    spendFormStore: { receiptItemsArray: selectedItems, removeReceiptItem },
   } = useStores()
   const theme = useTheme()
-  const [itemCount, setItemCount] = useState<string>("10")
-  const renderReceiptInput = () => {
-    return (
-      <Surface elevation={1} style={$itemContainer}>
-        <View style={{ flexGrow: 2 }}>
-          <CurrencyField label="قیمت" dense value={100} onChangeValue={() => {}}></CurrencyField>
-        </View>
-        <View style={$counterContainer}>
-          {/* <IconButton icon="plus" size={15} mode="contained" /> */}
-          <TextField
-            dense
-            label="مقدار"
-            value={itemCount}
-            onChangeText={(value) => {
-              setItemCount(value)
-            }}
-            helper="  "
-          />
-          {/* <IconButton icon="minus" size={15} mode="contained" /> */}
-        </View>
-      </Surface>
-    )
-  }
+
   const renderItemActions =
-    (key: string) => (progress: AnimatedInterpolation, dragX: AnimatedInterpolation) => {
+    (item: string) => (progress: AnimatedInterpolation, dragX: AnimatedInterpolation) => {
       const trans = dragX.interpolate({
         inputRange: [0, 50, 100, 101],
         outputRange: [0, 5, 10, 15],
@@ -53,7 +29,7 @@ export const SelectedReceiptList: FC<Props> = observer(function SelectedReceiptL
         <RectButton
           style={{ backgroundColor: theme.colors.surfaceVariant }}
           onPress={() => {
-            removeReceiptItem(key)
+            removeReceiptItem(item)
           }}
         >
           <IconButton animated icon="delete"></IconButton>
@@ -61,13 +37,9 @@ export const SelectedReceiptList: FC<Props> = observer(function SelectedReceiptL
       )
     }
 
-  const expandItem = (index: number) => (e: GestureResponderEvent) => {
-    onExpandedIndexChange && onExpandedIndexChange( expandedIndex === index ? -1 : index)
-  }
-
   return (
     <>
-      {!!selectedItems.length && (
+      {!!selectedItems && (
         <ListView
           style={listViewStyle}
           data={selectedItems}
@@ -81,19 +53,12 @@ export const SelectedReceiptList: FC<Props> = observer(function SelectedReceiptL
                 onSwipeableWillOpen={() => {
                   removeReceiptItem(keys)
                 }}
-                leftThreshold={180}
-                rightThreshold={180}
+                leftThreshold={160}
+                rightThreshold={160}
               >
-                <List.Accordion
-                  style={{ backgroundColor: theme.colors.surfaceVariant }}
-                  expanded={expandedIndex === index}
-                  onPress={expandItem(index)}
-                  title={i.title}
-                  id={index}
-                  key={i._id}
-                >
-                  {renderReceiptInput()}
-                </List.Accordion>
+                <ReceiptForm
+                  itemKey={keys}
+                ></ReceiptForm>
 
                 <Divider style={{ margin: 2 }} />
               </Swipeable>
@@ -118,3 +83,74 @@ const $itemContainer: ViewStyle = {
   flexDirection: "row",
   padding: 5,
 }
+
+type ReceiptFormProps = {
+  itemKey: string
+}
+
+const ReceiptForm: FC<ReceiptFormProps> = observer(function ReceiptFormProps(props) {
+  const { itemKey } = props
+  const {
+    spendFormStore: { itemByKeys, expandedItemKey, expand },
+  } = useStores()
+  const theme = useTheme()
+  const item = useMemo(() => itemByKeys(itemKey), [itemKey])
+
+  return (
+    <List.Accordion
+      style={{ display: "flex", backgroundColor: theme.colors.surfaceVariant, height: 50 }}
+      expanded={expandedItemKey===itemKey}
+      onPress={()=>expand(itemKey)}
+      // description={i.amount}
+      right={({ isExpanded }) => {
+        return (
+          <View
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              marginBottom: -5,
+              marginTop: -5,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {!isExpanded && (
+              <Text
+                style={{ width: 100, textAlign: "center" }}
+              >{`${item?.amount} X ${item?.price}`}</Text>
+            )}
+            <Icon source={isExpanded ? "chevron-up" : "chevron-down"} size={20}></Icon>
+          </View>
+        )
+      }}
+      title={<Text> {item?.title} </Text>}
+    >
+      <Surface elevation={1} style={$itemContainer}>
+        <View style={{ flexGrow: 2 }}>
+          <CurrencyField
+            label="قیمت"
+            dense
+            value={item?.price || 0}
+            onChangeValue={(value) => {
+              item?.setProp("price", value)
+            }}
+          ></CurrencyField>
+        </View>
+        <View style={$counterContainer}>
+          {/* <IconButton icon="plus" size={15} mode="contained" /> */}
+          <TextField
+            dense
+            label="مقدار"
+            value={item?.amount.toString()}
+            keyboardType="numeric"
+            onChangeText={(value) => {
+              item?.setProp("amount", Number(value))
+            }}
+            helper="  "
+          />
+          {/* <IconButton icon="minus" size={15} mode="contained" /> */}
+        </View>
+      </Surface>
+    </List.Accordion>
+  )
+})

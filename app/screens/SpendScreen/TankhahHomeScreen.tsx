@@ -74,7 +74,6 @@ export const TankhahHomeScreen: FC<TankhahTabScreenProps<"TankhahHome">> = obser
       for (const [index, item] of spendsChartBaseData.entries()) {
         pieData.push({ ...item, focused: index === selectedGroup })
       }
-      console.log("pie data: ", pieData)
       return pieData
     }, [selectedGroup, spendsChartBaseData])
 
@@ -176,9 +175,6 @@ export const TankhahHomeScreen: FC<TankhahTabScreenProps<"TankhahHome">> = obser
                 </View>
                 <PieChart
                   data={spendsChartData}
-                  onPress={(s: any, d: any) => {
-                    console.log(s, d)
-                  }}
                   donut
                   showGradient
                   sectionAutoFocus

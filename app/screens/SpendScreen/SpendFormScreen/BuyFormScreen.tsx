@@ -1,4 +1,4 @@
-import React, { FC } from "react"
+import React, { FC, useState } from "react"
 import { observer } from "mobx-react-lite"
 import { View, ViewStyle } from "react-native"
 import { AppStackScreenProps, StackNavigation } from "app/navigators"
@@ -42,7 +42,7 @@ export const BuyFormScreen: FC<BuyFormScreenProps> = observer(function BuyFormSc
     },
     [accountNum, recipient],
   )
-
+  const [expandedItem, setExpandedItem] = useState(0)
   return (
     <View style={$root}>
       <Surface>
@@ -102,7 +102,11 @@ export const BuyFormScreen: FC<BuyFormScreenProps> = observer(function BuyFormSc
             </Button>
           )}
         />
-        <SelectedReceiptList  listViewStyle={{height:460}} />
+        <SelectedReceiptList
+          expandedIndex={expandedItem}
+          onExpandedIndexChange={(index) => setExpandedItem(index)}
+          listViewStyle={{ height: 460 }}
+        />
       </Surface>
     </View>
   )

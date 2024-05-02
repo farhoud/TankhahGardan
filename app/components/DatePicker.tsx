@@ -71,9 +71,7 @@ export const DatePicker = (props: DatePickerProps) => {
           {...TextInputProps}
           onFocus={(e) => {
             setModalVisibility(true)
-            // Keyboard.dismiss()
           }}
-          onSubmitEditing={(e) => console.log(e)}
           showSoftInputOnFocus={false}
         />
       )}

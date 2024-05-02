@@ -1,17 +1,16 @@
 import { observer } from "mobx-react-lite"
 import React, { FC, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { TextInput, ViewStyle } from "react-native"
-import { Screen, TextField, Header, Text } from "../../components"
+import { Screen, TextField } from "../../components"
 import { DatePicker } from "app/components/DatePicker"
 import { isNumber } from "app/utils/validation"
 import { useObject, useRealm } from "@realm/react"
 import { Fund } from "app/models/realm/models"
-import { currencyFormatter, tomanFormatter } from "app/utils/formatDate"
+import { tomanFormatter } from "app/utils/formatDate"
 import { AppStackScreenProps, StackNavigation } from "app/navigators"
 import { CommonActions, useNavigation } from "@react-navigation/native"
 import { BSON, UpdateMode } from "realm"
-import { ChargeStackScreenProps } from "app/navigators/ChargeNavigator"
-import { Appbar, Button, Icon } from "react-native-paper"
+import { Appbar, Button } from "react-native-paper"
 import MaskInput, { createNumberMask } from "react-native-mask-input"
 
 export const TankhahChargeFromScreen: FC<AppStackScreenProps<"ChargeForm">> = observer(
@@ -31,7 +30,6 @@ export const TankhahChargeFromScreen: FC<AppStackScreenProps<"ChargeForm">> = ob
 
     const validateForm = () => {
       let errors: Record<string, string> = {}
-      console.log(amount)
       if (!amount || !isNumber(Number(amount))) {
         errors.amount = "لطفا مقدار را درست وارد کنید."
       }
@@ -62,7 +60,6 @@ export const TankhahChargeFromScreen: FC<AppStackScreenProps<"ChargeForm">> = ob
             },
             data ? UpdateMode.Modified : undefined,
           )
-          console.log(res)
         })
         goBack()
       }

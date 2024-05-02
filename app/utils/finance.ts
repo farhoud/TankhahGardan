@@ -1,7 +1,6 @@
 import { PaymentMethod } from "app/models/realm/models"
 
 export function calcTransferFee(amount: number, method: PaymentMethod) {
-  console.log("amount and method", amount, method)
   switch (method) {
     case "ctc":
       let step = ((amount -1) / 10000000 >> 0)

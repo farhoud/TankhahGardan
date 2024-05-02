@@ -33,8 +33,6 @@ if (Object.prototype.hasOwnProperty.call(i18n.translations, systemLocaleTag)) {
 export const isRTL = true
 I18nManager.allowRTL(isRTL)
 I18nManager.forceRTL(isRTL)
-console.log(isRTL)
-console.log(systemLocale)
 
 /**
  * Builds up valid keypaths for translations.
