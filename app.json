@@ -68,7 +68,7 @@
       [
         "expo-font",
         {
-          "fonts": ["./assets/fonts/IRANSansXFaNum-Bold.ttf", "./assets/fonts/IRANSansXFaNum-Regular"]
+          "fonts": ["./assets/fonts/IRANSansXFaNum-Bold.ttf", "./assets/fonts/IRANSansXFaNum-Regular.ttf"]
         }
       ],
       [
