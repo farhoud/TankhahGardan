@@ -37,6 +37,10 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
       }
     }
 
+    const goToEdit = () => {
+      navigation.navigate("TankhahSpendForm",{itemId})
+    }
+
     useLayoutEffect(() => {
       navigation.setOptions({
         headerShown: true,
@@ -59,6 +63,7 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
           <Appbar.Header>
             <Appbar.BackAction onPress={goBack} />
             <Appbar.Content title="خرج" />
+            <Appbar.Action icon='pencil' onPress={goToEdit}/>
           </Appbar.Header>
         ),
       })

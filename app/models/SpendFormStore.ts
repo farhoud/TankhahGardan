@@ -1,6 +1,6 @@
 import { Instance, SnapshotIn, SnapshotOut, types, unprotect } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
-import { PaymentMethod, PaymentType, ReceiptItem } from "./realm/models"
+import { PaymentMethod, PaymentType, ReceiptItem, Spend } from "./realm/models"
 import { ReceiptItemModel } from "./ReceiptItem"
 import { isNumber } from "app/utils/validation"
 import Realm, { BSON, Unmanaged, UpdateMode } from "realm"
@@ -121,6 +121,25 @@ export const SpendFormStoreModel = types
       self.title = undefined
       self.receiptItems.clear()
     },
+    setSpend(item: Spend) {
+      self._id = item._id.toHexString()
+      self.doneAt = item.doneAt
+      self.paymentMethod = item.paymentMethod
+      self.amount = item.amount
+      self.transferFee = item.transferFee
+      self.recipient = item.recipient
+      self.accountNum = item.accountNum || undefined
+      self.group = item.group
+      self.description = item.description || undefined
+      self.attachments.replace(item.attachments?.slice()||[])
+      self.trackingNum = item.trackingNum || undefined
+      self.paymentType = item.paymentType as PaymentType
+      self.title = item.title || undefined
+      self.receiptItems.clear()
+      item.receiptItems?.forEach(i=>{
+        self.receiptItems.put({_id: new BSON.ObjectID().toHexString(),...i})
+      })
+    },
     submit(realm: Realm) {
       self.loading = true
       const {
@@ -166,7 +185,7 @@ export const SpendFormStoreModel = types
           return realm.create(
             "Spend",
             {
-              _id: self._id ? self._id : new BSON.ObjectID(),
+              _id: self._id ? new BSON.ObjectID(self._id) : new BSON.ObjectID(),
               doneAt,
               paymentMethod,
               amount,

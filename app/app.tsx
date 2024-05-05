@@ -33,6 +33,7 @@ import { ViewStyle } from "react-native"
 import { RealmProvider } from "@realm/react"
 import { Fund, realmConfig, Spend } from "./models/realm/models"
 import { PaperProvider, configureFonts, MD3DarkTheme } from "react-native-paper"
+import {Appearance} from 'react-native';
 
 export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
 
@@ -41,6 +42,7 @@ const theme = {
   fonts: configureFonts({config: fontConfig}),
 };
 
+Appearance.setColorScheme('dark')
 // Web linking configuration
 const prefix = Linking.createURL("/")
 const config = {
