@@ -6,16 +6,16 @@ import { AutoComplete, DatePicker, Select, Text, TextField } from "app/component
 import { Badge, Button, Icon, List, Searchbar, Surface } from "react-native-paper"
 import { useNavigation } from "@react-navigation/native"
 import { useStores } from "app/models"
-import { PaymentMethod, PaymentType, Spend } from "app/models/realm/models"
+import { PaymentMethod, Spend } from "app/models/realm/models"
 import { useQuery } from "@realm/react"
 import { SelectedReceiptList } from "./SelectedReceiptList"
 
-interface BuyFormScreenProps extends AppStackScreenProps<"TestScreen"> {}
+// interface BuyFormScreenProps extends AppStackScreenProps<"TestScreen"> {}
 
-export const BuyFormScreen: FC<BuyFormScreenProps> = observer(function BuyFormScreen() {
+export const BuyFormScreen: FC = observer(function BuyFormScreen() {
   const navigation = useNavigation<StackNavigation>()
   const {
-    spendFormStore: { recipient, accountNum, setProp, errors, paymentMethod, description },
+    spendFormStore: { recipient, accountNum, setProp, errors, paymentMethod, description,paymentType },
   } = useStores()
 
   const [searchQuery, setSearchQuery] = React.useState("")
@@ -25,24 +25,25 @@ export const BuyFormScreen: FC<BuyFormScreenProps> = observer(function BuyFormSc
     Spend,
     (spends) => {
       return spends.filtered(
-        "recipient CONTAINS $0 AND recipient != '' SORT(doneAt DESC) DISTINCT(recipient) LIMIT(5)",
+        "recipient CONTAINS $0 AND recipient != '' AND paymentType == $1 SORT(doneAt DESC) DISTINCT(recipient) LIMIT(5)",
         recipient,
+        paymentType,
       )
     },
-    [recipient],
+    [recipient,paymentType],
   )
   const accountNumSuggestions = useQuery(
     Spend,
     (spends) => {
       return spends.filtered(
-        "accountNum CONTAINS $0 AND accountNum != '' AND recipient CONTAINS $1 SORT(doneAt DESC) DISTINCT(accountNum) LIMIT(5)",
+        "accountNum CONTAINS $0 AND accountNum != '' AND recipient CONTAINS $1 AND paymentMethod == $2 SORT(doneAt DESC) DISTINCT(accountNum) LIMIT(5)",
         accountNum,
         recipient,
+        paymentMethod,
       )
     },
     [accountNum, recipient],
   )
-  const [expandedItem, setExpandedItem] = useState(0)
   return (
     <View style={$root}>
       <Surface>
@@ -65,15 +66,12 @@ export const BuyFormScreen: FC<BuyFormScreenProps> = observer(function BuyFormSc
           <AutoComplete
             value={accountNum}
             onChangeText={(value) => setProp("accountNum", value)}
-            // status="error"
             suggestions={accountNumSuggestions.map((i) => {
               return { title: i.accountNum || "" }
             })}
-            // status="error"
             onSelect={(value) => {
               setProp("accountNum", value as PaymentMethod)
             }}
-            // status="error"
             label="Destination"
             labelTx="tankhahSpendFormScreen.destLabel"
             placeholder="xxxx-xxxx-xxxx-xxxx"
@@ -103,8 +101,6 @@ export const BuyFormScreen: FC<BuyFormScreenProps> = observer(function BuyFormSc
           )}
         />
         <SelectedReceiptList
-          expandedIndex={expandedItem}
-          onExpandedIndexChange={(index) => setExpandedItem(index)}
           listViewStyle={{ height: 460 }}
         />
       </Surface>

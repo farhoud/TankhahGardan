@@ -20,7 +20,6 @@ import { useColorScheme } from "react-native"
 import * as Screens from "app/screens"
 import Config from "../config"
 import { useStores } from "../models"
-// import { DemoNavigator, DemoTabParamList } from "./DemoNavigator"
 import { TankhahTabNavigator, TankhahTabParamList } from "./TankhahTabNavigator"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 import { colors } from "app/theme"
@@ -94,8 +93,8 @@ const AppStack = observer(function AppStack() {
   return (
     <Stack.Navigator
       screenOptions={{ headerShown: false, navigationBarColor: colors.background }}
-      // initialRouteName={isAuthenticated ? "TankhahTabs" : "Login"}
-      initialRouteName="TestScreen"
+      initialRouteName={isAuthenticated ? "TankhahTabs" : "Login"}
+      // initialRouteName="TestScreen"
     >
       {isAuthenticated ? (
         <>
@@ -131,7 +130,6 @@ const AppStack = observer(function AppStack() {
 
       {/** 🔥 Your screens go here */}
       <Stack.Screen name="BuyItemForm" component={Screens.BuyItemFormScreen} options={{presentation: 'modal'}}/>
-      <Stack.Screen name="TestScreen" component={TestScreen} />
       {/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
     </Stack.Navigator>
   )

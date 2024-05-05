@@ -15,7 +15,7 @@ import {
 } from "react-native-paper/react-navigation"
 
 export type TankhahTabParamList = {
-  TankhahHome: undefined
+  TankhahHome: {itemId?:string}
   ChargeList: undefined
 }
 

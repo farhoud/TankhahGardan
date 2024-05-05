@@ -1,35 +1,30 @@
 import React, { FC, useEffect, useMemo, useState } from "react"
 import { observer } from "mobx-react-lite"
-import { View, ViewStyle, Animated, useWindowDimensions } from "react-native"
+import { View, ViewStyle } from "react-native"
 import { AppStackScreenProps } from "app/navigators"
 import { Screen, TextField, Text, Button, CurrencyField, ListView } from "app/components"
 import {
   Searchbar,
-  Badge,
   List,
-  Icon,
   IconButton,
   Modal,
   Card,
   Switch,
   Portal,
   Surface,
-  useTheme,
   Divider,
 } from "react-native-paper"
 import { useNavigation } from "@react-navigation/native"
 import { useObject, useQuery, useRealm } from "@realm/react"
-import { BSON, UpdateMode } from "realm"
+import { BSON, Unmanaged, UpdateMode } from "realm"
 import { ReceiptItem } from "app/models/realm/models"
 // import { useNavigation } from "@react-navigation/native"
 import { useStores } from "app/models"
-import { RectButton, Swipeable } from "react-native-gesture-handler"
-import { useSharedValue } from "react-native-reanimated"
 import { SelectedReceiptList } from "./SelectedReceiptList"
 
-interface BuyItemFormScreenProps extends AppStackScreenProps<"BuyItemForm"> {}
+// interface BuyItemFormScreenProps extends AppStackScreenProps<"BuyItemForm"> {}
 
-export const BuyItemFormScreen: FC<BuyItemFormScreenProps> = observer(function BuyItemFormScreen() {
+export const BuyItemFormScreen: FC = observer(function BuyItemFormScreen() {
   // Pull in one of our MST stores
   const {
     spendFormStore: { receiptItemsArray: selectedItems, addReceiptItem },
@@ -66,20 +61,25 @@ export const BuyItemFormScreen: FC<BuyItemFormScreenProps> = observer(function B
 
   const handleSubmit = () => {
     const isValid = !!title
+
     if (isValid) {
-      realm.write(() => {
-        const res = realm.create(
-          "ReceiptItem",
-          {
-            _id: openedItem ? openedItem._id : new BSON.ObjectID(),
-            title,
-            description,
-            defaultPrice,
-            searchable,
-          },
-          openedItem ? UpdateMode.Modified : undefined,
-        )
-      })
+      const _id = openedItem ? openedItem._id : new BSON.ObjectID()
+      if (searchable) {
+        realm.write(() => {
+          return realm.create(
+            "ReceiptItem",
+            {
+              _id,
+              title,
+              description,
+              defaultPrice,
+              searchable,
+            },
+            openedItem ? UpdateMode.Modified : undefined,
+          )
+        })
+      }
+      addReceiptItem({ title, price: defaultPrice, _id: _id.toHexString() })
       closeModal()
       clearModalForm()
       return
@@ -144,7 +144,7 @@ export const BuyItemFormScreen: FC<BuyItemFormScreenProps> = observer(function B
   const searchResultBase = useQuery(
     ReceiptItem,
     (ReceiptItem) => {
-      const query = "(title CONTAINS $0 OR description CONTAINS $0) AND searchable == $1 "
+      const query = "(title CONTAINS $0 OR description CONTAINS $0) AND searchable == $1 SORT(createdAt DESC)"
       // `AND (NOT _id IN {${selectedItems.map((_, index) => `$${index + 2}`).join(",")}})`
       return ReceiptItem.filtered(query, searchQuery, true)
     },
@@ -160,7 +160,7 @@ export const BuyItemFormScreen: FC<BuyItemFormScreenProps> = observer(function B
     <Screen style={$root} safeAreaEdges={["top"]} preset="fixed">
       <Surface>
         <View style={$header}>
-          <IconButton icon="close" onPress={() => navigation.goBack()}></IconButton>
+          <IconButton icon="arrow-right" onPress={() => navigation.goBack()}></IconButton>
           <View>
             <Button mode="elevated" onPress={openModal} tx="common.new" />
           </View>
@@ -180,18 +180,21 @@ export const BuyItemFormScreen: FC<BuyItemFormScreenProps> = observer(function B
             <ListView
               style={{ maxHeight: "40%", minHeight: 280 }}
               data={searchResult}
-              renderItem={(info) => (
+              renderItem={({ item }) => (
                 <>
                   <List.Item
-                    title={info.item.title}
-                    key={info.item._id.toHexString()}
-                    description={info.item.description}
+                    title={item.title}
+                    key={item._id.toHexString()}
+                    description={item.description}
                     right={() => {
-                      if (info.item.defaultPrice) return <Text>{info.item.defaultPrice}</Text>
+                      if (item.defaultPrice) return <Text>{item.defaultPrice}</Text>
                     }}
                     onPress={() => {
-                      addReceiptItem(info.item)
-              
+                      addReceiptItem({
+                        _id: item._id.toHexString(),
+                        price: item.defaultPrice || 0,
+                        title: item.title,
+                      })
                     }}
                   />
                   <Divider />

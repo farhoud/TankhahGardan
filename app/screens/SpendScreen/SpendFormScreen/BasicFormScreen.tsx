@@ -1,4 +1,4 @@
-import React, { FC } from "react"
+import React, { FC, memo } from "react"
 import { observer } from "mobx-react-lite"
 import { View, ViewStyle } from "react-native"
 import { AppStackScreenProps } from "app/navigators"
@@ -9,9 +9,9 @@ import { useStores } from "app/models"
 import { PaymentMethod, PaymentType, Spend } from "app/models/realm/models"
 import { useQuery } from "@realm/react"
 
-interface BasicFormScreenProps extends AppStackScreenProps<"TestScreen"> {}
+// interface BasicFormScreenProps extends AppStackScreenProps<"TestScreen"> {}
 
-export const BasicFormScreen: FC<BasicFormScreenProps> = observer(function BasicFormScreen() {
+export const BasicFormScreen: FC = memo(observer(function BasicFormScreen() {
   // Pull in one of our MST stores
   const {
     spendFormStore: { doneAt, paymentType, paymentMethod, group, title, setProp, errors },
@@ -53,6 +53,7 @@ export const BasicFormScreen: FC<BasicFormScreenProps> = observer(function Basic
           onSelect={(value) => {
             setProp("paymentType", value as PaymentType)
           }}
+          error={!!errors?.paymentType}
         />
         <Select
           options={[
@@ -67,11 +68,12 @@ export const BasicFormScreen: FC<BasicFormScreenProps> = observer(function Basic
           onSelect={(value) => {
             setProp("paymentMethod", value as PaymentMethod)
           }}
+          error={!!errors?.paymentMethod}
         />
         <AutoComplete
           value={group}
           onChangeText={(value) => setProp("group", value)}
-          // error={!!errors?.group}
+          error={!!errors?.group}
           suggestions={groupSuggestions.map((i) => {
             return { title: i.group || "" }
           })}
@@ -94,7 +96,7 @@ export const BasicFormScreen: FC<BasicFormScreenProps> = observer(function Basic
       </Surface>
     </View>
   )
-})
+}))
 
 const $root: ViewStyle = {
   width: "100%",

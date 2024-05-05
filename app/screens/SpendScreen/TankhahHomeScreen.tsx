@@ -1,20 +1,20 @@
-import React, { FC, useCallback, useMemo, useState } from "react"
+import React, { FC, useEffect, useMemo, useState } from "react"
 import { observer } from "mobx-react-lite"
-import { TouchableOpacity, View, ViewStyle, useWindowDimensions } from "react-native"
+import { TouchableOpacity, View, ViewStyle } from "react-native"
 import { StackNavigation } from "app/navigators"
-import { DateRangePicker, ListView, Screen, Text } from "app/components"
-import { useQuery, useRealm } from "@realm/react"
+import { ListView, Screen, Text } from "app/components"
+import { useObject, useQuery, useRealm } from "@realm/react"
+import { BSON } from "realm"
 import { Fund, Spend } from "app/models/realm/models"
 import { colors } from "app/theme"
 import { subMonths, addDays } from "date-fns"
 import { PieChart } from "react-native-gifted-charts"
 import { currencyFormatter, formatDateIR } from "app/utils/formatDate"
-import { ScrollView } from "react-native-gesture-handler"
 import { useNavigation } from "@react-navigation/native"
 import { TankhahTabScreenProps } from "app/navigators/TankhahTabNavigator"
-import { Chip, Surface, Icon, Button, useTheme, Divider, FAB } from "react-native-paper"
+import { Chip, Surface, Icon, Button, useTheme, FAB } from "react-native-paper"
 import { DatePicker } from "app/components/DatePicker"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { ListRenderItemInfo } from "@shopify/flash-list"
 
 const PieCharColors = [
   { color: "#009FFF", gradientCenterColor: "#006DFF" },
@@ -24,7 +24,8 @@ const PieCharColors = [
 ]
 
 export const TankhahHomeScreen: FC<TankhahTabScreenProps<"TankhahHome">> = observer(
-  function TankhahHomeScreen() {
+  function TankhahHomeScreen(_props) {
+    const itemId = _props.route.params?.itemId
     // Pull in one of our MST stores
     // const { someStore, anotherStore } = useStores()
     const navigation = useNavigation<StackNavigation>()
@@ -77,22 +78,66 @@ export const TankhahHomeScreen: FC<TankhahTabScreenProps<"TankhahHome">> = obser
       return pieData
     }, [selectedGroup, spendsChartBaseData])
 
-    // const renderDot = useCallback(color: string) => {
-    //   return (
-    //     <View
-    //       style={{
-    //         height: 10,
-    //         width: 10,
-    //         borderRadius: 5,
-    //         backgroundColor: color,
-    //         marginRight: 10,
-    //       }}
-    //     />
-    //   )
-    // }
+    const renderSpendItem = (item: Spend) => {
+      return (
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate("TankhahSpendItem", {
+              itemId: item._id.toHexString(),
+            })
+          }}
+          onLongPress={() => {
+            navigation.navigate("TankhahSpendForm", {
+              itemId: item._id.toHexString(),
+            })
+          }}
+        >
+          <Surface
+            style={{
+              // display: "flex",
+              // elevation: 5,
+              // margin: 2,
+              paddingHorizontal: 20,
+              paddingVertical: 10,
+              marginBottom: 2,
+              // backgroundColor: "#EAEAEA",
+            }}
+            elevation={2}
+          >
+            <View style={$detail}>
+              <Text variant="labelMedium">تاریخ عملیات</Text>
+              <Text variant="labelMedium">{formatDateIR(item.doneAt)}</Text>
+            </View>
+            <View style={$detail}>
+              <Text variant="labelMedium">دریافت کننده</Text>
+              <Text>{item.recipient ?? "ثبت نشده"}</Text>
+            </View>
+            <View style={$detail}>
+              <Text variant="labelMedium">مبلغ</Text>
+              <Text variant="bodyLarge">{currencyFormatter.format(item.amount)}</Text>
+            </View>
+          </Surface>
+        </TouchableOpacity>
+      )
+    }
 
-    // Pull in navigation via hook
-    // const navigation = useNavigation()
+    const renderListItem = ({ item }: ListRenderItemInfo<Spend>) => renderSpendItem(item)
+    const headItem = useObject(Spend, new BSON.ObjectID(itemId))
+    const renderHeadItem = () => {
+      if (headItem) {
+        return renderSpendItem(headItem)
+      }
+      return undefined
+    }
+    useEffect(()=>{
+      if(itemId){
+        setTimeout(()=>{
+          navigation.setParams({itemId:undefined})
+        },3000)
+      }
+      return ()=>navigation.setParams({itemId:undefined})
+    },[])
+
     return (
       <>
         <Screen style={$root} safeAreaEdges={["top", "bottom"]} preset="fixed">
@@ -225,7 +270,6 @@ export const TankhahHomeScreen: FC<TankhahTabScreenProps<"TankhahHome">> = obser
                         textStyle={{ fontSize: 10 }}
                         maxFontSizeMultiplier={1}
                         showSelectedOverlay
-                        
                         selected={index === selectedGroup}
                         // style={{ width: "100%" }}
                         onPress={() => {
@@ -252,50 +296,9 @@ export const TankhahHomeScreen: FC<TankhahTabScreenProps<"TankhahHome">> = obser
           <View style={{ height: "61%" }}>
             <ListView
               // contentContainerStyle={{flexGrow:1}}
-              data={spendsList.slice(0, spendsList.length)}
-              renderItem={(j) => {
-                return (
-                  
-                  <TouchableOpacity
-                    onPress={() => {
-                      navigation.navigate("TankhahSpendItem", {
-                        itemId: j.item._id.toHexString(),
-                      })
-                    }}
-                    onLongPress={() => {
-                      navigation.navigate("TankhahSpendForm", {
-                        itemId: j.item._id.toHexString(),
-                      })
-                    }}
-                  >
-                    <Surface
-                      style={{
-                        // display: "flex",
-                        // elevation: 5,
-                        // margin: 2,
-                        paddingHorizontal: 20,
-                        paddingVertical: 10,
-                        marginBottom:2
-                        // backgroundColor: "#EAEAEA",
-                      }}
-                      elevation={2}
-                    >
-                      <View style={$detail}>
-                        <Text variant="labelMedium">تاریخ عملیات</Text>
-                        <Text variant="labelMedium">{formatDateIR(j.item.doneAt)}</Text>
-                      </View>
-                      <View style={$detail}>
-                        <Text variant="labelMedium">دریافت کننده</Text>
-                        <Text>{j.item.recipient ?? "ثبت نشده"}</Text>
-                      </View>
-                      <View style={$detail}>
-                        <Text variant="labelMedium">مبلغ</Text>
-                        <Text variant="bodyLarge">{currencyFormatter.format(j.item.amount)}</Text>
-                      </View>
-                    </Surface>
-                  </TouchableOpacity>
-                )
-              }}
+              data={spendsList.filter((i) => i._id.toHexString() !== itemId)}
+              ListHeaderComponent={renderHeadItem}
+              renderItem={renderListItem}
             ></ListView>
           </View>
         </Screen>

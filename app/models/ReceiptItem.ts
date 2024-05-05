@@ -9,9 +9,6 @@ export const ReceiptItemModel = types
   .props({
     _id: types.identifier,
     title: types.string,
-    searchable: types.boolean,
-    defaultPrice: types.maybe(types.integer),
-    description: types.maybe(types.string),
     amount: types.optional(types.number,0),
     price: types.optional(types.number,0)
   })
@@ -22,4 +19,4 @@ export const ReceiptItemModel = types
 export interface ReceiptItem extends Instance<typeof ReceiptItemModel> {}
 export interface ReceiptItemSnapshotOut extends SnapshotOut<typeof ReceiptItemModel> {}
 export interface ReceiptItemSnapshotIn extends SnapshotIn<typeof ReceiptItemModel> {}
-export const createReceiptItemDefaultModel = () => types.optional(ReceiptItemModel, {})
+export const createReceiptItemDefaultModel = () => types.maybe(ReceiptItemModel)
