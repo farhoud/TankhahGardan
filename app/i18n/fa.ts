@@ -11,6 +11,7 @@ const fa = {
     total: "کل",
     accountNum: "حساب مقصد",
     description: "توضیحات",
+    items:"آیتم‌ها"
   },
   common: {
     ok: "باشه!",

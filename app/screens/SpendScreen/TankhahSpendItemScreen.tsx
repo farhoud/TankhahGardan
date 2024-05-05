@@ -38,39 +38,24 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
     }
 
     const goToEdit = () => {
-      navigation.navigate("TankhahSpendForm",{itemId})
+      navigation.navigate("TankhahSpendForm", { itemId })
     }
 
     useLayoutEffect(() => {
       navigation.setOptions({
         headerShown: true,
         header: () => (
-          // <Header
-          //   title="خرج"
-          //   leftIcon="back"
-          //   onLeftPress={() => goBack()}
-          //   rightTx="common.edit"
-          //   onRightPress={() => {
-          //     navigation.navigate("TankhahTabs", {
-          //       screen: "SpendStack",
-          //       params: {
-          //         screen: "TankhahSpendForm",
-          //         params: { itemId: spend?._id.toHexString() },
-          //       },
-          //     })
-          //   }}
-          // />
           <Appbar.Header>
             <Appbar.BackAction onPress={goBack} />
             <Appbar.Content title="خرج" />
-            <Appbar.Action icon='pencil' onPress={goToEdit}/>
+            <Appbar.Action icon="pencil" onPress={goToEdit} />
           </Appbar.Header>
         ),
       })
     }, [])
 
     return (
-      <Screen style={$root} contentContainerStyle={$root} preset="scroll" >
+      <Screen style={$root} preset="scroll">
         <Surface style={$root}>
           <View style={$row}>
             <Text tx="spend.doneAt" />
@@ -88,22 +73,23 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
             <Text tx="spend.paymentMethod" />
             <Text text={spend?.paymentMethod} />
           </View>
-          {spend?.paymentMethod !== "cash" && (
-            <>
-              <View style={$row}>
-                <Text tx="spend.accountNum" />
-                <Text text={spend?.accountNum || "ندارد"} />
-              </View>
-              <View style={$row}>
-                <Text tx="spend.transferFee" />
-                <Text text={currencyFormatter.format(spend?.transferFee ?? 0)} />
-              </View>
-              <View style={$row}>
-                <Text tx="spend.trackingNum" />
-                <Text text={spend?.trackingNum || "ندارد"} />
-              </View>
-            </>
-          )}
+          {spend?.paymentMethod !== "cash" ||
+            ("pos" && (
+              <>
+                <View style={$row}>
+                  <Text tx="spend.accountNum" />
+                  <Text text={spend?.accountNum || "ندارد"} />
+                </View>
+                <View style={$row}>
+                  <Text tx="spend.transferFee" />
+                  <Text text={currencyFormatter.format(spend?.transferFee ?? 0)} />
+                </View>
+                <View style={$row}>
+                  <Text tx="spend.trackingNum" />
+                  <Text text={spend?.trackingNum || "ندارد"} />
+                </View>
+              </>
+            ))}
           <View style={$row}>
             <Text tx="spend.description" />
             <Text text={spend?.description || "ندارد"} />
@@ -112,15 +98,30 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
             <Text tx="spend.group" />
             <Text text={spend?.group || "ندارد"} />
           </View>
+          {spend?.receiptItems && (
+            <>
+              <View style={$row}>
+                <Text tx="spend.items" />
+              </View>
+              <View style={{ paddingHorizontal: 20 }}>
+                {spend.receiptItems.map((i) => (
+                  <View style={$row}>
+                    <Text text={i.title} />
+                    <Text text={`${i.amount} X ${i.price}`} />
+                  </View>
+                ))}
+              </View>
+            </>
+          )}
           <View style={$row}>
             <Text tx="spend.total" />
             <Text text={currencyFormatter.format(spend?.total ?? 0)} />
           </View>
           <View style={$row}>
             <Text tx="spend.attachments" />
-            <Text></Text>
+            {spend?.attachments && spend?.attachments?.length === 0 && <Text text={"ندارد"} />}
           </View>
-          {spend?.attachments?.length ? (
+          {!!spend?.attachments && (
             <View
               style={{
                 flex: 1,
@@ -157,8 +158,6 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
                 )
               })}
             </View>
-          ) : (
-            <Text text={"ندارد"} />
           )}
         </Surface>
       </Screen>
