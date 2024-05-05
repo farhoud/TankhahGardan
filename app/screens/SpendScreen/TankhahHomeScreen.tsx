@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useMemo, useState } from "react"
 import { observer } from "mobx-react-lite"
-import { TouchableOpacity, View, ViewStyle } from "react-native"
+import { TouchableOpacity, View, ViewStyle, Animated } from "react-native"
 import { StackNavigation } from "app/navigators"
 import { ListView, Screen, Text } from "app/components"
 import { useObject, useQuery, useRealm } from "@realm/react"
@@ -12,9 +12,11 @@ import { PieChart } from "react-native-gifted-charts"
 import { currencyFormatter, formatDateIR } from "app/utils/formatDate"
 import { useNavigation } from "@react-navigation/native"
 import { TankhahTabScreenProps } from "app/navigators/TankhahTabNavigator"
-import { Chip, Surface, Icon, Button, useTheme, FAB } from "react-native-paper"
+import { Chip, Surface, Icon, Button, useTheme, FAB, IconButton } from "react-native-paper"
 import { DatePicker } from "app/components/DatePicker"
 import { ListRenderItemInfo } from "@shopify/flash-list"
+import Reanimated, { BounceIn, FadeOut } from "react-native-reanimated"
+import { RectButton, Swipeable } from "react-native-gesture-handler"
 
 const PieCharColors = [
   { color: "#009FFF", gradientCenterColor: "#006DFF" },
@@ -22,6 +24,8 @@ const PieCharColors = [
   { color: "#BDB2FA", gradientCenterColor: "#8F80F3" },
   { color: "#FFA5BA", gradientCenterColor: "#FF7F97" },
 ]
+
+type AnimatedInterpolation = Animated.AnimatedInterpolation<string | number>
 
 export const TankhahHomeScreen: FC<TankhahTabScreenProps<"TankhahHome">> = observer(
   function TankhahHomeScreen(_props) {
@@ -78,6 +82,31 @@ export const TankhahHomeScreen: FC<TankhahTabScreenProps<"TankhahHome">> = obser
       return pieData
     }, [selectedGroup, spendsChartBaseData])
 
+    const renderItemActions =
+      (item: Spend) => (progress: AnimatedInterpolation, dragX: AnimatedInterpolation) => {
+        const trans = dragX.interpolate({
+          inputRange: [0, 50, 100, 101],
+          outputRange: [0, 5, 10, 15],
+        })
+        return (
+          <RectButton
+            style={{
+              backgroundColor: theme.colors.surfaceVariant,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+            onPress={() => {
+              realm.write(() => {
+                realm.delete(item)
+              })
+            }}
+          >
+            <IconButton animated icon="delete"></IconButton>
+          </RectButton>
+        )
+      }
+
     const renderSpendItem = (item: Spend) => {
       return (
         <TouchableOpacity
@@ -121,22 +150,38 @@ export const TankhahHomeScreen: FC<TankhahTabScreenProps<"TankhahHome">> = obser
       )
     }
 
-    const renderListItem = ({ item }: ListRenderItemInfo<Spend>) => renderSpendItem(item)
+    const renderListItem = ({ item }: ListRenderItemInfo<Spend>) => {
+      return (
+        <Swipeable
+          key={item._objectKey()}
+          renderLeftActions={renderItemActions(item)}
+          renderRightActions={renderItemActions(item)}
+          // leftThreshold={160}
+          // rightThreshold={160}
+        >
+          {renderSpendItem(item)}
+        </Swipeable>
+      )
+    }
     const headItem = useObject(Spend, new BSON.ObjectID(itemId))
     const renderHeadItem = () => {
       if (headItem) {
-        return renderSpendItem(headItem)
+        return (
+          <Reanimated.View entering={BounceIn} exiting={FadeOut}>
+            {renderSpendItem(headItem)}
+          </Reanimated.View>
+        )
       }
       return undefined
     }
-    useEffect(()=>{
-      if(itemId){
-        setTimeout(()=>{
-          navigation.setParams({itemId:undefined})
-        },3000)
+    useEffect(() => {
+      if (itemId) {
+        setTimeout(() => {
+          navigation.setParams({ itemId: undefined })
+        }, 3000)
       }
-      return ()=>navigation.setParams({itemId:undefined})
-    },[])
+      return () => navigation.setParams({ itemId: undefined })
+    }, [])
 
     return (
       <>

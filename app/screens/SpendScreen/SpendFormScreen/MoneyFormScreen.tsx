@@ -14,7 +14,7 @@ import * as FileSystem from "expo-file-system"
 export const MoneyFormScreen: FC = memo(observer(function MoneyFormScreen() {
   // Pull in one of our MST stores
   const {
-    spendFormStore: { amount, transferFee, trackingNum, setProp, errors, attachments, totalItems },
+    spendFormStore: { amount, transferFee, trackingNum, setProp, errors, attachments, totalItems, _id },
   } = useStores()
 
   // Pull in navigation via hook
@@ -67,6 +67,7 @@ export const MoneyFormScreen: FC = memo(observer(function MoneyFormScreen() {
   }
 
   useEffect(()=>{
+    if(!_id)
     setProp("amount",totalItems)
   },[totalItems])
 
