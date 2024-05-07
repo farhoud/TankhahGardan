@@ -1,15 +1,18 @@
-import React, { FC, useState } from "react"
+import React, { FC } from "react"
 import { observer } from "mobx-react-lite"
-import { ViewStyle } from "react-native"
+import { Animated, ViewStyle } from "react-native"
 import { ListView, Screen, Text } from "app/components"
 import { useNavigation } from "@react-navigation/native"
-import { useQuery } from "@realm/react"
+import { useQuery, useRealm } from "@realm/react"
 import { Fund } from "app/models/realm/models"
-import { currencyFormatter, formatDateIR } from "app/utils/formatDate"
+import { formatDateIR, tomanFormatter } from "app/utils/formatDate"
 import { StackNavigation } from "app/navigators"
-import { Appbar, Divider, FAB, List } from "react-native-paper"
+import { Appbar, Divider, FAB, IconButton, List, useTheme } from "react-native-paper"
 import { TankhahTabScreenProps } from "app/navigators/TankhahTabNavigator"
+import { RectButton, Swipeable } from "react-native-gesture-handler"
 // import { useStores } from "app/models"
+
+type AnimatedInterpolation = Animated.AnimatedInterpolation<string | number>
 
 export const TankhahChargeListScreen: FC<TankhahTabScreenProps<"ChargeList">> = observer(
   function TankhahChargeListScreen() {
@@ -19,7 +22,33 @@ export const TankhahChargeListScreen: FC<TankhahTabScreenProps<"ChargeList">> = 
 
     // Pull in navigation via hook
     const navigation = useNavigation<StackNavigation>()
-    const [showIndex, setShowIndex] = useState<undefined | number>()
+    const theme = useTheme()
+    const realm = useRealm()
+
+    const renderItemActions =
+      (item: Fund) => (progress: AnimatedInterpolation, dragX: AnimatedInterpolation) => {
+        const trans = dragX.interpolate({
+          inputRange: [0, 50, 100, 101],
+          outputRange: [0, 5, 10, 15],
+        })
+        return (
+          <RectButton
+            style={{
+              backgroundColor: theme.colors.surfaceVariant,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+            onPress={() => {
+              realm.write(() => {
+                realm.delete(item)
+              })
+            }}
+          >
+            <IconButton animated icon="delete"></IconButton>
+          </RectButton>
+        )
+      }
 
     return (
       <>
@@ -29,20 +58,28 @@ export const TankhahChargeListScreen: FC<TankhahTabScreenProps<"ChargeList">> = 
         <Screen style={$root} preset="fixed">
           <ListView
             data={funds.slice(0, funds.length)}
-            renderItem={(info) => {
+            renderItem={({item}) => {
               return (
                 <>
-                  <List.Item
-                    onPress={() => {
-                      navigation.navigate("ChargeForm", { itemId: info.item._id.toHexString() })
-                    }}
-                    title={currencyFormatter.format(info.item.amount)}
-                    description={info.item.description}
-                    right={() => (
-                      <>{<Text variant="labelMedium">{formatDateIR(info.item.doneAt)}</Text>}</>
-                    )}
-                  ></List.Item>
-                  <Divider />
+                  <Swipeable
+                    key={item._objectKey()}
+                    renderLeftActions={renderItemActions(item)}
+                    renderRightActions={renderItemActions(item)}
+                    // leftThreshold={160}
+                    // rightThreshold={160}
+                  >
+                    <List.Item
+                      onPress={() => {
+                        navigation.navigate("ChargeForm", { itemId: item._id.toHexString() })
+                      }}
+                      title={tomanFormatter(item.amount)}
+                      description={item.description}
+                      right={() => (
+                        <>{<Text variant="labelMedium">{formatDateIR(item.doneAt)}</Text>}</>
+                      )}
+                    ></List.Item>
+                    <Divider />
+                  </Swipeable>
                 </>
               )
             }}

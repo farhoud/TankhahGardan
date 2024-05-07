@@ -9,7 +9,7 @@ import { Fund, Spend } from "app/models/realm/models"
 import { colors } from "app/theme"
 import { subMonths, addDays } from "date-fns"
 import { PieChart } from "react-native-gifted-charts"
-import { currencyFormatter, formatDateIR } from "app/utils/formatDate"
+import { formatDateIR, tomanFormatter } from "app/utils/formatDate"
 import { useNavigation } from "@react-navigation/native"
 import { TankhahTabScreenProps } from "app/navigators/TankhahTabNavigator"
 import { Chip, Surface, Icon, Button, useTheme, FAB, IconButton } from "react-native-paper"
@@ -143,7 +143,7 @@ export const TankhahHomeScreen: FC<TankhahTabScreenProps<"TankhahHome">> = obser
             </View>
             <View style={$detail}>
               <Text variant="labelMedium">مبلغ</Text>
-              <Text variant="bodyLarge">{currencyFormatter.format(item.amount)}</Text>
+              <Text variant="bodyLarge">{tomanFormatter(item.amount)}</Text>
             </View>
           </Surface>
         </TouchableOpacity>
@@ -191,7 +191,7 @@ export const TankhahHomeScreen: FC<TankhahTabScreenProps<"TankhahHome">> = obser
               <Surface elevation={5}>
                 <View style={{ margin: 3, padding: 3 }}>
                   <Text variant="bodyMedium" style={{ textAlign: "center" }}>
-                    {currencyFormatter.format(totalFund - totalSpend) + " مانده"}
+                    {tomanFormatter(totalFund - totalSpend) + " مانده"}
                   </Text>
                 </View>
               </Surface>
@@ -276,7 +276,7 @@ export const TankhahHomeScreen: FC<TankhahTabScreenProps<"TankhahHome">> = obser
                     return (
                       <View style={{ justifyContent: "center", alignItems: "center" }}>
                         <Text style={{ fontSize: 22, color: "white", fontWeight: "bold" }}>
-                          {currencyFormatter.format(spendsList.sum("amount"))}
+                          {tomanFormatter(spendsList.sum("amount"))}
                         </Text>
 
                         <Text

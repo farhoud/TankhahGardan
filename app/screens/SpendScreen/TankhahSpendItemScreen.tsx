@@ -6,7 +6,7 @@ import { AutoImage, Screen, Text } from "app/components"
 import { CommonActions, useNavigation } from "@react-navigation/native"
 import { Spend } from "app/models/realm/models"
 import { useObject } from "@realm/react"
-import { currencyFormatter, formatDateIR } from "app/utils/formatDate"
+import { formatDateIR, tomanFormatter } from "app/utils/formatDate"
 import { BSON } from "realm"
 import ImageView from "react-native-image-viewing"
 import { TouchableOpacity } from "react-native-gesture-handler"
@@ -67,7 +67,7 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
           </View>
           <View style={$row}>
             <Text tx="spend.amount" />
-            <Text text={currencyFormatter.format(spend?.amount ?? 0)} />
+            <Text text={tomanFormatter(spend?.amount ?? 0)} />
           </View>
           <View style={$row}>
             <Text tx="spend.paymentMethod" />
@@ -82,7 +82,7 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
                 </View>
                 <View style={$row}>
                   <Text tx="spend.transferFee" />
-                  <Text text={currencyFormatter.format(spend?.transferFee ?? 0)} />
+                  <Text text={tomanFormatter(spend?.transferFee ?? 0)} />
                 </View>
                 <View style={$row}>
                   <Text tx="spend.trackingNum" />
@@ -115,7 +115,7 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
           )}
           <View style={$row}>
             <Text tx="spend.total" />
-            <Text text={currencyFormatter.format(spend?.total ?? 0)} />
+            <Text text={tomanFormatter(spend?.total ?? 0)} />
           </View>
           <View style={$row}>
             <Text tx="spend.attachments" />

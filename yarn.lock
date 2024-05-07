@@ -1378,7 +1378,7 @@
     node-forge "^1.2.1"
     nullthrows "^1.1.1"
 
-"@expo/config-plugins@7.9.1", "@expo/config-plugins@~7.9.0":
+"@expo/config-plugins@7.9.1", "@expo/config-plugins@~7.9.0", "@expo/config-plugins@~7.9.1":
   version "7.9.1"
   resolved "https://registry.npmjs.org/@expo/config-plugins/-/config-plugins-7.9.1.tgz"
   integrity sha512-ICt6Jed1J0tPYMQrJ8K5Qusgih2I6pZ2PU4VSvxsN3T4n97L13XpYV1vyq1Uc/HMl3UhOwldipmgpEbCfeDqsQ==
@@ -4711,6 +4711,13 @@ expo-constants@~15.4.0, expo-constants@~15.4.3:
   dependencies:
     "@expo/config" "~8.5.0"
 
+expo-constants@~15.4.6:
+  version "15.4.6"
+  resolved "https://registry.yarnpkg.com/expo-constants/-/expo-constants-15.4.6.tgz#d4e9b21b70c5602457962700f2e90a75356b487b"
+  integrity sha512-vizE69dww2Vl0PTWWvDmK0Jo2/J+WzdcMZlA05YEnEYofQuhKxTVsiuipf79mSOmFavt4UQYC1UnzptzKyfmiQ==
+  dependencies:
+    "@expo/config" "~8.5.0"
+
 expo-dev-client@^3.3.11:
   version "3.3.11"
   resolved "https://registry.yarnpkg.com/expo-dev-client/-/expo-dev-client-3.3.11.tgz#f2541ccbcfc2ba32bcea47293bc9beae4e10db60"
@@ -4831,6 +4838,15 @@ expo-modules-core@1.11.13:
   integrity sha512-2H5qrGUvmLzmJNPDOnovH1Pfk5H/S/V0BifBmOQyDc9aUh9LaDwkqnChZGIXv8ZHDW8JRlUW0QqyWxTggkbw1A==
   dependencies:
     invariant "^2.2.4"
+
+expo-share-intent@^1.5.2:
+  version "1.5.2"
+  resolved "https://registry.yarnpkg.com/expo-share-intent/-/expo-share-intent-1.5.2.tgz#dd1f480aa874056a0288f12b857f713d24e46b44"
+  integrity sha512-2AUYOEyFTGSoJKfaHeU7ZJXYJ8jy7vXXdJ1eMRwZ0KlTo0qTHqL0pC4sjBm6wgiSTyRpm9mkV6GZYPZEvocjew==
+  dependencies:
+    "@expo/config-plugins" "~7.9.1"
+    expo-constants "~15.4.6"
+    expo-linking "~6.2.2"
 
 expo-splash-screen@~0.26.3:
   version "0.26.4"

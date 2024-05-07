@@ -9,11 +9,13 @@ import { MoneyFormScreen } from "./MoneyFormScreen"
 import { StepBar } from "./StepBar"
 import { Header } from "./Header"
 import { useStores } from "app/models"
-import { useState, useEffect, useLayoutEffect, FC } from "react"
+import { useState, useEffect, useLayoutEffect, FC, useMemo } from "react"
 import { AppStackScreenProps } from "app/navigators"
 import { useObject } from "@realm/react"
 import { Spend } from "app/models/realm/models"
 import { BSON } from "realm"
+import { useShareIntentContext } from "expo-share-intent"
+import { Text } from "app/components"
 
 const routes = [
   { key: "step1", title: "پایه" },
@@ -27,10 +29,24 @@ export const TankhahSpendFormScreen: FC<AppStackScreenProps<"TankhahSpendForm">>
     const spend = useObject(Spend, new BSON.ObjectID(itemId))
     const [index, setIndex] = useState(0)
     const insets = useSafeAreaInsets()
+    const { hasShareIntent, shareIntent, resetShareIntent, error } = useShareIntentContext()
+
     const navigation = useNavigation()
     const {
-      spendFormStore: { errors, _id, setSpend },
+      spendFormStore: { errors, _id, setSpend,applyShareText },
     } = useStores()
+
+
+    const fromText = useMemo(() => {
+      let res
+      if (hasShareIntent && shareIntent.text){
+        res = applyShareText(shareIntent.text)
+      }
+      if(!res){
+        resetShareIntent()
+      }
+      return res
+    }, [hasShareIntent, shareIntent, error])
 
     useEffect(() => {
       console.log(index)
@@ -53,11 +69,11 @@ export const TankhahSpendFormScreen: FC<AppStackScreenProps<"TankhahSpendForm">>
       }
     }, [index])
 
-    useEffect(()=>{
-      if(spend && _id !== spend._id.toHexString()){
+    useEffect(() => {
+      if (spend && _id !== spend._id.toHexString()) {
         setSpend(spend)
       }
-    },[spend])
+    }, [spend])
 
     const renderScene = SceneMap({
       step1: BasicFormScreen,
@@ -84,6 +100,7 @@ export const TankhahSpendFormScreen: FC<AppStackScreenProps<"TankhahSpendForm">>
         style={{ flex: 1, justifyContent: "flex-end", marginBottom: -15 }}
         contentContainerStyle={{ flex: 1 }}
       >
+        {fromText && <Text>استخراج از متن</Text>}
         <View
           style={{
             flex: 1,

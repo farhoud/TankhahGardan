@@ -30,23 +30,23 @@ export const formatDate = (date: string, dateFormat?: string, options?: Options)
 
 export const formatDateIR = (date: Date, dateFormat?: string, options?: FormatOptions) => {
   return formatFa(date, dateFormat ?? "yy٫MM٫dd", options)
-    
 }
 
-export const currencyFormatter = new Intl.NumberFormat("fa-IR", {
-  style: "currency",
-  currency: "IRR",
-})
-
-
-export const tomanFormatter = (value:number) =>{
-  const [hole,fraction="0"] = (value/10).toString().split('.')
-  return hole.toString().split('').reverse().reduce((acc,curr, index)=>{
-    let res = curr + acc
-    if((index+1)%3 === 0){
-      return "٫" + res
-    }
-    return res
-  }).replace(/^\٫/, '') + `.${fraction} تومان`
-  
+export const tomanFormatter = (value: number) => {
+  const [hole, fraction] = Math.abs(value / 10)
+    .toString()
+    .split(".")
+  const formatedHole = hole
+    .toString()
+    .split("")
+    .reverse()
+    .reduce((acc, curr, index) => {
+      let res = curr + acc
+      if ((index + 1) % 3 === 0) {
+        return "٫" + res
+      }
+      return res
+    })
+    .replace(/^\٫/, "")
+  return `${formatedHole}${fraction ? ".".concat(fraction) : ""}${value < 0 ? "-" : ""} ت`
 }

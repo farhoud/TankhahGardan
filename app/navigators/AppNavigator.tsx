@@ -24,7 +24,6 @@ import { TankhahTabNavigator, TankhahTabParamList } from "./TankhahTabNavigator"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 import { colors } from "app/theme"
 import { Appbar } from "react-native-paper"
-import { TankhahSpendFormScreen as TestScreen } from "app/screens/SpendScreen/SpendFormScreen/TankhahSpendFormScreen"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator

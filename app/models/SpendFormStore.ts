@@ -5,6 +5,7 @@ import { ReceiptItemModel } from "./ReceiptItem"
 import { isNumber } from "app/utils/validation"
 import Realm, { BSON, Unmanaged, UpdateMode } from "realm"
 import { Alert } from "react-native"
+import { parseText } from "app/utils/textParser"
 
 /**
  * Model description here for TypeScript hints.
@@ -36,6 +37,7 @@ export const SpendFormStoreModel = types
     expandedItemKey: types.optional(types.string, ""),
     loading: types.optional(types.boolean, false),
     error: types.maybe(types.string),
+    editMode: types.optional(types.boolean, false)
   })
   .actions(withSetPropAction)
   .views((self) => ({
@@ -75,9 +77,9 @@ export const SpendFormStoreModel = types
       }
       return errors
     },
-    get totalItems(){
+    get totalItems() {
       let total = 0
-      self.receiptItems.forEach(i=>total += i.price * i.amount)
+      self.receiptItems.forEach((i) => (total += i.price * i.amount))
       return total
     },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -87,8 +89,8 @@ export const SpendFormStoreModel = types
     },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
-    addReceiptItem(item: {title:string, _id: string, price: number}) {
-      const {title, price, _id} = item
+    addReceiptItem(item: { title: string; _id: string; price: number }) {
+      const { title, price, _id } = item
       self.receiptItems.put({
         _id,
         title,
@@ -103,6 +105,19 @@ export const SpendFormStoreModel = types
     expand(key: string) {
       if (self.expandedItemKey === key) self.expandedItemKey = ""
       else self.expandedItemKey = key
+    },
+    applyShareText(text: string) {
+      const res = parseText(text)
+      this.reset()
+      if (Object.keys(res).length === 0) {
+        return false
+      }
+      console.log(res)
+      for (const [key, value] of Object.entries(res)) {
+        if (key && value) self.setProp(key as keyof SpendFormStoreSnapshotIn, value)
+      }
+      self.editMode = true
+      return true
     },
     reset() {
       self._id = undefined
@@ -120,6 +135,7 @@ export const SpendFormStoreModel = types
       self.paymentType = "buy"
       self.title = undefined
       self.receiptItems.clear()
+      self.editMode = false
     },
     setSpend(item: Spend) {
       self._id = item._id.toHexString()
@@ -131,14 +147,15 @@ export const SpendFormStoreModel = types
       self.accountNum = item.accountNum || undefined
       self.group = item.group
       self.description = item.description || undefined
-      self.attachments.replace(item.attachments?.slice()||[])
+      self.attachments.replace(item.attachments?.slice() || [])
       self.trackingNum = item.trackingNum || undefined
       self.paymentType = item.paymentType as PaymentType
       self.title = item.title || undefined
       self.receiptItems.clear()
-      item.receiptItems?.forEach(i=>{
-        self.receiptItems.put({_id: new BSON.ObjectID().toHexString(),...i})
+      item.receiptItems?.forEach((i) => {
+        self.receiptItems.put({ _id: new BSON.ObjectID().toHexString(), ...i })
       })
+      self.editMode = true
     },
     submit(realm: Realm) {
       self.loading = true
@@ -208,7 +225,7 @@ export const SpendFormStoreModel = types
         return res
       } catch (e: any) {
         // self.error = e.toString()
-        Alert.alert("store problem",e.toString())
+        Alert.alert("store problem", e.toString())
         self.loading = false
         return undefined
       }
