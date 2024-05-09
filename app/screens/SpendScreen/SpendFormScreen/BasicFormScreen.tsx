@@ -64,7 +64,7 @@ export const BasicFormScreen: FC = memo(
 
     useEffect(() => {
       if (focused === "recipient") {
-        setProp("accountNum", accountNumSuggestions.at(0)?.accountNum)
+        setProp("accountNum", accountNumSuggestions.at(0)?.accountNum||undefined)
       }
     }, [accountNumSuggestions, focused])
 

@@ -67,6 +67,7 @@ export const DatePicker = (props: DatePickerProps) => {
       ) : (
         <TextField
           ref={ref}
+          style={$leftAlien}
           value={formatDateIR(_date)}
           {...TextInputProps}
           onFocus={(e) => {
@@ -96,7 +97,7 @@ export const DatePicker = (props: DatePickerProps) => {
     </>
   )
 }
-
+const $leftAlien: ViewStyle | TextStyle = { direction: "ltr", textAlign: "left" }
 interface DatePickerModalProps {
   value: Date
   onValueChange: (date: Date) => void

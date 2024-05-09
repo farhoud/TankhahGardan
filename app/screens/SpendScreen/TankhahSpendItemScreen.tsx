@@ -11,6 +11,7 @@ import { BSON } from "realm"
 import ImageView from "react-native-image-viewing"
 import { TouchableOpacity } from "react-native-gesture-handler"
 import { Appbar, Surface } from "react-native-paper"
+import { TxKeyPath } from "app/i18n"
 
 export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">> = observer(
   function TankhahSpendItemScreen(_props) {
@@ -62,8 +63,8 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
             <Text text={spend?.doneAt && formatDateIR(spend?.doneAt)} />
           </View>
           <View style={$row}>
-            <Text tx="spend.recipient" />
-            <Text text={spend?.recipient} />
+            <Text tx="spend.paymentType" />
+            <Text tx={("paymentType." + spend?.paymentType) as TxKeyPath} />
           </View>
           <View style={$row}>
             <Text tx="spend.amount" />
@@ -71,25 +72,28 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
           </View>
           <View style={$row}>
             <Text tx="spend.paymentMethod" />
-            <Text text={spend?.paymentMethod} />
+            <Text tx={("paymentMethod." + spend?.paymentMethod) as TxKeyPath} />
           </View>
-          {spend?.paymentMethod !== "cash" ||
-            ("pos" && (
-              <>
-                <View style={$row}>
-                  <Text tx="spend.accountNum" />
-                  <Text text={spend?.accountNum || "ندارد"} />
-                </View>
-                <View style={$row}>
-                  <Text tx="spend.transferFee" />
-                  <Text text={tomanFormatter(spend?.transferFee ?? 0)} />
-                </View>
-                <View style={$row}>
-                  <Text tx="spend.trackingNum" />
-                  <Text text={spend?.trackingNum || "ندارد"} />
-                </View>
-              </>
-            ))}
+          {spend?.paymentMethod && !["cash", "pos"].includes(spend?.paymentMethod) && (
+            <>
+              <View style={$row}>
+                <Text tx="spend.recipient" />
+                <Text text={spend?.recipient} />
+              </View>
+              <View style={$row}>
+                <Text tx="spend.accountNum" />
+                <Text text={spend?.accountNum || "ندارد"} />
+              </View>
+              <View style={$row}>
+                <Text tx="spend.transferFee" />
+                <Text text={tomanFormatter(spend?.transferFee ?? 0)} />
+              </View>
+              <View style={$row}>
+                <Text tx="spend.trackingNum" />
+                <Text text={spend?.trackingNum || "ندارد"} />
+              </View>
+            </>
+          )}
           <View style={$row}>
             <Text tx="spend.description" />
             <Text text={spend?.description || "ندارد"} />
@@ -98,7 +102,7 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
             <Text tx="spend.group" />
             <Text text={spend?.group || "ندارد"} />
           </View>
-          {spend?.receiptItems && (
+          {spend?.receiptItems && spend?.receiptItems?.length > 0 && (
             <>
               <View style={$row}>
                 <Text tx="spend.items" />

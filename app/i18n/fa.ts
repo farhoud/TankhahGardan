@@ -1,4 +1,8 @@
 const fa = {
+  paymentType: {
+    buy:"خرید",
+    transfer: "واریز"
+  },
   paymentMethod: {
     satna: "ساتنا",
     paya: "پایا",
@@ -21,6 +25,7 @@ const fa = {
     trackingNum: "شماره پیگیری",
     doneAt: "تاریخ",
     paymentMethod: "روش پرداخت",
+    paymentType: "نوع عملیات",
     amount: "مبلغ",
     transferFee: "کارمزد",
     total: "کل",

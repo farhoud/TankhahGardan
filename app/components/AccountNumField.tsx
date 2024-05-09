@@ -125,8 +125,8 @@ export const AccountNumField = forwardRef(function AccountNumField(
         <MaskInput
           {...props}
           mask={accountNumMask}
-          onChangeText={(_, unmasked) => {
-            onChangeText && onChangeText(unmasked)
+          onChangeText={(masked, _) => {
+            onChangeText && onChangeText(masked)
           }}
         />
       )}

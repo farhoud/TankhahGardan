@@ -1,5 +1,5 @@
 import React, { forwardRef, Ref, useImperativeHandle, useMemo, useRef } from "react"
-import { TextInput as RNTextInput } from "react-native"
+import { TextInput as RNTextInput, TextStyle, ViewStyle } from "react-native"
 import { TextField, TextFieldProps } from "./TextField"
 import { TextInput } from "react-native-paper"
 import MaskInput, { createNumberMask } from "react-native-mask-input"
@@ -40,6 +40,7 @@ export const CurrencyField = forwardRef(function CurrencyField(
       ref={input}
       value={value? value.toString():""}
       right={<TextInput.Affix text="﷼" />}
+      style={$leftAlien}
       keyboardType="numeric"
       helper={helper}
       render={(props) => (
@@ -55,3 +56,4 @@ export const CurrencyField = forwardRef(function CurrencyField(
     />
   )
 })
+const $leftAlien: ViewStyle | TextStyle = { direction: "ltr", textAlign: "left" }

@@ -47,7 +47,7 @@ export class Spend extends Realm.Object<Spend> {
   createAt!: Date
   doneAt!: Date
   paymentMethod!: PaymentMethod
-  paymentType!: PaymentMethod
+  paymentType!: PaymentType
   amount!: number
   transferFee!: number
   total!: number

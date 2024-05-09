@@ -17,6 +17,7 @@ import { DatePicker } from "app/components/DatePicker"
 import { ListRenderItemInfo } from "@shopify/flash-list"
 import Reanimated, { BounceIn, FadeOut } from "react-native-reanimated"
 import { RectButton, Swipeable } from "react-native-gesture-handler"
+import { TxKeyPath } from "app/i18n"
 
 const PieCharColors = [
   { color: "#009FFF", gradientCenterColor: "#006DFF" },
@@ -134,13 +135,23 @@ export const TankhahHomeScreen: FC<TankhahTabScreenProps<"TankhahHome">> = obser
             elevation={2}
           >
             <View style={$detail}>
-              <Text variant="labelMedium">تاریخ عملیات</Text>
+              <Text variant="labelMedium" tx={("paymentType." + item.paymentType) as TxKeyPath} />
               <Text variant="labelMedium">{formatDateIR(item.doneAt)}</Text>
             </View>
-            <View style={$detail}>
-              <Text variant="labelMedium">دریافت کننده</Text>
-              <Text>{item.recipient ?? "ثبت نشده"}</Text>
-            </View>
+            {item.paymentType === "transfer" && (
+              <View style={$detail}>
+                <Text variant="labelMedium">دریافت کننده</Text>
+                <Text>{item.recipient ?? "ثبت نشده"}</Text>
+              </View>
+            )}
+            {item.paymentType === "buy" && (
+              <View style={$detail}>
+                <Text variant="labelMedium">اجناس</Text>
+                <Text>
+                  {item.receiptItems?.map((i) => `${i.title}`).join("، ") || "ثبت نشده"}
+                </Text>
+              </View>
+            )}
             <View style={$detail}>
               <Text variant="labelMedium">مبلغ</Text>
               <Text variant="bodyLarge">{tomanFormatter(item.amount)}</Text>
@@ -341,6 +352,7 @@ export const TankhahHomeScreen: FC<TankhahTabScreenProps<"TankhahHome">> = obser
           <View style={{ height: "61%" }}>
             <ListView
               // contentContainerStyle={{flexGrow:1}}
+              keyExtractor={(i) => i._objectKey()}
               data={spendsList.filter((i) => i._id.toHexString() !== itemId)}
               ListHeaderComponent={renderHeadItem}
               renderItem={renderListItem}
