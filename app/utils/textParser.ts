@@ -1,4 +1,6 @@
 import { SpendFormStoreSnapshotIn } from "app/models"
+import { newDate } from 'date-fns-jalali'
+
 type SpendPart = Partial<SpendFormStoreSnapshotIn>
 type SpendPartFunction = (text: string) => {
   extracted?: SpendPart
@@ -12,7 +14,6 @@ export function parseText(text: string): SpendPart {
   let extracted = {}
   for (const f of patterns) {
     const res = f(text)
-    console.log("res", res)
     if (res?.subFunction) {
       patterns.push(...res.subFunction)
     }
@@ -64,23 +65,22 @@ const stringCaster = (value: RegExpMatchArray): string | null => {
 
 const numberCaster = (value: RegExpMatchArray): number | null => {
   if (value.length == 2) {
-    console.log("amount of mablagh",value[1].replace(",",""))
-    console.log("amount of mablagh numer", Number(value[1].replaceAll(",","")))
     return Number(value[1].replaceAll(",","")) ?? null
   }
   return null
 }
 
 const dateTimeCaster = (value: RegExpMatchArray): Date | null => {
-  if (value.length == 3) {
-    const [_, time, date] = value
-    return new Date() ?? null
+  if (value.length===7) {
+    const [hour, minute, second,year,month,day] = value.slice(1).map(i=>Number(i))
+    const date = newDate(year,month-1,day,hour,minute,second)
+    return date || null
   }
   return null
 }
 
 const BackShahrReceiptBase: [keyof SpendPart, RegExp, Caster][] = [
-  ["doneAt", /تاریخ و ساعت:\s*(\d{2}:\d{2}:\d{2}) - (\d{4}\/\d{2}\/\d{2})/, dateTimeCaster],
+  ["doneAt", /تاریخ و ساعت:\s*(\d{2}):(\d{2}):(\d{2}) - (\d{4})\/(\d{2})\/(\d{2})/, dateTimeCaster],
   ["recipient", /نام گیرنده:\s*(.+)/, stringCaster],
   ["trackingNum", /شماره پیگیری:\s*(.+)/, stringCaster],
   ["amount", /مبلغ:\s*([\d,]+)\s*ریال/, numberCaster],

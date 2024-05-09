@@ -16,12 +16,7 @@ import { Spend } from "app/models/realm/models"
 import { BSON } from "realm"
 import { useShareIntentContext } from "expo-share-intent"
 import { Text } from "app/components"
-
-const routes = [
-  { key: "step1", title: "پایه" },
-  { key: "step2", title: "شرح" },
-  { key: "step3", title: "بانکی" },
-]
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet"
 
 export const TankhahSpendFormScreen: FC<AppStackScreenProps<"TankhahSpendForm">> = observer(
   function TankhahSpendFormScreen(_props) {
@@ -33,23 +28,34 @@ export const TankhahSpendFormScreen: FC<AppStackScreenProps<"TankhahSpendForm">>
 
     const navigation = useNavigation()
     const {
-      spendFormStore: { errors, _id, setSpend,applyShareText },
+      spendFormStore: { paymentType, errors, _id, setSpend, applyShareText },
     } = useStores()
-
-
+    const routes = useMemo(() => {
+      if (paymentType === "buy") {
+        return [
+          { key: "step1", title: "پایه" },
+          { key: "step2", title: "اجناس" },
+          { key: "step3", title: "بانکی" },
+        ]
+      }
+      return [
+        { key: "step1", title: "پایه" },
+        { key: "step3", title: "بانکی" },
+      ]
+    }, [paymentType])
     const fromText = useMemo(() => {
       let res
-      if (hasShareIntent && shareIntent.text){
+      if (hasShareIntent && shareIntent.text) {
         res = applyShareText(shareIntent.text)
+        resetShareIntent()
       }
-      if(!res){
+      if (!res) {
         resetShareIntent()
       }
       return res
     }, [hasShareIntent, shareIntent, error])
 
     useEffect(() => {
-      console.log(index)
       switch (index) {
         case 0:
           setIndex(0)
@@ -95,29 +101,31 @@ export const TankhahSpendFormScreen: FC<AppStackScreenProps<"TankhahSpendForm">>
     }, [])
 
     return (
-      <KeyboardAvoidingView
-        behavior="padding"
-        style={{ flex: 1, justifyContent: "flex-end", marginBottom: -15 }}
-        contentContainerStyle={{ flex: 1 }}
-      >
-        {fromText && <Text>استخراج از متن</Text>}
-        <View
-          style={{
-            flex: 1,
-            paddingBottom: insets.bottom + 15,
-            paddingLeft: insets.left,
-            paddingRight: insets.right,
-          }}
+      <BottomSheetModalProvider>
+        <KeyboardAvoidingView
+          behavior="padding"
+          style={{ flex: 1, justifyContent: "flex-end", marginBottom: -15 }}
+          contentContainerStyle={{ flex: 1 }}
         >
-          <TabView
-            navigationState={{ index, routes }}
-            renderScene={renderScene}
-            renderTabBar={StepBar}
-            tabBarPosition="bottom"
-            onIndexChange={setIndex}
-          />
-        </View>
-      </KeyboardAvoidingView>
+          {fromText && <Text>استخراج از متن</Text>}
+          <View
+            style={{
+              flex: 1,
+              paddingBottom: insets.bottom + 15,
+              paddingLeft: insets.left,
+              paddingRight: insets.right,
+            }}
+          >
+            <TabView
+              navigationState={{ index, routes }}
+              renderScene={renderScene}
+              renderTabBar={StepBar}
+              tabBarPosition="bottom"
+              onIndexChange={setIndex}
+            />
+          </View>
+        </KeyboardAvoidingView>
+      </BottomSheetModalProvider>
     )
   },
 )

@@ -6,6 +6,7 @@ import { isNumber } from "app/utils/validation"
 import Realm, { BSON, Unmanaged, UpdateMode } from "realm"
 import { Alert } from "react-native"
 import { parseText } from "app/utils/textParser"
+import { calcTransferFee } from "app/utils/finance"
 
 /**
  * Model description here for TypeScript hints.
@@ -15,7 +16,6 @@ export const SpendFormStoreModel = types
   .props({
     _id: types.maybe(types.string),
     doneAt: types.Date,
-    title: types.maybe(types.string),
     group: types.string,
     paymentType: types.enumeration<PaymentType>("PaymentType", ["buy", "transfer"]),
     paymentMethod: types.enumeration<PaymentMethod>("PaymentMethod", [
@@ -23,10 +23,10 @@ export const SpendFormStoreModel = types
       "ctc",
       "other",
       "paya",
-      "pose",
+      "pos",
       "satna",
     ]),
-    recipient: types.string,
+    recipient: types.maybe(types.string),
     accountNum: types.maybe(types.string),
     amount: types.integer,
     transferFee: types.number,
@@ -56,9 +56,6 @@ export const SpendFormStoreModel = types
       const required = "این فیلد الزامیست"
       if (!self.doneAt) {
         errors.doneAt = required
-      }
-      if (!self.recipient) {
-        errors.recipient = required
       }
       if (!self.amount && self.amount > 0) {
         errors.amount = required
@@ -112,10 +109,10 @@ export const SpendFormStoreModel = types
       if (Object.keys(res).length === 0) {
         return false
       }
-      console.log(res)
       for (const [key, value] of Object.entries(res)) {
         if (key && value) self.setProp(key as keyof SpendFormStoreSnapshotIn, value)
       }
+      self.setProp("transferFee", calcTransferFee(self.amount, self.paymentMethod))
       self.editMode = true
       return true
     },
@@ -123,17 +120,15 @@ export const SpendFormStoreModel = types
       self._id = undefined
       self.accountNum = undefined
       self.doneAt = new Date()
-      self.paymentMethod = "cash"
+      self.paymentMethod = "pos"
       self.amount = 0
       self.transferFee = 0
       self.recipient = ""
-      self.accountNum = undefined
       self.group = ""
       self.description = undefined
       self.attachments.clear()
       self.trackingNum = undefined
       self.paymentType = "buy"
-      self.title = undefined
       self.receiptItems.clear()
       self.editMode = false
     },
@@ -150,7 +145,6 @@ export const SpendFormStoreModel = types
       self.attachments.replace(item.attachments?.slice() || [])
       self.trackingNum = item.trackingNum || undefined
       self.paymentType = item.paymentType as PaymentType
-      self.title = item.title || undefined
       self.receiptItems.clear()
       item.receiptItems?.forEach((i) => {
         self.receiptItems.put({ _id: new BSON.ObjectID().toHexString(), ...i })
@@ -171,7 +165,6 @@ export const SpendFormStoreModel = types
         description,
         attachments,
         trackingNum,
-        title,
         receiptItemsArray,
       } = self
       const receiptItems = receiptItemsArray.map(([_, i]) => ({
@@ -180,23 +173,6 @@ export const SpendFormStoreModel = types
         title: i.title,
       }))
 
-      console.log({
-        _id: self._id ? self._id : new BSON.ObjectID(),
-        doneAt,
-        paymentMethod,
-        amount,
-        transferFee,
-        total: amount + transferFee,
-        recipient,
-        accountNum,
-        group,
-        description,
-        attachments,
-        trackingNum,
-        paymentType,
-        title,
-        receiptItems,
-      })
       try {
         const res = realm.write(() => {
           return realm.create(
@@ -215,7 +191,6 @@ export const SpendFormStoreModel = types
               attachments,
               trackingNum,
               paymentType,
-              title: title || undefined,
               receiptItems,
             },
             self._id ? UpdateMode.Modified : undefined,
@@ -225,7 +200,7 @@ export const SpendFormStoreModel = types
         return res
       } catch (e: any) {
         // self.error = e.toString()
-        Alert.alert("store problem", e.toString())
+        Alert.alert("save failed", e.toString())
         self.loading = false
         return undefined
       }
@@ -238,10 +213,9 @@ export interface SpendFormStoreSnapshotIn extends SnapshotIn<typeof SpendFormSto
 export const createSpendFormStoreDefaultModel = () =>
   types.optional(SpendFormStoreModel, {
     doneAt: new Date(),
-    title: "",
     group: "",
     paymentType: "buy",
-    paymentMethod: "cash",
+    paymentMethod: "pos",
     recipient: "",
     accountNum: "",
     amount: 0,

@@ -1,7 +1,27 @@
 import Realm, { BSON, ObjectSchema } from "realm"
 
-export type PaymentMethod = "satna" | "paya" | "cash" | "ctc" | "pose" | "other"
+export type PaymentMethod = "satna" | "paya" | "cash" | "ctc" | "pos" | "other"
+export type AccountNumType = "sheba" | "card" | "other" | "none"
 export type PaymentType = "buy" | "transfer"
+
+export const paymentMethodAccountTypeMapper = (method: PaymentMethod|undefined):AccountNumType=>{
+  switch  (method){
+    case "satna":
+      return "sheba"
+    case "paya":
+      return "sheba"
+    case "cash":
+      return "none"
+    case "ctc":
+      return "card"
+    case "pos":
+      return "none"
+    case "other":
+      return "other"
+    default:
+      return "other"  
+  }
+}
 
 export class Fund extends Realm.Object<Fund> {
   _id!: BSON.ObjectId
@@ -32,8 +52,7 @@ export class Spend extends Realm.Object<Spend> {
   transferFee!: number
   total!: number
   group!: string
-  recipient!: string
-  title?: string
+  recipient?: string
   accountNum?: string
   description?: string
   attachments?: string[]
@@ -50,8 +69,7 @@ export class Spend extends Realm.Object<Spend> {
       amount: "int",
       transferFee: { type: "int", default: 0 },
       total: "int",
-      recipient: { type: "string", indexed: true },
-      title: { type: "string", indexed: true, optional: true },
+      recipient: { type: "string", indexed: true, optional: true },
       accountNum: { type: "string", indexed: true, optional: true },
       group: { type: "string", indexed: true, default: "no_group" },
       description: { type: "string", indexed: true, optional: true },
@@ -108,7 +126,7 @@ export const realmConfig: Realm.Configuration = {
   // Increment the 'schemaVersion', since 'fullName' has replaced
   // 'firstName' and 'lastName' in the schema.
   // The initial schemaVersion is 0.
-  schemaVersion: 7,
+  schemaVersion: 8,
   // onMigration: (oldRealm: Realm, newRealm: Realm) => {
   //   // only apply this change if upgrading schemaVersion
   //   if (oldRealm.schemaVersion < 1) {

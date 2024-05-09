@@ -19,7 +19,7 @@ if (__DEV__) {
 import "./i18n"
 import "./utils/ignoreWarnings"
 import { useFonts } from "expo-font"
-import React, { useRef } from "react"
+import React, { useMemo, useRef } from "react"
 import Constants from "expo-constants"
 import { initialWindowMetrics, SafeAreaProvider } from "react-native-safe-area-context"
 import * as Linking from "expo-linking"
@@ -30,10 +30,10 @@ import * as storage from "./utils/storage"
 import { customFontsToLoad, fontConfig } from "./theme"
 import Config from "./config"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
-import { Alert, ViewStyle } from "react-native"
+import { Alert, useColorScheme, ViewStyle } from "react-native"
 import { RealmProvider } from "@realm/react"
 import { Fund, realmConfig, Spend } from "./models/realm/models"
-import { PaperProvider, configureFonts, MD3DarkTheme } from "react-native-paper"
+import { PaperProvider, configureFonts, MD3DarkTheme, MD3LightTheme } from "react-native-paper"
 import { Appearance } from "react-native"
 import {
   addStateListener,
@@ -46,12 +46,6 @@ import { getStateFromPath } from "@react-navigation/native"
 
 export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
 
-const theme = {
-  ...MD3DarkTheme,
-  fonts: configureFonts({ config: fontConfig }),
-}
-
-Appearance.setColorScheme("dark")
 // Web linking configuration
 const PREFIX = Linking.createURL("/")
 const PACKAGE_NAME =
@@ -86,6 +80,7 @@ interface AppProps {
  * @returns {JSX.Element} The rendered `App` component.
  */
 function App(props: AppProps) {
+  Appearance.setColorScheme("dark")
   const { hideSplashScreen } = props
   const {
     initialNavigationState,
@@ -94,6 +89,15 @@ function App(props: AppProps) {
   } = useNavigationPersistence(storage, NAVIGATION_PERSISTENCE_KEY)
 
   const [areFontsLoaded] = useFonts(customFontsToLoad)
+
+  const colorScheme = useColorScheme()
+  const theme = useMemo(
+    () => ({
+      ...(colorScheme === "dark" ? MD3DarkTheme : MD3LightTheme),
+      fonts: configureFonts({ config: fontConfig }),
+    }),
+    [colorScheme],
+  )
 
   const { rehydrated } = useInitialRootStore(() => {
     // This runs after the root store has been initialized and rehydrated.
@@ -120,7 +124,6 @@ function App(props: AppProps) {
       // REQUIRED FOR iOS FIRST LAUNCH
       if (path.includes(`dataUrl=${getShareExtensionKey()}`)) {
         // redirect to the ShareIntent Screen to handle data with the hook
-        console.debug("react-navigation[getStateFromPath] redirect to ShareIntent screen")
         return {
           routes: [
             {
@@ -132,20 +135,16 @@ function App(props: AppProps) {
       return getStateFromPath(path, config)
     },
     subscribe(listener: (url: string) => void): undefined | void | (() => void) {
-      console.debug("react-navigation[subscribe]", PREFIX, PACKAGE_NAME)
       const onReceiveURL = ({ url }: { url: string }) => {
         if (url.includes(getShareExtensionKey())) {
           // REQUIRED FOR iOS WHEN APP IS IN BACKGROUND
-          console.debug("react-navigation[onReceiveURL] Redirect to ShareIntent Screen", url)
           listener(`${getScheme()}://spendform`)
         } else {
-          console.debug("react-navigation[onReceiveURL] OPEN URL", url)
           listener(url)
         }
       }
       const shareIntentEventSubscription = addStateListener((event) => {
         // REQUIRED FOR ANDROID WHEN APP IS IN BACKGROUND
-        console.debug("react-navigation[subscribe] shareIntentStateListener", event.value)
         if (event.value === "pending") {
           listener(`${getScheme()}://spendform`)
         }
@@ -161,7 +160,6 @@ function App(props: AppProps) {
     async getInitialURL() {
       // REQUIRED FOR ANDROID FIRST LAUNCH
       const needRedirect = hasShareIntent(getShareExtensionKey())
-      console.debug("react-navigation[getInitialURL] redirect to ShareIntent screen:", needRedirect)
       if (needRedirect) {
         return `${Constants.expoConfig?.scheme}://spendform`
       }
@@ -175,11 +173,10 @@ function App(props: AppProps) {
   return (
     <ShareIntentProvider
       options={{
-        debug: true,
+        debug: false,
         // @ts-ignore
         onResetShareIntent: () => {
-          Alert.alert("متن ورودی قابل تجزیه نبود")
-          navigationRef?.current?.navigate("TankhahTabs",{screen:"TankhahHome", params:{}})
+          // navigationRef?.current?.navigate("TankhahTabs", { screen: "TankhahHome", params: {} })
         },
       }}
     >

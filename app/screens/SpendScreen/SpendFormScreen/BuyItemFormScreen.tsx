@@ -13,6 +13,7 @@ import {
   Portal,
   Surface,
   Divider,
+  useTheme,
 } from "react-native-paper"
 import { useNavigation } from "@react-navigation/native"
 import { useObject, useQuery, useRealm } from "@realm/react"
@@ -21,6 +22,7 @@ import { ReceiptItem } from "app/models/realm/models"
 // import { useNavigation } from "@react-navigation/native"
 import { useStores } from "app/models"
 import { SelectedReceiptList } from "./SelectedReceiptList"
+import { BottomSheetFlatList, BottomSheetTextInput } from "@gorhom/bottom-sheet"
 
 // interface BuyItemFormScreenProps extends AppStackScreenProps<"BuyItemForm"> {}
 
@@ -32,6 +34,7 @@ export const BuyItemFormScreen: FC = observer(function BuyItemFormScreen() {
 
   // Pull in navigation via hook
   const navigation = useNavigation()
+  const theme = useTheme()
 
   const realm = useRealm()
   // Modal actions
@@ -144,7 +147,8 @@ export const BuyItemFormScreen: FC = observer(function BuyItemFormScreen() {
   const searchResultBase = useQuery(
     ReceiptItem,
     (ReceiptItem) => {
-      const query = "(title CONTAINS $0 OR description CONTAINS $0) AND searchable == $1 SORT(createdAt DESC)"
+      const query =
+        "(title CONTAINS $0 OR description CONTAINS $0) AND searchable == $1 SORT(createdAt DESC)"
       // `AND (NOT _id IN {${selectedItems.map((_, index) => `$${index + 2}`).join(",")}})`
       return ReceiptItem.filtered(query, searchQuery, true)
     },
@@ -157,55 +161,61 @@ export const BuyItemFormScreen: FC = observer(function BuyItemFormScreen() {
   }, [searchResultBase, selectedItems])
 
   return (
-    <Screen style={$root} safeAreaEdges={["top"]} preset="fixed">
+    <>
       <Surface>
         <View style={$header}>
-          <IconButton icon="arrow-right" onPress={() => navigation.goBack()}></IconButton>
+          <View style={{ alignSelf: "stretch", flexGrow: 2 }}>
+            <TextField
+              onChangeText={setSearchQuery}
+              value={searchQuery}
+              render={(props) => {
+                return (
+                  <BottomSheetTextInput
+                    // mode="bar"
+                    // placeholder="Search"
+                    {...props}
+                  />
+                )
+              }}
+            />
+          </View>
           <View>
             <Button mode="elevated" onPress={openModal} tx="common.new" />
           </View>
         </View>
-        <Searchbar
-          mode="bar"
-          placeholder="Search"
-          onChangeText={setSearchQuery}
-          value={searchQuery}
-        />
-        <List.Section>
-          <List.Subheader>انتخاب شده ها</List.Subheader>
-          <SelectedReceiptList listViewStyle={{ maxHeight: "40%", minHeight: 280 }} />
-
-          <List.Subheader>نتایج جستجو</List.Subheader>
-          {searchResult && (
-            <ListView
-              style={{ maxHeight: "40%", minHeight: 280 }}
-              data={searchResult}
-              renderItem={({ item }) => (
-                <>
-                  <List.Item
-                    title={item.title}
-                    key={item._id.toHexString()}
-                    description={item.description}
-                    right={() => {
-                      if (item.defaultPrice) return <Text>{item.defaultPrice}</Text>
-                    }}
-                    onPress={() => {
-                      addReceiptItem({
-                        _id: item._id.toHexString(),
-                        price: item.defaultPrice || 0,
-                        title: item.title,
-                      })
-                    }}
-                  />
-                  <Divider />
-                </>
-              )}
-            />
-          )}
-        </List.Section>
       </Surface>
+
+      {searchResult && (
+        <BottomSheetFlatList
+          style={{ backgroundColor:theme.colors.surface }}
+          data={searchResult}
+          scrollEnabled
+          scrollToOverflowEnabled
+          renderItem={({ item }) => (
+            <>
+              <List.Item
+                title={item.title}
+                key={item._id.toHexString()}
+                description={item.description}
+                right={() => {
+                  if (item.defaultPrice) return <Text>{item.defaultPrice}</Text>
+                }}
+                onPress={() => {
+                  addReceiptItem({
+                    _id: item._id.toHexString(),
+                    price: item.defaultPrice || 0,
+                    title: item.title,
+                  })
+                }}
+              />
+              <Divider />
+            </>
+          )}
+        />
+      )}
+
       {renderModal()}
-    </Screen>
+    </>
   )
 })
 
@@ -218,6 +228,8 @@ const $header: ViewStyle = {
   flexDirection: "row",
   justifyContent: "space-between",
   alignItems: "center",
+  paddingTop:2,
+  paddingStart:2
 }
 
 const $switch: ViewStyle = {

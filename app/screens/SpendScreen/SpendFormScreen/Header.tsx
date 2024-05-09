@@ -21,8 +21,9 @@ export const Header: FC<Props> = observer(function Header(props) {
   const navigation = useNavigation<StackNavigation>()
   const realm = useRealm()
 
-  const close = (save?: boolean, itemId?:string) => {
+  const close = (save: boolean, itemId?:string) => {
     if (!save) {
+      console.log("reeset called with ",save)
       reset()
     }
     const params = itemId ? {itemId} : {}
@@ -59,7 +60,7 @@ export const Header: FC<Props> = observer(function Header(props) {
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => close(true)} tx="common.ok" />
-            <Button onPress={() => close()} tx="common.cancel" />
+            <Button onPress={() => close(false)} tx="common.cancel" />
           </Dialog.Actions>
         </Dialog>
       </Portal>

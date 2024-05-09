@@ -1,4 +1,19 @@
 const fa = {
+  paymentMethod: {
+    satna: "ساتنا",
+    paya: "پایا",
+    cash: "نقد",
+    ctc: "کارت به کارت",
+    pos: "پوز",
+    other: "دریافت کننده",
+  },
+  accountNumType: {
+    sheba: "شبا",
+    card: "کارت",
+    other: "حساب",
+    placeHolder: "لطفا شماره {{type}} گیرنده را وارد کنید",
+    label:"{{type}} گیرنده"
+  },
   spend: {
     recipient: "دریافت کننده",
     group: "گروه",
@@ -11,7 +26,7 @@ const fa = {
     total: "کل",
     accountNum: "حساب مقصد",
     description: "توضیحات",
-    items:"آیتم‌ها"
+    items: "آیتم‌ها",
   },
   common: {
     ok: "باشه!",
@@ -21,7 +36,7 @@ const fa = {
     edit: "تغییر",
     save: "ثبت",
     add: "اضافه",
-    new: "جدید"
+    new: "جدید",
   },
   welcomeScreen: {
     postscript: "پیست: اپت اسولا این شکلی نیست",

@@ -6,7 +6,7 @@ import {
   TextInput as RNTextInput,
 } from "react-native"
 import { translate } from "../i18n"
-import { colors, spacing, typography } from "../theme"
+import { spacing } from "../theme"
 import { TextProps } from "./Text"
 import { HelperText, TextInput, TextInputProps } from "react-native-paper"
 
@@ -61,6 +61,8 @@ export interface TextFieldProps extends Omit<TextInputProps, "ref"> {
   placeholderTxOptions?: TextProps["txOptions"]
   
   textStyle?: TextStyle
+
+  containerStyle?: ViewStyle
 }
 
 /**
@@ -85,6 +87,7 @@ export const TextField = forwardRef(function TextField(
     helperTxOptions,
     HelperTextProps,
     LabelTextProps,
+    containerStyle,
     mode,
     ...TextInputProps
   } = props
@@ -96,10 +99,12 @@ export const TextField = forwardRef(function TextField(
   const labelContent = labelTx ? translate(labelTx, labelTxOptions) : label
   const helperContent = helperTx ? translate(helperTx, helperTxOptions) : helper
 
+  const $containerStyle = [$container, containerStyle]
+
   useImperativeHandle(ref, () => input.current as RNTextInput)
 
   return (
-    <View style={{}}>
+    <View style={$containerStyle}>
       <TextInput
         ref={input}
         {...TextInputProps}
@@ -116,47 +121,7 @@ export const TextField = forwardRef(function TextField(
   )
 })
 
-const $labelStyle: TextStyle = {
+const $container: ViewStyle = {
   marginBottom: spacing.xs,
 }
 
-const $inputWrapperStyle: ViewStyle = {
-  flexDirection: "row",
-  alignItems: "flex-start",
-  borderWidth: 1,
-  borderRadius: 4,
-  backgroundColor: colors.palette.neutral200,
-  borderColor: colors.palette.neutral400,
-  overflow: "hidden",
-}
-
-const $inputStyle: TextStyle = {
-  flex: 1,
-  alignSelf: "stretch",
-  fontFamily: typography.primary.normal,
-  color: colors.text,
-  fontSize: 16,
-  height: 24,
-  // https://github.com/facebook/react-native/issues/21720#issuecomment-532642093
-  paddingVertical: 0,
-  paddingHorizontal: 0,
-  marginVertical: spacing.xs,
-  marginHorizontal: spacing.sm,
-}
-
-const $helperStyle: TextStyle = {
-  marginTop: spacing.xs,
-}
-
-const $rightAccessoryStyle: ViewStyle = {
-  marginEnd: spacing.xs,
-  height: 40,
-  justifyContent: "center",
-  alignItems: "center",
-}
-const $leftAccessoryStyle: ViewStyle = {
-  marginStart: spacing.xs,
-  height: 40,
-  justifyContent: "center",
-  alignItems: "center",
-}

@@ -7,6 +7,7 @@ import { IconButton, Surface, TextInput } from "react-native-paper"
 import { useStores } from "app/models"
 import * as ImagePicker from "expo-image-picker"
 import * as FileSystem from "expo-file-system"
+import { calcTransferFee } from "app/utils/finance"
 
 // interface MoneyFormScreenProps extends AppStackScreenProps<"TestScreen"> {}
 
@@ -23,6 +24,7 @@ export const MoneyFormScreen: FC = memo(
         attachments,
         totalItems,
         editMode,
+        paymentMethod,
       },
     } = useStores()
 
@@ -36,17 +38,14 @@ export const MoneyFormScreen: FC = memo(
       const attachmentsDir = FileSystem.documentDirectory + "attachments/"
       const dirInfo = await FileSystem.getInfoAsync(attachmentsDir)
       if (!dirInfo.exists) {
-        console.log("Gif directory doesn't exist, creating…")
         await FileSystem.makeDirectoryAsync(attachmentsDir, { intermediates: true })
       }
       for (const asset of assets) {
-        console.log("saving image: ", asset)
         const storeFile = attachmentsDir + asset.uri.split("/").pop()
         await FileSystem.copyAsync({
           from: asset.uri,
           to: attachmentsDir + asset.uri.split("/").pop(),
         })
-        console.log(`${storeFile} saved`)
         setProp("attachments", [...attachments, storeFile])
       }
     }
@@ -72,73 +71,74 @@ export const MoneyFormScreen: FC = memo(
           return i === item
         }),
       )
-      console.log(attachments)
     }
 
     useEffect(() => {
       if (!editMode) setProp("amount", totalItems)
     }, [totalItems])
 
+    useEffect(() => {
+      setProp("transferFee", calcTransferFee(amount, paymentMethod))
+    }, [amount, paymentMethod])
+
     return (
-      <View style={$root}>
-        <Surface>
-          <CurrencyField
-            value={amount}
-            onChangeValue={(value) => setProp("amount", value)}
-            error={!!errors?.amount}
-            label="Amount"
-            labelTx="tankhahChargeScreen.amountLabel"
-            placeholder="John Doe"
-            placeholderTx="tankhahChargeScreen.amountPlaceholder"
-          />
-          <CurrencyField
-            value={transferFee}
-            onChangeValue={(value) => setProp("transferFee", value)}
-            error={!!errors?.transferFee}
-            label="Name"
-            labelTx="tankhahSpendFormScreen.feesLabel"
-            placeholder="John Doe"
-            placeholderTx="tankhahSpendFormScreen.feesPlaceholder"
-          />
-          <TextField
-            value={trackingNum}
-            onChangeText={(value) => setProp("trackingNum", value)}
-            label="Name"
-            labelTx="tankhahSpendFormScreen.trackingNumLabel"
-            placeholder="John Doe"
-            placeholderTx="tankhahSpendFormScreen.trackingNumPlaceholder"
-          />
-          <View style={{ margin: 20 }}>
-            <Text variant="labelMedium">پیوست ها</Text>
-            <View style={{ display: "flex", flexDirection: "row", flexWrap: "wrap" }}>
-              {!attachments && <Text>ندارد</Text>}
-              {attachments.map((i) => {
-                return (
-                  <TouchableOpacity key={i} onLongPress={() => handleRemoveAttachment(i)}>
-                    <AutoImage
-                      style={{ margin: 5 }}
-                      source={{ uri: i }}
-                      maxHeight={70}
-                      maxWidth={60}
-                    ></AutoImage>
-                  </TouchableOpacity>
-                )
-              })}
-            </View>
-            <View
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "flex-end",
-                alignItems: "flex-end",
-              }}
-            >
-              <IconButton onPress={() => handlePickImage("camera")} icon="camera-plus" />
-              <IconButton onPress={() => handlePickImage("gallery")} icon="folder-open" />
-            </View>
+      <Surface style={$root}>
+        <CurrencyField
+          value={amount}
+          onChangeValue={(value) => setProp("amount", value)}
+          error={!!errors?.amount}
+          label="Amount"
+          labelTx="tankhahChargeScreen.amountLabel"
+          placeholder="John Doe"
+          placeholderTx="tankhahChargeScreen.amountPlaceholder"
+        />
+        {["ctc","paya","satna","other"].includes(paymentMethod)&&<CurrencyField
+          value={transferFee}
+          onChangeValue={(value) => setProp("transferFee", value)}
+          error={!!errors?.transferFee}
+          label="Name"
+          labelTx="tankhahSpendFormScreen.feesLabel"
+          placeholder="John Doe"
+          placeholderTx="tankhahSpendFormScreen.feesPlaceholder"
+        />}
+        <TextField
+          value={trackingNum}
+          onChangeText={(value) => setProp("trackingNum", value)}
+          label="Name"
+          labelTx="tankhahSpendFormScreen.trackingNumLabel"
+          placeholder="John Doe"
+          placeholderTx="tankhahSpendFormScreen.trackingNumPlaceholder"
+        />
+        <View style={{ margin: 20 }}>
+          <Text variant="labelMedium">پیوست ها</Text>
+          <View style={{ display: "flex", flexDirection: "row", flexWrap: "wrap" }}>
+            {!attachments && <Text>ندارد</Text>}
+            {attachments.map((i) => {
+              return (
+                <TouchableOpacity key={i} onLongPress={() => handleRemoveAttachment(i)}>
+                  <AutoImage
+                    style={{ margin: 5 }}
+                    source={{ uri: i }}
+                    maxHeight={70}
+                    maxWidth={60}
+                  ></AutoImage>
+                </TouchableOpacity>
+              )
+            })}
           </View>
-        </Surface>
-      </View>
+          <View
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "flex-end",
+              alignItems: "flex-end",
+            }}
+          >
+            <IconButton onPress={() => handlePickImage("camera")} icon="camera-plus" />
+            <IconButton onPress={() => handlePickImage("gallery")} icon="folder-open" />
+          </View>
+        </View>
+      </Surface>
     )
   }),
 )

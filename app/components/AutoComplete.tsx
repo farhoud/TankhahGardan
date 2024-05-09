@@ -8,14 +8,18 @@ import {
   KeyboardAvoidingView,
   View,
 } from "react-native"
-import { TextFieldProps, TextField } from "."
+import { TextFieldProps, TextField, AccountNumFieldProps, AccountNumField } from "."
 import { Card, Divider, List, Modal, Portal } from "react-native-paper"
+import { AccountNumType, PaymentMethod } from "app/models/realm/models"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { TouchableWithoutFeedback } from "react-native-gesture-handler"
 
 export interface AutoCompleteProps extends Omit<TextFieldProps, "ref"> {
   suggestions?: Array<{ title: string }>
   onSelect?: (text: string) => void
   onDropdownChange?: (state: "opened" | "closed") => void
   style?: StyleProp<TextStyle>
+  type?: PaymentMethod
 }
 
 /**
@@ -29,11 +33,13 @@ export const AutoComplete = forwardRef(function AutoComplete(
   ref: Ref<RNTextInput>,
 ) {
   const {
+    type,
     suggestions,
     value,
     onChangeText,
     onSelect,
     onDropdownChange,
+    onFocus,
     style: $inputStyleOverride,
     ...TextInputProps
   } = props
@@ -61,16 +67,23 @@ export const AutoComplete = forwardRef(function AutoComplete(
     return suggestions?.flatMap((i) => i.title)
   }, [suggestions])
 
+  const Input = useMemo(() => {
+    return type ? AccountNumField : TextField
+  }, [type])
+
+  const insets = useSafeAreaInsets()
+
   return (
     <>
-      <TextField
+      <Input
+        paymentMethod={type}
         showSoftInputOnFocus={false}
         onPressIn={openModal}
         value={value}
         onChangeText={onChangeText}
         ref={inputRef}
         onFocus={(e) => {
-          // e.preventDefualt
+          onFocus && onFocus(e)
           modalInputRef.current?.focus()
         }}
         {...TextInputProps}
@@ -79,36 +92,33 @@ export const AutoComplete = forwardRef(function AutoComplete(
         <Modal
           style={{
             flex: 1,
-            paddingHorizontal:"5%",
-            paddingBottom:"40%",
+            paddingHorizontal: "6%",
+            paddingBottom: insets.bottom,
           }}
           visible={modalShow}
           onDismiss={closeModal}
           contentContainerStyle={{
-            flex:1,
-            display:"flex",
+            display: "flex",
             justifyContent: "center",
-            alignSelf:"stretch",
           }}
         >
-          <KeyboardAvoidingView
-            behavior={"padding"}
-          >
+          <KeyboardAvoidingView behavior={"padding"}>
             <Card mode="contained">
               <Card.Content>
-                <TextField
+                <Input
+                  paymentMethod={type}
                   ref={modalInputRef}
                   autoFocus
                   value={value}
                   onChangeText={onChangeText}
-                  // {...TextInputProps}
+                  onFocus={onFocus}
+                  {...TextInputProps}
                 />
                 {value && !names?.includes(value) && (
                   <>
                     <List.Item
                       onPress={() => selectSuggestion(value)}
                       left={() => <List.Icon icon="account-plus" />}
-                      // textStyle={{ textAlign: "center", fontSize: 14 }}
                       description="جدید"
                       title={value}
                     />
@@ -126,31 +136,13 @@ export const AutoComplete = forwardRef(function AutoComplete(
                 })}
               </Card.Content>
             </Card>
-
-            {/* <View style={{height:150}} pointerEvents="box-none">
-
-            </View> */}
+            <TouchableWithoutFeedback
+              onPress={closeModal}
+              style={{ height: 100 }}
+            ></TouchableWithoutFeedback>
           </KeyboardAvoidingView>
         </Modal>
       </Portal>
     </>
   )
-})
-
-const styles = StyleSheet.create({
-  centerSubContainer: {
-    elevation: 5,
-
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  container: {
-    alignItems: "center",
-    flex: 1,
-    justifyContent: "center",
-  },
 })
