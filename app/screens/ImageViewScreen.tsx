@@ -34,13 +34,10 @@ export const ImageViewScreen: FC<ImageViewScreenProps> = observer(function Image
   }
 
   const goNext = () => {
-    console.log("seeeegeeeeeee")
     setIndex(nextImage(index))
   }
 
   const goPrev = () => {
-    console.log("soote")
-    console.log(prevImage(index))
     setIndex(prevImage(index))
   }
 
