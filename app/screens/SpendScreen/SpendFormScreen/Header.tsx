@@ -23,7 +23,6 @@ export const Header: FC<Props> = observer(function Header(props) {
 
   const close = (save: boolean, itemId?:string) => {
     if (!save) {
-      console.log("reeset called with ",save)
       reset()
     }
     const params = itemId ? {itemId} : {}
