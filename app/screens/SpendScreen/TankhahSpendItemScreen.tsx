@@ -2,7 +2,7 @@ import React, { FC, useLayoutEffect, useState } from "react"
 import { observer } from "mobx-react-lite"
 import { View, ViewStyle } from "react-native"
 import { AppStackScreenProps, StackNavigation } from "app/navigators"
-import { AutoImage, Screen, Text } from "app/components"
+import { AutoImage, EmptyState, Screen, Text } from "app/components"
 import { CommonActions, useNavigation } from "@react-navigation/native"
 import { Spend } from "app/models/realm/models"
 import { useObject } from "@realm/react"
@@ -55,54 +55,67 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
       })
     }, [])
 
+    if (!spend) {
+      return <EmptyState headingTx="common.not_found"></EmptyState>
+    }
     return (
-      <Screen style={$root} preset="scroll">
+      <Screen style={$root} safeAreaEdges={["bottom"]} preset="scroll">
         <Surface style={$root}>
           <View style={$row}>
             <Text tx="spend.doneAt" />
-            <Text text={spend?.doneAt && formatDateIR(spend?.doneAt)} />
-          </View>
-          <View style={$row}>
-            <Text tx="spend.paymentType" />
-            <Text tx={("paymentType." + spend?.paymentType) as TxKeyPath} />
-          </View>
-          <View style={$row}>
-            <Text tx="spend.amount" />
-            <Text text={tomanFormatter(spend?.amount ?? 0)} />
-          </View>
-          <View style={$row}>
-            <Text tx="spend.paymentMethod" />
-            <Text tx={("paymentMethod." + spend?.paymentMethod) as TxKeyPath} />
-          </View>
-          {spend?.paymentMethod && !["cash", "pos"].includes(spend?.paymentMethod) && (
-            <>
-              <View style={$row}>
-                <Text tx="spend.recipient" />
-                <Text text={spend?.recipient} />
-              </View>
-              <View style={$row}>
-                <Text tx="spend.accountNum" />
-                <Text text={spend?.accountNum || "ندارد"} />
-              </View>
-              <View style={$row}>
-                <Text tx="spend.transferFee" />
-                <Text text={tomanFormatter(spend?.transferFee ?? 0)} />
-              </View>
-              <View style={$row}>
-                <Text tx="spend.trackingNum" />
-                <Text text={spend?.trackingNum || "ندارد"} />
-              </View>
-            </>
-          )}
-          <View style={$row}>
-            <Text tx="spend.description" />
-            <Text text={spend?.description || "ندارد"} />
+            <Text text={formatDateIR(spend.doneAt)} />
           </View>
           <View style={$row}>
             <Text tx="spend.group" />
             <Text text={spend?.group || "ندارد"} />
           </View>
-          {spend?.receiptItems && spend?.receiptItems?.length > 0 && (
+          <View style={$row}>
+            <Text tx="spend.paymentType" />
+            <Text tx={("paymentType." + spend.paymentType) as TxKeyPath} />
+          </View>
+          <View style={$row}>
+            <Text tx="spend.amount" />
+            <Text text={tomanFormatter(spend.amount ?? 0)} />
+          </View>
+          <View style={$row}>
+            <Text tx="spend.paymentMethod" />
+            <Text tx={("paymentMethod." + spend.paymentMethod) as TxKeyPath} />
+          </View>
+          {!["cash", "pos"].includes(spend.paymentMethod) && (
+            <>
+              {spend.recipient && (
+                <View style={$row}>
+                  <Text tx="spend.recipient" />
+                  <Text text={spend.recipient} />
+                </View>
+              )}
+              {spend.accountNum && (
+                <View style={$row}>
+                  <Text tx="spend.accountNum" />
+                  <Text text={spend.accountNum} />
+                </View>
+              )}
+              {spend.transferFee && (
+                <View style={$row}>
+                  <Text tx="spend.transferFee" />
+                  <Text text={tomanFormatter(spend.transferFee)} />
+                </View>
+              )}
+              {spend.trackingNum && (
+                <View style={$row}>
+                  <Text tx="spend.trackingNum" />
+                  <Text text={spend.trackingNum} />
+                </View>
+              )}
+            </>
+          )}
+          {spend.description && (
+            <View style={$row}>
+              <Text tx="spend.description" />
+              <Text text={spend.description || "ندارد"} />
+            </View>
+          )}
+          {spend.receiptItems && spend.receiptItems.length > 0 && (
             <>
               <View style={$row}>
                 <Text tx="spend.items" />
@@ -119,49 +132,43 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
           )}
           <View style={$row}>
             <Text tx="spend.total" />
-            <Text text={tomanFormatter(spend?.total ?? 0)} />
+            <Text text={tomanFormatter(spend.total ?? 0)} />
           </View>
-          <View style={$row}>
-            <Text tx="spend.attachments" />
-            {spend?.attachments && spend?.attachments?.length === 0 && <Text text={"ندارد"} />}
-          </View>
-          {!!spend?.attachments && (
-            <View
-              style={{
-                flex: 1,
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "center",
-                alignItems: "center",
-                flexWrap: "wrap",
-              }}
-            >
-              <ImageView
-                images={spend?.attachments.map((i) => {
-                  return { uri: i }
+          {!!spend.attachments?.length && (
+            <>
+              <View style={$row}>
+                <Text tx="spend.attachments" />
+              </View>
+              <View
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                {spend.attachments.map((uri, index) => {
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() => {
+                        spend.attachments &&
+                          navigation.navigate("ImageView", { images: spend.attachments, index })
+                      }}
+                    >
+                      <AutoImage
+                        source={{ uri }}
+                        maxHeight={300}
+                        maxWidth={350}
+                        style={{ padding: 10, margin: 10 }}
+                      ></AutoImage>
+                    </TouchableOpacity>
+                  )
                 })}
-                imageIndex={0}
-                visible={visible}
-                onRequestClose={() => setVisible(false)}
-              />
-              {spend.attachments.map((uri, index) => {
-                return (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() => {
-                      // setVisible(true)
-                    }}
-                  >
-                    <AutoImage
-                      source={{ uri }}
-                      maxHeight={300}
-                      maxWidth={350}
-                      style={{ padding: 10, margin: 10 }}
-                    ></AutoImage>
-                  </TouchableOpacity>
-                )
-              })}
-            </View>
+              </View>
+            </>
           )}
         </Surface>
       </Screen>

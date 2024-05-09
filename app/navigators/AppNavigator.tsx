@@ -45,13 +45,9 @@ export type AppStackParamList = {
   TankhahSpendItem: { itemId: string }
   TankhahSpendForm: { itemId?: string }
   ChargeForm: { itemId?: string }
-  // 🔥 Your screens go here
-  // TankhahHome: undefined
-  // TankhahDepositFrom: { itemId?: string }
-  // TankhahSpendItem: { itemId: string }
-  // TankhahWithdraw: { itemId?: string }
   TestScreen: undefined
   BuyItemForm: undefined
+  ImageView: { images: string[], index?: number }
   // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
 
@@ -123,12 +119,26 @@ const AppStack = observer(function AppStack() {
       </Stack.Group>
       <Stack.Group>
         <Stack.Screen name="ChargeForm" component={Screens.TankhahChargeFromScreen} />
-
       </Stack.Group>
 
-
       {/** 🔥 Your screens go here */}
-      <Stack.Screen name="BuyItemForm" component={Screens.BuyItemFormScreen} options={{presentation: 'modal'}}/>
+      <Stack.Screen
+        name="BuyItemForm"
+        component={Screens.BuyItemFormScreen}
+        options={{ presentation: "modal" }}
+      />
+      <Stack.Screen
+        name="ImageView"
+        component={Screens.ImageViewScreen}
+        options={{
+          headerShown: true,
+          header: () => (
+            <Appbar.Header>
+              <Appbar.BackAction onPress={goBack} />
+            </Appbar.Header>
+          ),
+        }}
+      />
       {/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
     </Stack.Navigator>
   )

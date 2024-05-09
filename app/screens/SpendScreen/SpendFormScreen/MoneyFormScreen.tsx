@@ -3,11 +3,12 @@ import { observer } from "mobx-react-lite"
 import { TouchableOpacity, View, ViewStyle } from "react-native"
 import { TextField, Text, AutoImage, CurrencyField } from "app/components"
 import { IconButton, Surface, TextInput } from "react-native-paper"
-// import { useNavigation } from "@react-navigation/native"
+import { useNavigation } from "@react-navigation/native"
 import { useStores } from "app/models"
 import * as ImagePicker from "expo-image-picker"
 import * as FileSystem from "expo-file-system"
 import { calcTransferFee } from "app/utils/finance"
+import { StackNavigation } from "app/navigators"
 
 // interface MoneyFormScreenProps extends AppStackScreenProps<"TestScreen"> {}
 
@@ -29,7 +30,7 @@ export const MoneyFormScreen: FC = memo(
     } = useStores()
 
     // Pull in navigation via hook
-    // const navigation = useNavigation()
+    const navigation = useNavigation<StackNavigation>()
 
     const [statusCamera, requestCamerPermission] = ImagePicker.useCameraPermissions()
     const [statusMedia, requestMediaPermission] = ImagePicker.useMediaLibraryPermissions()
@@ -57,7 +58,6 @@ export const MoneyFormScreen: FC = memo(
       let result = await lunchFunc({
         mediaTypes: ImagePicker.MediaTypeOptions.All,
         allowsEditing: true,
-        aspect: [4, 3],
         quality: 1,
       })
       result.assets && (await saveAttachments(result.assets))
@@ -113,9 +113,11 @@ export const MoneyFormScreen: FC = memo(
           <Text variant="labelMedium">پیوست ها</Text>
           <View style={{ display: "flex", flexDirection: "row", flexWrap: "wrap" }}>
             {!attachments && <Text>ندارد</Text>}
-            {attachments.map((i) => {
+            {attachments.map((i,index) => {
               return (
-                <TouchableOpacity key={i} onLongPress={() => handleRemoveAttachment(i)}>
+                <TouchableOpacity key={i} onPress={()=>{
+                  attachments && navigation.navigate("ImageView",{images:attachments,index})
+                }} onLongPress={() => handleRemoveAttachment(i)}>
                   <AutoImage
                     style={{ margin: 5 }}
                     source={{ uri: i }}

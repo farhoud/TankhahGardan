@@ -90,7 +90,7 @@ interface EmptyStateProps {
   /**
    * Style overrides for button text.
    */
-  buttonTextStyle?: ButtonProps["textStyle"]
+  buttonTextStyle?: ButtonProps["contentStyle"]
   /**
    * Called when the button is pressed.
    */
@@ -188,7 +188,7 @@ export function EmptyState(props: EmptyStateProps) {
 
       {isHeadingPresent && (
         <Text
-          preset="subheading"
+          variant="headlineMedium"
           text={heading}
           tx={headingTx}
           txOptions={headingTxOptions}
@@ -213,7 +213,7 @@ export function EmptyState(props: EmptyStateProps) {
           text={button}
           tx={buttonTx}
           txOptions={buttonTxOptions}
-          textStyle={$buttonTextStyleOverride}
+          contentStyle={$buttonTextStyleOverride}
           {...ButtonProps}
           style={$buttonStyles}
         />

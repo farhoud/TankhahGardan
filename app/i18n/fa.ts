@@ -42,6 +42,7 @@ const fa = {
     save: "ثبت",
     add: "اضافه",
     new: "جدید",
+    not_found: "آیتم مورد نظر پیدا نشد!"
   },
   welcomeScreen: {
     postscript: "پیست: اپت اسولا این شکلی نیست",
