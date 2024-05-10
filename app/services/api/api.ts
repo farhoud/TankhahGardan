@@ -57,9 +57,9 @@ export class Api {
       analyzing and bank receipt or report texts. Extract key information in JSON 
       format with keys 'tackingNum', 'doneAt', 'recipient', 'accountNum','paymentMethod', amount as number 'amount' . If
       certain information is not available, return an empty string for that key. if you cant parse just return empty object no text"
-      paymentMethod is how money transferred and can be: کارت به کارت : ctc OR  پایا: paya OR ساتنا: satna OR pos: خرید.
+      paymentMethod is how money transferred and can be if انتقال کارت به کارت :'ctc' OR انتقال پایا : 'paya' OR انتقال ساتنا : 'satna' OR (انواع خرید کالا یا خدمات) : 'pos' OR other : 'other'.
       doneAt is a hejri shamsi date in iran time zone convert it to Georgian utc.
-      accountNum is card (کارت) or sheba (شبا) or account number (شماره) of the recipient.
+      accountNum is card (کارت) or sheba (شبا) or account number (شماره حساب) of the recipient.
       text:
        ${text || ""}`,
       },
