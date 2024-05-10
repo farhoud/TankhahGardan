@@ -122,7 +122,7 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
               </View>
               <View style={{ paddingHorizontal: 20 }}>
                 {spend.receiptItems.map((i) => (
-                  <View style={$row}>
+                  <View style={$row} key={i._objectKey()}>
                     <Text text={i.title} />
                     <Text text={`${i.amount} X ${i.price}`} />
                   </View>

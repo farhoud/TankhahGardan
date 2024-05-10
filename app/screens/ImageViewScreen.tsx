@@ -14,7 +14,7 @@ type AnimatedInterpolation = Animated.AnimatedInterpolation<string | number>
 
 export const ImageViewScreen: FC<ImageViewScreenProps> = observer(function ImageViewScreen(_props) {
   const { images, index:indexProp } = _props.route.params
-  const theme = useTheme()
+  // const theme = useTheme()
   // Pull in one of our MST stores
   // const { someStore, anotherStore } = useStores()
   const [index, setIndex] = useState(indexProp||0)
@@ -50,13 +50,7 @@ export const ImageViewScreen: FC<ImageViewScreenProps> = observer(function Image
       })
       return (
         <RectButton>
-          {/* <Animated.View style={{transform:[{translateX:trans}]}}>
-          <AutoImage
-            // style={{height:380}}
-            // resizeMode="contain"
-            source={{ uri: images[action === "right" ? nextImage(index) : prevImage(index)] }}
-          ></AutoImage>
-        </Animated.View> */}
+         
         </RectButton>
       )
     }
@@ -71,7 +65,6 @@ export const ImageViewScreen: FC<ImageViewScreenProps> = observer(function Image
         onSwipeableOpenStartDrag={(direction) => {
           direction === "left" ? goNext() : goPrev()
         }}
-        childrenContainerStyle={{ borderColor: "red", borderWidth: 2 }}
       >
         <Reanimated.Image
           entering={BounceIn}

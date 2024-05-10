@@ -22,7 +22,6 @@ import Config from "../config"
 import { useStores } from "../models"
 import { TankhahTabNavigator, TankhahTabParamList } from "./TankhahTabNavigator"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
-import { colors } from "app/theme"
 import { Appbar } from "react-native-paper"
 
 /**
@@ -87,7 +86,7 @@ const AppStack = observer(function AppStack() {
 
   return (
     <Stack.Navigator
-      screenOptions={{ headerShown: false, navigationBarColor: colors.background }}
+      screenOptions={{ headerShown: false }}
       initialRouteName={isAuthenticated ? "TankhahTabs" : "Login"}
       // initialRouteName="TestScreen"
     >

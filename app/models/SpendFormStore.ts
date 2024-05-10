@@ -3,10 +3,11 @@ import { withSetPropAction } from "./helpers/withSetPropAction"
 import { PaymentMethod, PaymentType, ReceiptItem, Spend } from "./realm/models"
 import { ReceiptItemModel } from "./ReceiptItem"
 import { isNumber } from "app/utils/validation"
-import Realm, { BSON, Unmanaged, UpdateMode } from "realm"
+import Realm, { BSON, UpdateMode } from "realm"
 import { Alert } from "react-native"
 import { parseText } from "app/utils/textParser"
 import { calcTransferFee } from "app/utils/finance"
+import { api } from "app/services/api"
 
 /**
  * Model description here for TypeScript hints.
@@ -37,7 +38,7 @@ export const SpendFormStoreModel = types
     expandedItemKey: types.optional(types.string, ""),
     loading: types.optional(types.boolean, false),
     error: types.maybe(types.string),
-    editMode: types.optional(types.boolean, false)
+    editMode: types.optional(types.boolean, false),
   })
   .actions(withSetPropAction)
   .views((self) => ({
@@ -103,18 +104,33 @@ export const SpendFormStoreModel = types
       if (self.expandedItemKey === key) self.expandedItemKey = ""
       else self.expandedItemKey = key
     },
-    applyShareText(text: string) {
-      const res = parseText(text)
-      this.reset()
-      if (Object.keys(res).length === 0) {
-        return false
+    async applyShareText(text: string) {
+      self.setProp("loading", true)
+      try {
+        const res = await api.extractInfo(text)
+        if (res.kind === "bad-data") {
+          self.setProp("loading", false)
+          self.setProp("error", "تکست قابل هضم نبود")
+          return false
+        }
+        this.reset()
+        if (Object.keys(res.extracted).length === 0) {
+          return false
+        }
+        for (const [key, value] of Object.entries(res.extracted)) {
+          if (key && value) self.setProp(key as keyof SpendFormStoreSnapshotIn, value)
+        }
+        self.setProp("transferFee", calcTransferFee(self.amount, self.paymentMethod))
+        self.setProp("editMode", true)
+      } catch (e) {
+        if (e instanceof Error) {
+          self.setProp("error", e.toString())
+        }
+      } finally {
+        self.setProp("loading", false)
       }
-      for (const [key, value] of Object.entries(res)) {
-        if (key && value) self.setProp(key as keyof SpendFormStoreSnapshotIn, value)
-      }
-      self.setProp("transferFee", calcTransferFee(self.amount, self.paymentMethod))
-      self.editMode = true
-      return true
+
+      return !!self.error
     },
     reset() {
       self._id = undefined

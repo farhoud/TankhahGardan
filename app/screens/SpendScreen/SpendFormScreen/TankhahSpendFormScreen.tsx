@@ -15,8 +15,9 @@ import { useObject } from "@realm/react"
 import { Spend } from "app/models/realm/models"
 import { BSON } from "realm"
 import { useShareIntentContext } from "expo-share-intent"
-import { Text } from "app/components"
+import { Button, Text } from "app/components"
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet"
+import { ActivityIndicator, Dialog, Modal, Portal } from "react-native-paper"
 
 export const TankhahSpendFormScreen: FC<AppStackScreenProps<"TankhahSpendForm">> = observer(
   function TankhahSpendFormScreen(_props) {
@@ -28,7 +29,16 @@ export const TankhahSpendFormScreen: FC<AppStackScreenProps<"TankhahSpendForm">>
 
     const navigation = useNavigation()
     const {
-      spendFormStore: { paymentType, errors, _id, setSpend, applyShareText },
+      spendFormStore: {
+        paymentType,
+        errors,
+        _id,
+        setSpend,
+        applyShareText,
+        loading,
+        setProp,
+        error: apiError,
+      },
     } = useStores()
     const routes = useMemo(() => {
       if (paymentType === "buy") {
@@ -116,6 +126,21 @@ export const TankhahSpendFormScreen: FC<AppStackScreenProps<"TankhahSpendForm">>
               paddingRight: insets.right,
             }}
           >
+            <Portal>
+              <Modal visible={loading}>
+                <ActivityIndicator animating={true} />
+                <View style={{alignItems:"center", justifyContent:"center"}}>
+                <Text variant="bodyMedium">تلاش برای هضم تکست!</Text>
+                </View>
+              </Modal>
+              <Dialog visible={!!apiError}>
+                <Dialog.Title>هضم نشد</Dialog.Title>
+                <Dialog.Content><Text variant="bodyMedium">{apiError}</Text></Dialog.Content>
+                <Dialog.Actions>
+                  <Button tx="common.ok" onPress={()=>{setProp("error",undefined)}}></Button>
+                </Dialog.Actions>
+              </Dialog>
+            </Portal>
             <TabView
               navigationState={{ index, routes }}
               renderScene={renderScene}
