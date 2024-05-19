@@ -1,25 +1,17 @@
-import React, { FC, useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react"
+import React, { FC, useCallback, useState } from "react"
 import { observer } from "mobx-react-lite"
-import { View, ViewStyle, useWindowDimensions } from "react-native"
+import { View, ViewStyle } from "react-native"
 import { AppTabScreenProps, StackNavigation } from "app/navigators"
-import { Button, DatePicker, ListView, Screen, Text, TimeIndicator } from "app/components"
-import { SceneMap, TabView } from "react-native-tab-view"
+import { Button, DatePicker, ListView, TimeIndicator } from "app/components"
+import { SceneMap } from "react-native-tab-view"
 import { useSafeAreaInsetsStyle } from "app/utils/useSafeAreaInsetsStyle"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { Appbar, Card, List, Menu, useTheme } from "react-native-paper"
 import { formatDateIR } from "app/utils/formatDate"
 import { useNavigation } from "@react-navigation/native"
 import PagerView from "react-native-pager-view"
 import { resources, zones } from "./test-data"
-import Animated, {
-  interpolate,
-  useAnimatedStyle,
-  useDerivedValue,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated"
 import { TimeRangeIndicator } from "app/components/TimeRangeIndicator"
-import { $debugBorder, $row } from "app/theme"
+import { $row } from "app/theme"
 import { format } from "date-fns"
 // import { useStores } from "app/models"
 
