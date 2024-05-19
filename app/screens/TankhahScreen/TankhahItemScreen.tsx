@@ -4,11 +4,10 @@ import { View, ViewStyle } from "react-native"
 import { AppStackScreenProps, StackNavigation } from "app/navigators"
 import { AutoImage, EmptyState, Screen, Text } from "app/components"
 import { CommonActions, useNavigation } from "@react-navigation/native"
-import { Spend } from "app/models/realm/models"
+import { TankhahItem } from "app/models/realm/models"
 import { useObject } from "@realm/react"
 import { formatDateIR, tomanFormatter } from "app/utils/formatDate"
 import { BSON } from "realm"
-import ImageView from "react-native-image-viewing"
 import { TouchableOpacity } from "react-native-gesture-handler"
 import { Appbar, Surface } from "react-native-paper"
 import { TxKeyPath } from "app/i18n"
@@ -18,12 +17,11 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
     const itemId = _props.route.params.itemId
     // Pull in one of our MST stores
     // const { someStore, anotherStore } = useStores()
-    const [visible, setVisible] = useState(false)
 
     // Pull in navigation via hook
     const navigation = useNavigation<StackNavigation>()
 
-    const spend = useObject(Spend, new BSON.ObjectID(itemId))
+    const spend = useObject(TankhahItem, new BSON.ObjectID(itemId))
 
     const goBack = () => {
       if (navigation.canGoBack()) {
@@ -39,6 +37,10 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
     }
 
     const goToEdit = () => {
+      if(spend?.opType==="fund"){
+        navigation.navigate("ChargeForm", { itemId })
+        return
+      }
       navigation.navigate("TankhahSpendForm", { itemId })
     }
 
@@ -70,8 +72,8 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
             <Text text={spend?.group || "ندارد"} />
           </View>
           <View style={$row}>
-            <Text tx="spend.paymentType" />
-            <Text tx={("paymentType." + spend.paymentType) as TxKeyPath} />
+            <Text tx="spend.opType" />
+            <Text tx={("opType." + spend.opType) as TxKeyPath} />
           </View>
           <View style={$row}>
             <Text tx="spend.amount" />
@@ -190,4 +192,3 @@ const $row: ViewStyle = {
   marginHorizontal: 20,
 }
 
-const $col: ViewStyle = {}

@@ -11,9 +11,11 @@ import { BSON } from "realm"
 
 interface Props {
   jumpTo:(route:string)=>void
+  route?: { key: string; title: string }
 }
 
-export const Header: FC<Props> = observer(function Header(props) {
+export const Header: FC<Props> = observer(function Header(_props) {
+  const { route, jumpTo } = _props
   const {
     spendFormStore: { isValid, reset, submit },
   } = useStores()
@@ -21,11 +23,11 @@ export const Header: FC<Props> = observer(function Header(props) {
   const navigation = useNavigation<StackNavigation>()
   const realm = useRealm()
 
-  const close = (save: boolean, itemId?:string) => {
+  const close = (save: boolean, itemId?: string) => {
     if (!save) {
       reset()
     }
-    const params = itemId ? {itemId} : {}
+    const params = itemId ? { itemId } : {}
     navigation.dispatch(
       CommonActions.reset({
         index: 0,
@@ -79,7 +81,7 @@ export const Header: FC<Props> = observer(function Header(props) {
           icon="autorenew"
           onPress={() => {
             reset()
-            props.jumpTo("step1")
+            jumpTo("step1")
           }}
         />
         <Appbar.Action
@@ -87,8 +89,8 @@ export const Header: FC<Props> = observer(function Header(props) {
           disabled={isValid}
           onPress={() => {
             const s = submit(realm)
-            if(s){
-              close(false,(s?._id as BSON.ObjectId).toHexString())
+            if (s) {
+              close(false, (s?._id as BSON.ObjectId).toHexString())
             }
           }}
         />

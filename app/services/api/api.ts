@@ -48,17 +48,19 @@ export class Api {
   /**
    * Gets a list of recent React Native Radio episodes.
    */
-  async extractInfo(text:string): Promise<{ kind: "ok", extracted: SpendPart } | GeneralApiProblem> {
+  async extractInfo(
+    text: string,
+  ): Promise<{ extracted: SpendPart; kind: "ok" } | GeneralApiProblem> {
     // make the api call
     const messages = [
       {
         role: "system",
-        content: `"You are a knowledgeable assistant specialized in 
+        content: `You are a knowledgeable assistant specialized in 
       analyzing and bank receipt or report texts. Extract key information in JSON 
       format with keys 'tackingNum', 'doneAt', 'recipient', 'accountNum','paymentMethod', amount as number 'amount' . If
-      certain information is not available, return an empty string for that key. if you cant parse just return empty object no text"
+      certain information is not available, return null for that key.
       paymentMethod is how money transferred and can be if انتقال کارت به کارت :'ctc' OR انتقال پایا : 'paya' OR انتقال ساتنا : 'satna' OR (انواع خرید کالا یا خدمات) : 'pos' OR other : 'other'.
-      doneAt is a hejri shamsi date in iran time zone convert it to Georgian utc.
+      doneAt is a hejri shamsi date in iran time zone convert it to Georgian utc and  may not be available.
       accountNum is card (کارت) or sheba (شبا) or account number (شماره حساب) of the recipient.
       text:
        ${text || ""}`,
@@ -77,7 +79,7 @@ export class Api {
         stop: null,
       },
     )
-    
+
     // the typical ways to die when calling an api
     if (!response.ok) {
       const problem = getGeneralApiProblem(response)
@@ -89,10 +91,11 @@ export class Api {
       const rawData = (response.data as any).choices[0].message.content
 
       // This is where we transform the data into the shape we expect for our MST model.
-      const extracted: SpendPart =
-      JSON.parse(rawData) as SpendPart
-      if(extracted.doneAt){
+      const extracted: SpendPart = JSON.parse(rawData) as SpendPart
+      if (extracted.doneAt) {
         extracted.doneAt = new Date(extracted.doneAt)
+      }
+      if (extracted.amount) {
         extracted.amount = Number(extracted.amount)
       }
 

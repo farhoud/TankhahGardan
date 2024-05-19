@@ -1,4 +1,4 @@
-import { View, KeyboardAvoidingView } from "react-native"
+import { View, KeyboardAvoidingView, Image } from "react-native"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { TabView, SceneMap } from "react-native-tab-view"
 import { BasicFormScreen } from "./BasicFormScreen"
@@ -12,25 +12,25 @@ import { useStores } from "app/models"
 import { useState, useEffect, useLayoutEffect, FC, useMemo } from "react"
 import { AppStackScreenProps } from "app/navigators"
 import { useObject } from "@realm/react"
-import { Spend } from "app/models/realm/models"
+import { TankhahItem } from "app/models/realm/models"
 import { BSON } from "realm"
 import { useShareIntentContext } from "expo-share-intent"
 import { Button, Text } from "app/components"
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet"
-import { ActivityIndicator, Dialog, Modal, Portal } from "react-native-paper"
+import { ActivityIndicator, Banner, Dialog, Modal, Portal } from "react-native-paper"
 
 export const TankhahSpendFormScreen: FC<AppStackScreenProps<"TankhahSpendForm">> = observer(
   function TankhahSpendFormScreen(_props) {
     const itemId = _props.route.params.itemId
-    const spend = useObject(Spend, new BSON.ObjectID(itemId))
+    const spend = useObject(TankhahItem, new BSON.ObjectID(itemId))
     const [index, setIndex] = useState(0)
     const insets = useSafeAreaInsets()
-    const { hasShareIntent, shareIntent, resetShareIntent, error } = useShareIntentContext()
+    const sharedIntentContext = useShareIntentContext()
 
     const navigation = useNavigation()
     const {
       spendFormStore: {
-        paymentType,
+        opType,
         errors,
         _id,
         setSpend,
@@ -38,10 +38,12 @@ export const TankhahSpendFormScreen: FC<AppStackScreenProps<"TankhahSpendForm">>
         loading,
         setProp,
         error: apiError,
+        report,
       },
     } = useStores()
+
     const routes = useMemo(() => {
-      if (paymentType === "buy") {
+      if (opType === "buy") {
         return [
           { key: "step1", title: "پایه" },
           { key: "step2", title: "اجناس" },
@@ -52,8 +54,10 @@ export const TankhahSpendFormScreen: FC<AppStackScreenProps<"TankhahSpendForm">>
         { key: "step1", title: "پایه" },
         { key: "step3", title: "بانکی" },
       ]
-    }, [paymentType])
-    const fromText = useMemo(() => {
+    }, [opType])
+
+    useEffect(() => {
+      const { hasShareIntent, shareIntent, resetShareIntent, error } = sharedIntentContext
       let res
       if (hasShareIntent && shareIntent.text) {
         res = applyShareText(shareIntent.text)
@@ -62,8 +66,34 @@ export const TankhahSpendFormScreen: FC<AppStackScreenProps<"TankhahSpendForm">>
       if (!res) {
         resetShareIntent()
       }
-      return res
-    }, [hasShareIntent, shareIntent, error])
+    }, [sharedIntentContext])
+
+    const renderBanner = () => {
+      return (
+        <Banner
+          visible={!!report}
+          actions={[
+            {
+              label: "باشه",
+              onPress: () => setProp("report", undefined),
+            },
+          ]}
+          icon={({ size }) => (
+            <Image
+              source={{
+                uri: "https://avatars3.githubusercontent.com/u/17571969?s=400&v=4",
+              }}
+              style={{
+                width: size,
+                height: size,
+              }}
+            />
+          )}
+        >
+          {report}
+        </Banner>
+      )
+    }
 
     useEffect(() => {
       switch (index) {
@@ -85,17 +115,17 @@ export const TankhahSpendFormScreen: FC<AppStackScreenProps<"TankhahSpendForm">>
       }
     }, [index])
 
-    useEffect(() => {
-      if (spend && _id !== spend._id.toHexString()) {
-        setSpend(spend)
-      }
-    }, [spend])
-
     const renderScene = SceneMap({
       step1: BasicFormScreen,
       step2: BuyFormScreen,
       step3: MoneyFormScreen,
     })
+
+    useEffect(() => {
+      if (spend && _id !== spend._id.toHexString()) {
+        setSpend(spend)
+      }
+    }, [spend])
 
     useLayoutEffect(() => {
       navigation.setOptions({
@@ -117,7 +147,7 @@ export const TankhahSpendFormScreen: FC<AppStackScreenProps<"TankhahSpendForm">>
           style={{ flex: 1, justifyContent: "flex-end", marginBottom: -15 }}
           contentContainerStyle={{ flex: 1 }}
         >
-          {fromText && <Text>استخراج از متن</Text>}
+          {renderBanner()}
           <View
             style={{
               flex: 1,
@@ -129,15 +159,22 @@ export const TankhahSpendFormScreen: FC<AppStackScreenProps<"TankhahSpendForm">>
             <Portal>
               <Modal visible={loading}>
                 <ActivityIndicator animating={true} />
-                <View style={{alignItems:"center", justifyContent:"center"}}>
-                <Text variant="bodyMedium">تلاش برای هضم تکست!</Text>
+                <View style={{ alignItems: "center", justifyContent: "center" }}>
+                  <Text variant="bodyMedium">تلاش برای هضم تکست!</Text>
                 </View>
               </Modal>
               <Dialog visible={!!apiError}>
                 <Dialog.Title>هضم نشد</Dialog.Title>
-                <Dialog.Content><Text variant="bodyMedium">{apiError}</Text></Dialog.Content>
+                <Dialog.Content>
+                  <Text variant="bodyMedium">{apiError}</Text>
+                </Dialog.Content>
                 <Dialog.Actions>
-                  <Button tx="common.ok" onPress={()=>{setProp("error",undefined)}}></Button>
+                  <Button
+                    tx="common.ok"
+                    onPress={() => {
+                      setProp("error", undefined)
+                    }}
+                  ></Button>
                 </Dialog.Actions>
               </Dialog>
             </Portal>

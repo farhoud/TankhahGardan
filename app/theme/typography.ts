@@ -16,8 +16,8 @@ export const customFontsToLoad = {
   spaceGroteskMedium,
   spaceGroteskSemiBold,
   spaceGroteskBold,
-  "IRANSansXFaNum-Regular": require('../../assets/fonts/IRANSansXFaNum-Regular.ttf'),
-  "IRANSansXFaNum-Bold": require('../../assets/fonts/IRANSansXFaNum-Bold.ttf'),
+  "IRANSansXFaNum-Regular": require("../../assets/fonts/IRANSansXFaNum-Regular.ttf"),
+  "IRANSansXFaNum-Bold": require("../../assets/fonts/IRANSansXFaNum-Bold.ttf"),
 }
 
 const fonts = {
@@ -57,7 +57,7 @@ const fonts = {
     thin: "IRANSansXFaNum-Regular",
     light: "IRANSansXFaNum-Regular",
     medium: "IRANSansXFaNum-Regular",
-  }
+  },
 }
 
 export const typography = {
@@ -79,7 +79,114 @@ export const typography = {
   code: Platform.select({ ios: fonts.iranSans, android: fonts.iranSans }),
 }
 
-
 export const fontConfig = {
-  fontFamily: "IRANSansXFaNum-Regular"
-};
+  fontFamily: "IRANSansXFaNum-Regular",
+  displaySmall: {
+    fontFamily: "IRANSansXFaNum-Regular",
+    fontSize: 36,
+    fontWeight: "400",
+    letterSpacing: 0,
+    lineHeight: 44,
+  },
+  displayMedium: {
+    fontFamily: "IRANSansXFaNum-Regular",
+    fontSize: 45,
+    fontWeight: "400",
+    letterSpacing: 0,
+    lineHeight: 52,
+  },
+  displayLarge: {
+    fontFamily: "IRANSansXFaNum-Regular",
+    fontSize: 57,
+    fontWeight: "400",
+    letterSpacing: 0,
+    lineHeight: 64,
+  },
+  headlineSmall: {
+    fontFamily: "IRANSansXFaNum-Regular",
+    fontSize: 22,
+    fontWeight: "400",
+    letterSpacing: 0,
+    lineHeight: 32,
+  },
+  headlineMedium: {
+    fontFamily: "IRANSansXFaNum-Regular",
+    fontSize: 26,
+    fontWeight: "400",
+    letterSpacing: 0,
+    lineHeight: 36,
+  },
+  headlineLarge: {
+    fontFamily: "IRANSansXFaNum-Regular",
+    fontSize: 30,
+    fontWeight: "400",
+    letterSpacing: 0,
+    lineHeight: 40,
+  },
+  titleSmall: {
+    fontFamily: "IRANSansXFaNum-Regular",
+    fontSize: 14,
+    fontWeight: "500",
+    letterSpacing: 0.1,
+    lineHeight: 20,
+  },
+
+  titleMedium: {
+    fontFamily: "IRANSansXFaNum-Regular",
+    fontSize: 16,
+    fontWeight: "500",
+    letterSpacing: 0.15,
+    lineHeight: 24,
+  },
+
+  titleLarge: {
+    fontFamily: "IRANSansXFaNum-Regular",
+    fontSize: 22,
+    fontWeight: "400",
+    letterSpacing: 0,
+    lineHeight: 28,
+  },
+
+  labelSmall: {
+    fontFamily: "IRANSansXFaNum-Regular",
+    fontSize: 11,
+    fontWeight: "500",
+    letterSpacing: 0.5,
+    lineHeight: 16,
+  },
+  labelMedium: {
+    fontFamily: "IRANSansXFaNum-Regular",
+    fontSize: 12,
+    fontWeight: "500",
+    letterSpacing: 0.5,
+    lineHeight: 16,
+  },
+  labelLarge: {
+    fontFamily: "IRANSansXFaNum-Regular",
+    fontSize: 14,
+    fontWeight: "500",
+    letterSpacing: 0.1,
+    lineHeight: 20,
+  },
+  bodySmall: {
+    fontFamily: "IRANSansXFaNum-Regular",
+    fontSize: 12,
+    fontWeight: "400",
+    letterSpacing: 0.4,
+    lineHeight: 16,
+  },
+  bodyMedium: {
+    fontFamily: "IRANSansXFaNum-Regular",
+    fontSize: 14,
+    fontWeight: "400",
+    letterSpacing: 0.25,
+    lineHeight: 20,
+  },
+  bodyLarge: {
+    fontFamily: "IRANSansXFaNum-Regular",
+    fontSize: 16,
+    fontWeight: "400",
+    letterSpacing: 0.15,
+    lineHeight: 24,
+  },
+}

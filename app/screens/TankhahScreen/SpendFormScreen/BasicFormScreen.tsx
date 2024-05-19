@@ -4,7 +4,7 @@ import { ViewStyle, StyleSheet } from "react-native"
 import { AutoComplete, DatePicker, Select, TextField } from "app/components"
 import { Surface } from "react-native-paper"
 import { useStores } from "app/models"
-import { PaymentMethod, PaymentType, Spend } from "app/models/realm/models"
+import { PaymentMethod, OperationType, TankhahItem } from "app/models/realm/models"
 import { useQuery } from "@realm/react"
 
 export const BasicFormScreen: FC = memo(
@@ -16,7 +16,7 @@ export const BasicFormScreen: FC = memo(
     const {
       spendFormStore: {
         doneAt,
-        paymentType,
+        opType,
         paymentMethod,
         group,
         setProp,
@@ -28,10 +28,10 @@ export const BasicFormScreen: FC = memo(
     } = useStores()
 
     const groupSuggestions = useQuery(
-      Spend,
+      TankhahItem,
       (spends) => {
         return spends.filtered(
-          "group CONTAINS $0 AND group != '' SORT(doneAt DESC) DISTINCT(group) LIMIT(5)",
+          "group CONTAINS $0 AND group != '' AND group != 'no_group' SORT(doneAt DESC) DISTINCT(group) LIMIT(5)",
           group,
         )
       },
@@ -39,18 +39,18 @@ export const BasicFormScreen: FC = memo(
     )
 
     const recipientSuggestions = useQuery(
-      Spend,
+      TankhahItem,
       (spends) => {
         return spends.filtered(
-          "recipient CONTAINS $0 AND recipient != '' AND paymentType == $1 SORT(doneAt DESC) DISTINCT(recipient) LIMIT(5)",
+          "recipient CONTAINS $0 AND recipient != '' AND opType == $1 SORT(doneAt DESC) DISTINCT(recipient) LIMIT(5)",
           recipient,
-          paymentType,
+          opType,
         )
       },
-      [recipient, paymentType],
+      [recipient, opType],
     )
     const accountNumSuggestions = useQuery(
-      Spend,
+      TankhahItem,
       (spends) => {
         return spends.filtered(
           "accountNum CONTAINS $0 AND accountNum != '' AND recipient CONTAINS $1 AND paymentMethod == $2 SORT(doneAt DESC) DISTINCT(accountNum) LIMIT(5)",
@@ -63,7 +63,7 @@ export const BasicFormScreen: FC = memo(
     )
 
     useEffect(() => {
-      if (focused === "recipient") {
+      if (focused === "recipient" && !accountNum) {
         setProp("accountNum", accountNumSuggestions.at(0)?.accountNum||undefined)
       }
     }, [accountNumSuggestions, focused])
@@ -103,11 +103,11 @@ export const BasicFormScreen: FC = memo(
             { value: "transfer", label: "واریز" },
           ]}
           label="نوع عملیات"
-          value={paymentType}
+          value={opType}
           onSelect={(value) => {
-            setProp("paymentType", value as PaymentType)
+            setProp("opType", value as OperationType)
           }}
-          error={!!errors?.paymentType}
+          error={!!errors?.opType}
         />
         <Select
           options={[
@@ -166,7 +166,7 @@ export const BasicFormScreen: FC = memo(
           placeholderTx="tankhahSpendFormScreen.destPlaceholder"
         />
 
-        {paymentType === "transfer" && (
+        {opType === "transfer" && (
           <TextField
             value={description}
             onChangeText={(value) => setProp("description", value)}

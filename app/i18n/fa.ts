@@ -1,7 +1,9 @@
 const fa = {
-  paymentType: {
+  opType: {
     buy:"خرید",
-    transfer: "واریز"
+    transfer: "واریز",
+    fund: "شارژ",
+    all: "همه"
   },
   paymentMethod: {
     satna: "ساتنا",
@@ -25,7 +27,7 @@ const fa = {
     trackingNum: "شماره پیگیری",
     doneAt: "تاریخ",
     paymentMethod: "روش پرداخت",
-    paymentType: "نوع عملیات",
+    opType: "نوع عملیات",
     amount: "مبلغ",
     transferFee: "کارمزد",
     total: "کل",
@@ -80,10 +82,9 @@ const fa = {
     tapToSignIn: "برای ورود به سیستم ضربه بزنید!",
     hint: "نکته: می توانید از هر آدرس ایمیل و رمز عبور دلخواه خود استفاده کنید :)",
   },
-  tankhahNavigator: {
-    chargeTab: "شارژ",
-    spendTab: "خرج",
-    homeTab: "پرداخت",
+  tabNavigator: {
+    tankhahTab: "تنخواه",
+    attendanceTab: "حضور",
   },
   tankhahChargeScreen: {
     amountLabel: "مقدار",

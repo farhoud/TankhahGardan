@@ -1,6 +1,5 @@
 import { Instance, SnapshotOut, types } from "mobx-state-tree"
 import { AuthenticationStoreModel } from "./AuthenticationStore"
-import { EpisodeStoreModel } from "./EpisodeStore"
 import { createSpendFormStoreDefaultModel } from "./SpendFormStore" 
 
 /**
@@ -8,7 +7,6 @@ import { createSpendFormStoreDefaultModel } from "./SpendFormStore"
  */
 export const RootStoreModel = types.model("RootStore").props({
   authenticationStore: types.optional(AuthenticationStoreModel, {}),
-  episodeStore: types.optional(EpisodeStoreModel, {}),
   spendFormStore: createSpendFormStoreDefaultModel(),
 })
 

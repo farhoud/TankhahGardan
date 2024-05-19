@@ -3,6 +3,8 @@ import Realm, { BSON, ObjectSchema } from "realm"
 export type PaymentMethod = "satna" | "paya" | "cash" | "ctc" | "pos" | "other"
 export type AccountNumType = "sheba" | "card" | "other" | "none"
 export type PaymentType = "buy" | "transfer"
+export type OperationType = "buy" | "transfer" | "fund"
+
 
 export const paymentMethodAccountTypeMapper = (method: PaymentMethod|undefined):AccountNumType=>{
   switch  (method){
@@ -81,6 +83,62 @@ export class Spend extends Realm.Object<Spend> {
   }
 }
 
+export class TankhahItem extends Realm.Object<TankhahItem> {
+  _id!: BSON.ObjectId
+  createAt!: Date
+  doneAt!: Date
+  paymentMethod!: PaymentMethod
+  opType!: OperationType
+  amount!: number
+  transferFee!: number
+  total!: number
+  group!: string
+  recipient?: string
+  accountNum?: string
+  description?: string
+  attachments?: string[]
+  trackingNum?: string
+  receiptItems?: Realm.List<TankhahReceiptItem>
+  static schema: ObjectSchema = {
+    name: "TankhahItem",
+    properties: {
+      _id: { type: "objectId", default: () => new BSON.ObjectID() },
+      createdAt: { type: "date", default: () => new Date() },
+      doneAt: "date",
+      paymentMethod: { type: "string", indexed: true },
+      opType: { type: "string", indexed: true },
+      amount: "int",
+      transferFee: { type: "int", default: 0 },
+      total: "int",
+      recipient: { type: "string", indexed: true, optional: true },
+      accountNum: { type: "string", indexed: true, optional: true },
+      group: { type: "string", indexed: true, default: "no_group" },
+      description: { type: "string", indexed: true, optional: true },
+      attachments: { type: "list", optional: true, objectType: "string" },
+      trackingNum: { type: "string", indexed: true, optional: true },
+      receiptItems: "SpendReceiptItem[]",
+    },
+    primaryKey: "_id",
+  }
+}
+
+export class TankhahReceiptItem extends Realm.Object<TankhahReceiptItem> {
+  createAt!: Date
+  title!: string
+  price?: number
+  amount?: number
+  static schema: ObjectSchema = {
+    name: "TankhahReceiptItem",
+    embedded: true,
+    properties: {
+      createdAt: { type: "date", default: () => new Date() },
+      title: { type: "string" },
+      amount: { type: "int", optional: true },
+      price: { type: "float", optional: true },
+    },
+  }
+}
+
 export class ReceiptItem extends Realm.Object<ReceiptItem> {
   _id!: BSON.ObjectId
   createAt!: Date
@@ -122,24 +180,33 @@ export class SpendReceiptItem extends Realm.Object<SpendReceiptItem> {
 }
 
 export const realmConfig: Realm.Configuration = {
-  schema: [Fund, Spend, ReceiptItem, SpendReceiptItem],
+  schema: [Fund, Spend, ReceiptItem, SpendReceiptItem, TankhahItem, TankhahReceiptItem],
   // Increment the 'schemaVersion', since 'fullName' has replaced
   // 'firstName' and 'lastName' in the schema.
   // The initial schemaVersion is 0.
-  schemaVersion: 8,
-  // onMigration: (oldRealm: Realm, newRealm: Realm) => {
-  //   // only apply this change if upgrading schemaVersion
-  //   if (oldRealm.schemaVersion < 1) {
-  //     const oldObjects: Realm.Results<OldObjectModel> =
-  //       oldRealm.objects(OldObjectModel);
-  //     const newObjects: Realm.Results<Person> = newRealm.objects(Person);
-  //     // loop through all objects and set the fullName property in the
-  //     // new schema
-  //     for (const objectIndex in oldObjects) {
-  //       const oldObject = oldObjects[objectIndex];
-  //       const newObject = newObjects[objectIndex];
-  //       newObject.fullName = `${oldObject.firstName} ${oldObject.lastName}`;
-  //     }
-  //   }
-  // },
+  schemaVersion: 9,
+  onMigration: (oldRealm: Realm, newRealm: Realm) => {
+    // only apply this change if upgrading schemaVersion
+    if (oldRealm.schemaVersion < 9) {
+      const oldFunObjects: Realm.Results<Fund> =
+        oldRealm.objects(Fund);
+      const oldSpendObjects: Realm.Results<Spend> = newRealm.objects(Spend);
+      // loop through all objects and set the fullName property in the
+      // new schema
+      for (const obj of oldSpendObjects) {
+        const newObj = obj.toJSON()
+        newObj.opType=newObj.paymentType
+        delete newObj.paymentType
+        newRealm.create(TankhahItem, {...newObj})
+      }
+      for (const obj of oldFunObjects) {
+        const newObj = obj.toJSON()
+        newObj.opType="fund"
+        newObj.paymentMethod="cash"
+        newObj.transferFee=0
+        newObj.total=newObj.amount
+        newRealm.create(TankhahItem, {...newObj})
+      }
+    }
+  },
 }

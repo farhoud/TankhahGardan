@@ -1,3 +1,5 @@
+import { ViewStyle } from "react-native"
+
 /**
   Use these spacings for margins/paddings and other whitespace throughout your app.
  */
@@ -12,5 +14,17 @@ export const spacing = {
   xxl: 48,
   xxxl: 64,
 } as const
+
+export const $row: ViewStyle = {
+  flexDirection:"row",
+  justifyContent: "space-around",
+  alignItems:"center",
+  alignContent:"center"
+}
+
+export const $debugBorder: ViewStyle = {
+  borderColor: "red",
+  borderWidth: 2
+}
 
 export type Spacing = keyof typeof spacing

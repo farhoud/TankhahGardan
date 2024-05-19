@@ -8,13 +8,13 @@ import { Fund } from "app/models/realm/models"
 import { formatDateIR, tomanFormatter } from "app/utils/formatDate"
 import { StackNavigation } from "app/navigators"
 import { Appbar, Divider, FAB, IconButton, List, useTheme } from "react-native-paper"
-import { TankhahTabScreenProps } from "app/navigators/TankhahTabNavigator"
+import { AppTabScreenProps } from "app/navigators/AppTabNavigator"
 import { RectButton, Swipeable } from "react-native-gesture-handler"
 // import { useStores } from "app/models"
 
 type AnimatedInterpolation = Animated.AnimatedInterpolation<string | number>
 
-export const TankhahChargeListScreen: FC<TankhahTabScreenProps<"ChargeList">> = observer(
+export const TankhahChargeListScreen: FC<AppTabScreenProps<"ChargeList">> = observer(
   function TankhahChargeListScreen() {
     // Pull in one of our MST stores
     // const { someStore, anotherStore } = useStores()

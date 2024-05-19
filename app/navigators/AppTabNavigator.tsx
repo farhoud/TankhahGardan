@@ -1,6 +1,6 @@
 import { CompositeScreenProps } from "@react-navigation/native"
 import React from "react"
-import { Icon } from "../components"
+import { Icon } from "react-native-paper"
 import { translate } from "../i18n"
 import { AppStackParamList, AppStackScreenProps } from "./AppNavigator"
 import * as Screens from "app/screens"
@@ -10,9 +10,9 @@ import {
   MaterialBottomTabScreenProps,
 } from "react-native-paper/react-navigation"
 
-export type TankhahTabParamList = {
+export type AppTabParamList = {
   TankhahHome: {itemId?:string}
-  ChargeList: undefined
+  AttendanceHome: undefined
 }
 
 /**
@@ -20,12 +20,12 @@ export type TankhahTabParamList = {
  *
  * More info: https://reactnavigation.org/docs/typescript/#organizing-types
  */
-export type TankhahTabScreenProps<T extends keyof TankhahTabParamList> = CompositeScreenProps<
-  MaterialBottomTabScreenProps<TankhahTabParamList, T>,
+export type AppTabScreenProps<T extends keyof AppTabParamList> = CompositeScreenProps<
+  MaterialBottomTabScreenProps<AppTabParamList, T>,
   AppStackScreenProps<keyof AppStackParamList>
 >
 
-const Tab = createMaterialBottomTabNavigator<TankhahTabParamList>()
+const Tab = createMaterialBottomTabNavigator<AppTabParamList>()
 
 /**
  * This is the main navigator for the Tankhah screens with a bottom tab bar.
@@ -34,23 +34,23 @@ const Tab = createMaterialBottomTabNavigator<TankhahTabParamList>()
  * More info: https://reactnavigation.org/docs/bottom-tab-navigator/
  * @returns {JSX.Element} The rendered `TankhahNavigator`.
  */
-export function TankhahTabNavigator() {
+export function AppTabNavigator() {
   return (
     <Tab.Navigator labeled={false} shifting>
       <Tab.Screen
         name="TankhahHome"
         component={Screens.TankhahHomeScreen}
         options={{
-          tabBarLabel: translate("tankhahNavigator.homeTab"),
-          tabBarIcon: ({ color }) => <Icon icon="spend" color={color} size={26} />,
+          tabBarLabel: translate("tabNavigator.tankhahTab"),
+          tabBarIcon: ({ color }) => <Icon source="cash-fast" color={color} size={26} />,
         }}
       />
       <Tab.Screen
-        name="ChargeList"
-        component={Screens.TankhahChargeListScreen}
+        name="AttendanceHome"
+        component={Screens.AttendanceHomeScreen}
         options={{
-          tabBarLabel: translate("tankhahNavigator.chargeTab"),
-          tabBarIcon: ({ color }) => <Icon icon="charge" color={color} size={26} />,
+          tabBarLabel: translate("tabNavigator.attendanceTab"),
+          tabBarIcon: ({ color }) => <Icon source="calendar-account-outline" color={color} size={26} />,
         }}
       />
     </Tab.Navigator>

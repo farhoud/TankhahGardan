@@ -1,11 +1,11 @@
 import { observer } from "mobx-react-lite"
 import React, { FC, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { TextInput, ViewStyle } from "react-native"
-import { Screen, TextField } from "../../components"
-import { DatePicker } from "app/components/DatePicker"
+import { CurrencyField, Screen, TextField } from "../../components"
+import { DatePicker } from "app/components/DatePicker/DatePicker"
 import { isNumber } from "app/utils/validation"
 import { useObject, useRealm } from "@realm/react"
-import { Fund } from "app/models/realm/models"
+import { TankhahItem } from "app/models/realm/models"
 import { tomanFormatter } from "app/utils/formatDate"
 import { AppStackScreenProps, StackNavigation } from "app/navigators"
 import { CommonActions, useNavigation } from "@react-navigation/native"
@@ -23,7 +23,7 @@ export const TankhahChargeFromScreen: FC<AppStackScreenProps<"ChargeForm">> = ob
     const [isValid, setIsValid] = useState(false)
     const [errors, setErrors] = useState<Record<string, string>>()
     const realm = useRealm()
-    const data = useObject(Fund, new BSON.ObjectID(itemId))
+    const data = useObject(TankhahItem, new BSON.ObjectID(itemId))
 
     const refAmount = useRef<TextInput>(null)
     const refDescription = useRef<TextInput>(null)
@@ -40,28 +40,34 @@ export const TankhahChargeFromScreen: FC<AppStackScreenProps<"ChargeForm">> = ob
       setIsValid(Object.keys(errors).length === 0)
     }
 
-    const amountHelper = useMemo(() => {
-      if (!amount) {
-        return "فیلد الزامیست"
-      }
-      return errors?.amount ? errors?.amount : tomanFormatter(Number(amount))
-    }, [amount, errors?.amount])
-
     const handleSubmit = () => {
       if (isValid) {
-        realm.write(() => {
-          const res = realm.create(
-            "Fund",
+        const res = realm.write(() => {
+          return realm.create(
+            TankhahItem,
             {
               _id: data ? data._id : new BSON.ObjectID(),
               doneAt,
               amount,
+              total: amount,
+              opType: "fund",
+              paymentMethod: "cash",
               description,
             },
             data ? UpdateMode.Modified : undefined,
           )
         })
-        goBack()
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [
+              {
+                name: "TankhahTabs",
+                params: { screen: "TankhahHome", params: { itemId: res._id.toHexString() } },
+              },
+            ],
+          }),
+        )
       }
     }
 
@@ -72,7 +78,7 @@ export const TankhahChargeFromScreen: FC<AppStackScreenProps<"ChargeForm">> = ob
         navigation.dispatch(
           CommonActions.reset({
             index: 0,
-            routes: [{ name: "TankhahTabs", params: { screen: "ChargeList", params: {} } }],
+            routes: [{ name: "TankhahTabs", params: { screen: "TankhahHome", params: {} } }],
           }),
         )
       }
@@ -143,9 +149,9 @@ export const TankhahChargeFromScreen: FC<AppStackScreenProps<"ChargeForm">> = ob
           placeholderTx="tankhahChargeScreen.datePlaceholder"
         />
 
-        <TextField
+        <CurrencyField
           ref={refAmount}
-          value={amount ? amount.toString() : ""}
+          value={amount}
           autoFocus
           onSubmitEditing={() => {
             refDescription && refDescription.current?.focus()
@@ -153,13 +159,10 @@ export const TankhahChargeFromScreen: FC<AppStackScreenProps<"ChargeForm">> = ob
           keyboardType="numeric"
           error={!!amount && !!errors?.amount}
           label="Name"
-          helper={amountHelper}
           labelTx="tankhahChargeScreen.amountLabel"
           // placeholder="John Doe"
           placeholderTx="tankhahChargeScreen.amountPlaceholder"
-          render={(props) => <MaskInput {...props} mask={dollarMask} onChangeText={(masked, unmasked)=>{
-            setAmount(Number(unmasked) || 0)
-          }} />}
+          onChangeValue={(value) => setAmount(value)}
         />
 
         <TextField

@@ -20,7 +20,7 @@ import { useColorScheme } from "react-native"
 import * as Screens from "app/screens"
 import Config from "../config"
 import { useStores } from "../models"
-import { TankhahTabNavigator, TankhahTabParamList } from "./TankhahTabNavigator"
+import { AppTabNavigator, AppTabParamList } from "./AppTabNavigator"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 import { Appbar } from "react-native-paper"
 
@@ -40,14 +40,15 @@ import { Appbar } from "react-native-paper"
 export type AppStackParamList = {
   Welcome: undefined
   Login: undefined
-  TankhahTabs: NavigatorScreenParams<TankhahTabParamList>
+  TankhahTabs: NavigatorScreenParams<AppTabParamList>
   TankhahSpendItem: { itemId: string }
   TankhahSpendForm: { itemId?: string }
   ChargeForm: { itemId?: string }
   TestScreen: undefined
   BuyItemForm: undefined
   ImageView: { images: string[], index?: number }
-  // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
+  Attendance: undefined
+	// IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
 
 /**
@@ -92,7 +93,7 @@ const AppStack = observer(function AppStack() {
     >
       {isAuthenticated ? (
         <>
-          <Stack.Screen name="TankhahTabs" component={TankhahTabNavigator} />
+          <Stack.Screen name="TankhahTabs" component={AppTabNavigator} />
         </>
       ) : (
         <>
@@ -138,7 +139,7 @@ const AppStack = observer(function AppStack() {
           ),
         }}
       />
-      {/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
+			{/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
     </Stack.Navigator>
   )
 })
@@ -147,14 +148,12 @@ export interface NavigationProps
   extends Partial<React.ComponentProps<typeof NavigationContainer>> {}
 
 export const AppNavigator = observer(function AppNavigator(props: NavigationProps) {
-  const colorScheme = useColorScheme()
 
   useBackButtonHandler((routeName) => exitRoutes.includes(routeName))
 
   return (
     <NavigationContainer
       ref={navigationRef}
-      theme={colorScheme === "dark" ? DarkTheme : DefaultTheme}
       {...props}
     >
       <AppStack />

@@ -19,22 +19,22 @@ if (__DEV__) {
 import "./i18n"
 import "./utils/ignoreWarnings"
 import { useFonts } from "expo-font"
-import React, { useMemo, useRef } from "react"
+import React, { useMemo } from "react"
 import Constants from "expo-constants"
+import { DarkTheme as NavigationDarkTheme, DefaultTheme as NavigationDefaultTheme } from "@react-navigation/native"
 import { initialWindowMetrics, SafeAreaProvider } from "react-native-safe-area-context"
 import * as Linking from "expo-linking"
 import { useInitialRootStore } from "./models"
-import { AppNavigator, navigationRef, useNavigationPersistence } from "./navigators"
+import { AppNavigator, useNavigationPersistence } from "./navigators"
 import { ErrorBoundary } from "./screens/ErrorScreen/ErrorBoundary"
 import * as storage from "./utils/storage"
 import { customFontsToLoad, fontConfig } from "./theme"
 import Config from "./config"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
-import { Alert, useColorScheme, ViewStyle } from "react-native"
+import { useColorScheme, ViewStyle } from "react-native"
 import { RealmProvider } from "@realm/react"
-import { Fund, realmConfig, Spend } from "./models/realm/models"
-import { PaperProvider, configureFonts, MD3DarkTheme, MD3LightTheme } from "react-native-paper"
-import { Appearance } from "react-native"
+import { realmConfig } from "./models/realm/models"
+import { PaperProvider, configureFonts, MD3DarkTheme, MD3LightTheme, adaptNavigationTheme } from "react-native-paper"
 import {
   addStateListener,
   getScheme,
@@ -45,6 +45,28 @@ import {
 import { getStateFromPath } from "@react-navigation/native"
 
 export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
+
+const { LightTheme, DarkTheme } = adaptNavigationTheme({
+  reactNavigationLight: NavigationDefaultTheme,
+  reactNavigationDark: NavigationDarkTheme,
+});
+
+const CombinedDefaultTheme = {
+  ...MD3LightTheme,
+  ...LightTheme,
+  colors: {
+    ...MD3LightTheme.colors,
+    ...LightTheme.colors,
+  },
+};
+const CombinedDarkTheme = {
+  ...MD3DarkTheme,
+  ...DarkTheme,
+  colors: {
+    ...MD3DarkTheme.colors,
+    ...DarkTheme.colors,
+  },
+};
 
 // Web linking configuration
 const PREFIX = Linking.createURL("/")
@@ -80,7 +102,6 @@ interface AppProps {
  * @returns {JSX.Element} The rendered `App` component.
  */
 function App(props: AppProps) {
-  Appearance.setColorScheme("dark")
   const { hideSplashScreen } = props
   const {
     initialNavigationState,
@@ -93,7 +114,7 @@ function App(props: AppProps) {
   const colorScheme = useColorScheme()
   const theme = useMemo(
     () => ({
-      ...(colorScheme === "dark" ? MD3DarkTheme : MD3LightTheme),
+      ...(colorScheme === "dark" ? CombinedDarkTheme : CombinedDefaultTheme),
       fonts: configureFonts({ config: fontConfig }),
     }),
     [colorScheme],
@@ -186,6 +207,7 @@ function App(props: AppProps) {
             <GestureHandlerRootView style={$container}>
               <PaperProvider theme={theme}>
                 <AppNavigator
+                  theme={theme}
                   linking={linking}
                   initialState={initialNavigationState}
                   onStateChange={onNavigationStateChange}

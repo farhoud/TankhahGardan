@@ -1,13 +1,14 @@
-import { Instance, SnapshotIn, SnapshotOut, types, unprotect } from "mobx-state-tree"
+import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
-import { PaymentMethod, PaymentType, ReceiptItem, Spend } from "./realm/models"
+import { OperationType, PaymentMethod, TankhahItem } from "./realm/models"
 import { ReceiptItemModel } from "./ReceiptItem"
 import { isNumber } from "app/utils/validation"
 import Realm, { BSON, UpdateMode } from "realm"
 import { Alert } from "react-native"
-import { parseText } from "app/utils/textParser"
 import { calcTransferFee } from "app/utils/finance"
 import { api } from "app/services/api"
+import { TxKeyPath, translate } from "app/i18n"
+import { formatDateIR } from "app/utils/formatDate"
 
 /**
  * Model description here for TypeScript hints.
@@ -18,7 +19,7 @@ export const SpendFormStoreModel = types
     _id: types.maybe(types.string),
     doneAt: types.Date,
     group: types.string,
-    paymentType: types.enumeration<PaymentType>("PaymentType", ["buy", "transfer"]),
+    opType: types.enumeration<OperationType>("OperationType", ["buy", "transfer","fund"]),
     paymentMethod: types.enumeration<PaymentMethod>("PaymentMethod", [
       "cash",
       "ctc",
@@ -39,6 +40,7 @@ export const SpendFormStoreModel = types
     loading: types.optional(types.boolean, false),
     error: types.maybe(types.string),
     editMode: types.optional(types.boolean, false),
+    report: types.maybe(types.string)
   })
   .actions(withSetPropAction)
   .views((self) => ({
@@ -67,8 +69,8 @@ export const SpendFormStoreModel = types
       if (!self.paymentMethod) {
         errors.paymentMethod = required
       }
-      if (!self.paymentType) {
-        errors.paymentType = required
+      if (!self.opType) {
+        errors.opType = required
       }
       if (!self.group) {
         errors.group = required
@@ -106,6 +108,7 @@ export const SpendFormStoreModel = types
     },
     async applyShareText(text: string) {
       self.setProp("loading", true)
+      let report = ""
       try {
         const res = await api.extractInfo(text)
         if (res.kind === "bad-data") {
@@ -113,15 +116,27 @@ export const SpendFormStoreModel = types
           self.setProp("error", "تکست قابل هضم نبود")
           return false
         }
+        if  (res.kind !== "ok") {
+          self.setProp("loading", false)
+          self.setProp("error", res.kind)
+          return false
+        }
         this.reset()
         if (Object.keys(res.extracted).length === 0) {
           return false
         }
+        
         for (const [key, value] of Object.entries(res.extracted)) {
-          if (key && value) self.setProp(key as keyof SpendFormStoreSnapshotIn, value)
+          if (key && value) {
+            self.setProp(key as keyof SpendFormStoreSnapshotIn, value)
+            const formatedValue = value instanceof Date ? formatDateIR(value): value
+            report = report.concat(`${translate('spend.'+key as TxKeyPath)} با مقدار ${formatedValue} .\n`)
+          }
         }
+        report += "استخراج شد."
         self.setProp("transferFee", calcTransferFee(self.amount, self.paymentMethod))
         self.setProp("editMode", true)
+        self.setProp("report", report)
       } catch (e) {
         if (e instanceof Error) {
           self.setProp("error", e.toString())
@@ -144,11 +159,12 @@ export const SpendFormStoreModel = types
       self.description = undefined
       self.attachments.clear()
       self.trackingNum = undefined
-      self.paymentType = "buy"
+      self.opType = "buy"
       self.receiptItems.clear()
       self.editMode = false
+      self.report = undefined
     },
-    setSpend(item: Spend) {
+    setSpend(item: TankhahItem) {
       self._id = item._id.toHexString()
       self.doneAt = item.doneAt
       self.paymentMethod = item.paymentMethod
@@ -160,7 +176,7 @@ export const SpendFormStoreModel = types
       self.description = item.description || undefined
       self.attachments.replace(item.attachments?.slice() || [])
       self.trackingNum = item.trackingNum || undefined
-      self.paymentType = item.paymentType as PaymentType
+      self.opType = item.opType as OperationType
       self.receiptItems.clear()
       item.receiptItems?.forEach((i) => {
         self.receiptItems.put({ _id: new BSON.ObjectID().toHexString(), ...i })
@@ -172,7 +188,7 @@ export const SpendFormStoreModel = types
       const {
         doneAt,
         paymentMethod,
-        paymentType,
+        opType,
         amount,
         transferFee,
         recipient,
@@ -192,7 +208,7 @@ export const SpendFormStoreModel = types
       try {
         const res = realm.write(() => {
           return realm.create(
-            "Spend",
+            "TankhahItem",
             {
               _id: self._id ? new BSON.ObjectID(self._id) : new BSON.ObjectID(),
               doneAt,
@@ -206,7 +222,7 @@ export const SpendFormStoreModel = types
               description,
               attachments,
               trackingNum,
-              paymentType,
+              opType,
               receiptItems,
             },
             self._id ? UpdateMode.Modified : undefined,
@@ -230,7 +246,7 @@ export const createSpendFormStoreDefaultModel = () =>
   types.optional(SpendFormStoreModel, {
     doneAt: new Date(),
     group: "",
-    paymentType: "buy",
+    opType: "buy",
     paymentMethod: "pos",
     recipient: "",
     accountNum: "",
