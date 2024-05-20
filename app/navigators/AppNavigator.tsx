@@ -6,8 +6,6 @@
  */
 import {
   CommonActions,
-  DarkTheme,
-  DefaultTheme,
   NavigationContainer,
   NavigationProp,
   NavigatorScreenParams,
@@ -16,7 +14,6 @@ import {
 import { createNativeStackNavigator, NativeStackScreenProps } from "@react-navigation/native-stack"
 import { observer } from "mobx-react-lite"
 import React from "react"
-import { useColorScheme } from "react-native"
 import * as Screens from "app/screens"
 import Config from "../config"
 import { useStores } from "../models"
@@ -122,11 +119,6 @@ const AppStack = observer(function AppStack() {
       </Stack.Group>
 
       {/** 🔥 Your screens go here */}
-      <Stack.Screen
-        name="BuyItemForm"
-        component={Screens.BuyItemFormScreen}
-        options={{ presentation: "modal" }}
-      />
       <Stack.Screen
         name="ImageView"
         component={Screens.ImageViewScreen}

@@ -2,22 +2,20 @@ import React, { FC, useMemo, useState } from "react"
 import { observer } from "mobx-react-lite"
 import { ViewStyle } from "react-native"
 import { TextField, Text } from "app/components"
-import { List, Divider, useTheme } from "react-native-paper"
+import { List, Divider, Surface } from "react-native-paper"
 import { useQuery } from "@realm/react"
 import { ReceiptItem } from "app/models/realm/models"
 // import { useNavigation } from "@react-navigation/native"
 import { useStores } from "app/models"
-import { BottomSheetFlatList, BottomSheetTextInput } from "@gorhom/bottom-sheet"
+import { BottomSheetFlatList } from "@gorhom/bottom-sheet"
 
 // interface BuyItemFormScreenProps extends AppStackScreenProps<"BuyItemForm"> {}
 
-export const BuyItemFormScreen: FC = observer(function BuyItemFormScreen() {
+export const SearchItemBottomSheetList: FC = observer(function SearchItemBottomSheetList() {
   // Pull in one of our MST stores
   const {
     spendFormStore: { receiptItemsArray: selectedItems, addReceiptItem },
   } = useStores()
-
-  const theme = useTheme()
 
   // End Modal
 
@@ -41,27 +39,16 @@ export const BuyItemFormScreen: FC = observer(function BuyItemFormScreen() {
   }, [searchResultBase, selectedItems])
 
   return (
-    <>
+    <Surface style={$root}>
       <TextField
         onChangeText={setSearchQuery}
         value={searchQuery}
-        render={(props) => {
-          return (
-            <BottomSheetTextInput
-              // mode="bar"
-              // placeholder="Search"
-              {...props}
-            />
-          )
-        }}
       />
 
       {searchResult && (
         <BottomSheetFlatList
-          style={{ backgroundColor: theme.colors.surface }}
           data={searchResult}
           scrollEnabled
-          scrollToOverflowEnabled
           renderItem={({ item }) => (
             <>
               <List.Item
@@ -84,41 +71,10 @@ export const BuyItemFormScreen: FC = observer(function BuyItemFormScreen() {
           )}
         />
       )}
-    </>
+    </Surface>
   )
 })
 
 const $root: ViewStyle = {
   flex: 1,
-}
-
-const $header: ViewStyle = {
-  display: "flex",
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  paddingTop: 2,
-  paddingStart: 2,
-}
-
-const $switch: ViewStyle = {
-  display: "flex",
-  flexDirection: "row",
-  justifyContent: "flex-start",
-  alignItems: "center",
-  margin: 7,
-}
-
-const $counterContainer: ViewStyle = {
-  display: "flex",
-  flexDirection: "row",
-  justifyContent: "space-around",
-  alignItems: "center",
-}
-
-const $itemContainer: ViewStyle = {
-  width: "100%",
-  display: "flex",
-  flexDirection: "row",
-  padding: 5,
 }

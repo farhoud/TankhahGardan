@@ -1,10 +1,10 @@
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { observer } from "mobx-react-lite"
-import { Modal, Switch, View, ViewStyle } from "react-native"
-import { Card, Dialog, FAB, Portal, Surface } from "react-native-paper"
+import { Switch, View, ViewStyle } from "react-native"
+import { Dialog, FAB, Portal, Surface } from "react-native-paper"
 import { SelectedReceiptList } from "./SelectedReceiptList"
 import { BottomSheetModal } from "@gorhom/bottom-sheet"
-import { BuyItemFormScreen } from "./BuyItemFormScreen"
+import { SearchItemBottomSheetList } from "./SearchItemBottomSheetList"
 import { useObject, useRealm } from "@realm/react"
 import { TextField, CurrencyField, Button, Text } from "app/components"
 import { ReceiptItem } from "app/models/realm/models"
@@ -15,14 +15,14 @@ import { useStores } from "app/models"
 
 export const BuyFormScreen: FC = observer(function BuyFormScreen() {
   const {
-    spendFormStore: { receiptItemsArray: selectedItems, addReceiptItem },
+    spendFormStore: { addReceiptItem },
   } = useStores()
   // ref
   const bottomSheetModalRef = useRef<BottomSheetModal>(null)
 
   // variables
   const [fabOpen, setFabOpen] = useState(false)
-  const snapPoints = useMemo(() => ["25%", "50%"], [])
+  const snapPoints = useMemo(() => ["25%", "60%"], [])
 
   // callbacks
   const handlePresentModalPress = useCallback(() => {
@@ -87,43 +87,41 @@ export const BuyFormScreen: FC = observer(function BuyFormScreen() {
     return (
       <Portal>
         <Dialog visible={modalVisibility} onDismiss={closeModal}>
-       
-            <Dialog.Content>
-              <TextField
-                value={title}
-                onChangeText={(value) => setTitle(value)}
-                error={error}
-                labelTx="receiptItemForm.titleLabel"
-                placeholderTx="receiptItemForm.titlePlaceholder"
-                helperTx={error && title !== undefined ? "receiptItemForm.titleHelper" : undefined}
-              />
-              <CurrencyField
-                value={defaultPrice}
-                onChangeValue={(value) => setDefaultPrice(value)}
-                error={error}
-                labelTx="receiptItemForm.defaultPriceLabel"
-                placeholderTx="receiptItemForm.defaultPricePlaceholder"
-              />
-              <TextField
-                value={description}
-                onChangeText={(value) => setDescription(value)}
-                labelTx="receiptItemForm.descriptionLabel"
-                placeholderTx="receiptItemForm.descriptionPlaceholder"
-              />
-              <View style={$switch}>
-                <Text tx="receiptItemForm.searchableLabel" />
-                <Switch
-                  value={searchable}
-                  onValueChange={(value) => {
-                    setSearchable(value)
-                  }}
-                ></Switch>
-              </View>
-            </Dialog.Content>
-            <Dialog.Actions>
-              <Button tx="common.add" onPress={handleSubmit} />
-            </Dialog.Actions>
-       
+          <Dialog.Content>
+            <TextField
+              value={title}
+              onChangeText={(value) => setTitle(value)}
+              error={error}
+              labelTx="receiptItemForm.titleLabel"
+              placeholderTx="receiptItemForm.titlePlaceholder"
+              helperTx={error && title !== undefined ? "receiptItemForm.titleHelper" : undefined}
+            />
+            <CurrencyField
+              value={defaultPrice}
+              onChangeValue={(value) => setDefaultPrice(value)}
+              error={error}
+              labelTx="receiptItemForm.defaultPriceLabel"
+              placeholderTx="receiptItemForm.defaultPricePlaceholder"
+            />
+            <TextField
+              value={description}
+              onChangeText={(value) => setDescription(value)}
+              labelTx="receiptItemForm.descriptionLabel"
+              placeholderTx="receiptItemForm.descriptionPlaceholder"
+            />
+            <View style={$switch}>
+              <Text tx="receiptItemForm.searchableLabel" />
+              <Switch
+                value={searchable}
+                onValueChange={(value) => {
+                  setSearchable(value)
+                }}
+              ></Switch>
+            </View>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button tx="common.add" onPress={handleSubmit} />
+          </Dialog.Actions>
         </Dialog>
       </Portal>
     )
@@ -137,38 +135,35 @@ export const BuyFormScreen: FC = observer(function BuyFormScreen() {
       <Surface style={$root}>
         <SelectedReceiptList listViewStyle={{ height: 460 }} />
       </Surface>
-
+      <FAB.Group
+        open={fabOpen}
+        visible
+        icon="magnify"
+        actions={[
+          {
+            icon: "plus",
+            onPress: openModal,
+          },
+        ]}
+        onStateChange={({ open }) => {
+          setFabOpen(open)
+        }}
+        onPress={() => {
+          if (fabOpen) {
+            handlePresentModalPress()
+            // do something if the speed dial is open
+          }
+        }}
+      />
+      {renderModal()}
       <BottomSheetModal
         ref={bottomSheetModalRef}
         index={1}
         snapPoints={snapPoints}
         keyboardBlurBehavior="restore"
       >
-        {/* <BottomSheetView > */}
-        <BuyItemFormScreen />
-        {/* </BottomSheetView> */}
+        <SearchItemBottomSheetList />
       </BottomSheetModal>
-      <FAB.Group
-          open={fabOpen}
-          visible
-          icon="magnify"
-          actions={[
-            {
-              icon: "plus",
-              onPress: openModal,
-            },
-          ]}
-          onStateChange={({ open }) => {
-            setFabOpen(open)
-          }}
-          onPress={() => {
-            if (fabOpen) {
-              handlePresentModalPress()
-              // do something if the speed dial is open
-            }
-          }}
-        />
-        {renderModal()}
     </>
   )
 })
@@ -177,7 +172,6 @@ const $root: ViewStyle = {
   width: "100%",
   height: "100%",
 }
-
 
 const $switch: ViewStyle = {
   display: "flex",

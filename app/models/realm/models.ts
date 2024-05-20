@@ -185,6 +185,7 @@ export const realmConfig: Realm.Configuration = {
   // 'firstName' and 'lastName' in the schema.
   // The initial schemaVersion is 0.
   schemaVersion: 9,
+
   onMigration: (oldRealm: Realm, newRealm: Realm) => {
     // only apply this change if upgrading schemaVersion
     if (oldRealm.schemaVersion < 9) {
@@ -195,9 +196,13 @@ export const realmConfig: Realm.Configuration = {
       // new schema
       for (const obj of oldSpendObjects) {
         const newObj = obj.toJSON()
-        newObj.opType=newObj.paymentType
-        delete newObj.paymentType
-        newRealm.create(TankhahItem, {...newObj})
+        if(!!newObj.paymentType){
+          newObj.opType=newObj.paymentType
+          delete newObj.paymentType
+        } else {
+          newObj.opType="transfer"
+        }
+        newRealm.create(TankhahItem, newObj)
       }
       for (const obj of oldFunObjects) {
         const newObj = obj.toJSON()
@@ -205,7 +210,7 @@ export const realmConfig: Realm.Configuration = {
         newObj.paymentMethod="cash"
         newObj.transferFee=0
         newObj.total=newObj.amount
-        newRealm.create(TankhahItem, {...newObj})
+        newRealm.create(TankhahItem, newObj)
       }
     }
   },

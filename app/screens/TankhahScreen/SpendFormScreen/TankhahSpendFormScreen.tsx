@@ -1,5 +1,4 @@
-import { View, KeyboardAvoidingView, Image } from "react-native"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { View, Image } from "react-native"
 import { TabView, SceneMap } from "react-native-tab-view"
 import { BasicFormScreen } from "./BasicFormScreen"
 import { observer } from "mobx-react-lite"
@@ -21,10 +20,9 @@ import { ActivityIndicator, Banner, Dialog, Modal, Portal } from "react-native-p
 
 export const TankhahSpendFormScreen: FC<AppStackScreenProps<"TankhahSpendForm">> = observer(
   function TankhahSpendFormScreen(_props) {
-    const itemId = _props.route.params.itemId
+    const itemId = _props.route?.params?.itemId
     const spend = useObject(TankhahItem, new BSON.ObjectID(itemId))
     const [index, setIndex] = useState(0)
-    const insets = useSafeAreaInsets()
     const sharedIntentContext = useShareIntentContext()
 
     const navigation = useNavigation()
@@ -57,7 +55,7 @@ export const TankhahSpendFormScreen: FC<AppStackScreenProps<"TankhahSpendForm">>
     }, [opType])
 
     useEffect(() => {
-      const { hasShareIntent, shareIntent, resetShareIntent, error } = sharedIntentContext
+      const { hasShareIntent, shareIntent, resetShareIntent } = sharedIntentContext
       let res
       if (hasShareIntent && shareIntent.text) {
         res = applyShareText(shareIntent.text)
@@ -142,51 +140,42 @@ export const TankhahSpendFormScreen: FC<AppStackScreenProps<"TankhahSpendForm">>
 
     return (
       <BottomSheetModalProvider>
-        <KeyboardAvoidingView
-          behavior="padding"
-          style={{ flex: 1, justifyContent: "flex-end", marginBottom: -15 }}
-          contentContainerStyle={{ flex: 1 }}
+        {renderBanner()}
+        <View
+          style={{
+            flex: 1,
+          }}
         >
-          {renderBanner()}
-          <View
-            style={{
-              flex: 1,
-              paddingBottom: insets.bottom + 15,
-              paddingLeft: insets.left,
-              paddingRight: insets.right,
-            }}
-          >
-            <Portal>
-              <Modal visible={loading}>
-                <ActivityIndicator animating={true} />
-                <View style={{ alignItems: "center", justifyContent: "center" }}>
-                  <Text variant="bodyMedium">تلاش برای هضم تکست!</Text>
-                </View>
-              </Modal>
-              <Dialog visible={!!apiError}>
-                <Dialog.Title>هضم نشد</Dialog.Title>
-                <Dialog.Content>
-                  <Text variant="bodyMedium">{apiError}</Text>
-                </Dialog.Content>
-                <Dialog.Actions>
-                  <Button
-                    tx="common.ok"
-                    onPress={() => {
-                      setProp("error", undefined)
-                    }}
-                  ></Button>
-                </Dialog.Actions>
-              </Dialog>
-            </Portal>
-            <TabView
-              navigationState={{ index, routes }}
-              renderScene={renderScene}
-              renderTabBar={StepBar}
-              tabBarPosition="bottom"
-              onIndexChange={setIndex}
-            />
-          </View>
-        </KeyboardAvoidingView>
+          <Portal>
+            <Modal visible={loading}>
+              <ActivityIndicator animating={true} />
+              <View style={{ alignItems: "center", justifyContent: "center" }}>
+                <Text variant="bodyMedium">تلاش برای هضم تکست!</Text>
+              </View>
+            </Modal>
+            <Dialog visible={!!apiError}>
+              <Dialog.Title>هضم نشد</Dialog.Title>
+              <Dialog.Content>
+                <Text variant="bodyMedium">{apiError}</Text>
+              </Dialog.Content>
+              <Dialog.Actions>
+                <Button
+                  tx="common.ok"
+                  onPress={() => {
+                    setProp("error", undefined)
+                  }}
+                ></Button>
+              </Dialog.Actions>
+            </Dialog>
+          </Portal>
+          <TabView
+            navigationState={{ index, routes }}
+            renderScene={renderScene}
+            renderTabBar={StepBar}
+            tabBarPosition="bottom"
+            onIndexChange={setIndex}
+          />
+        </View>
       </BottomSheetModalProvider>
     )
   },

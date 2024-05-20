@@ -1,6 +1,6 @@
 import { CompositeScreenProps } from "@react-navigation/native"
 import React from "react"
-import { Icon } from "react-native-paper"
+import { Icon, useTheme } from "react-native-paper"
 import { translate } from "../i18n"
 import { AppStackParamList, AppStackScreenProps } from "./AppNavigator"
 import * as Screens from "app/screens"
@@ -35,8 +35,9 @@ const Tab = createMaterialBottomTabNavigator<AppTabParamList>()
  * @returns {JSX.Element} The rendered `TankhahNavigator`.
  */
 export function AppTabNavigator() {
+  const theme = useTheme()
   return (
-    <Tab.Navigator labeled={false} shifting>
+    <Tab.Navigator theme={theme} labeled={false} shifting>
       <Tab.Screen
         name="TankhahHome"
         component={Screens.TankhahHomeScreen}
