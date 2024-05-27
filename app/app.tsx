@@ -21,7 +21,10 @@ import "./utils/ignoreWarnings"
 import { useFonts } from "expo-font"
 import React, { useMemo } from "react"
 import Constants from "expo-constants"
-import { DarkTheme as NavigationDarkTheme, DefaultTheme as NavigationDefaultTheme } from "@react-navigation/native"
+import {
+  DarkTheme as NavigationDarkTheme,
+  DefaultTheme as NavigationDefaultTheme,
+} from "@react-navigation/native"
 import { initialWindowMetrics, SafeAreaProvider } from "react-native-safe-area-context"
 import * as Linking from "expo-linking"
 import { useInitialRootStore } from "./models"
@@ -34,7 +37,13 @@ import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { useColorScheme, ViewStyle } from "react-native"
 import { RealmProvider } from "@realm/react"
 import { realmConfig } from "./models/realm/models"
-import { PaperProvider, configureFonts, MD3DarkTheme, MD3LightTheme, adaptNavigationTheme } from "react-native-paper"
+import {
+  PaperProvider,
+  configureFonts,
+  MD3DarkTheme,
+  MD3LightTheme,
+  adaptNavigationTheme,
+} from "react-native-paper"
 import {
   addStateListener,
   getScheme,
@@ -43,13 +52,14 @@ import {
   ShareIntentProvider,
 } from "expo-share-intent"
 import { getStateFromPath } from "@react-navigation/native"
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet"
 
 export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
 
 const { LightTheme, DarkTheme } = adaptNavigationTheme({
   reactNavigationLight: NavigationDefaultTheme,
   reactNavigationDark: NavigationDarkTheme,
-});
+})
 
 const CombinedDefaultTheme = {
   ...MD3LightTheme,
@@ -58,7 +68,7 @@ const CombinedDefaultTheme = {
     ...MD3LightTheme.colors,
     ...LightTheme.colors,
   },
-};
+}
 const CombinedDarkTheme = {
   ...MD3DarkTheme,
   ...DarkTheme,
@@ -66,7 +76,7 @@ const CombinedDarkTheme = {
     ...MD3DarkTheme.colors,
     ...DarkTheme.colors,
   },
-};
+}
 
 // Web linking configuration
 const PREFIX = Linking.createURL("/")
@@ -78,7 +88,7 @@ const config = {
     Login: {
       path: "",
     },
-    TankhahTabs: {
+    AppTabs: {
       screens: {
         TankhahHome: {
           path: "home/:itemId?",
@@ -197,7 +207,7 @@ function App(props: AppProps) {
         debug: false,
         // @ts-ignore
         onResetShareIntent: () => {
-          // navigationRef?.current?.navigate("TankhahTabs", { screen: "TankhahHome", params: {} })
+          // navigationRef?.current?.navigate("AppTabs", { screen: "TankhahHome", params: {} })
         },
       }}
     >
@@ -206,12 +216,14 @@ function App(props: AppProps) {
           <ErrorBoundary catchErrors={Config.catchErrors}>
             <GestureHandlerRootView style={$container}>
               <PaperProvider theme={theme}>
-                <AppNavigator
-                  theme={theme}
-                  linking={linking}
-                  initialState={initialNavigationState}
-                  onStateChange={onNavigationStateChange}
-                />
+                <BottomSheetModalProvider>
+                  <AppNavigator
+                    theme={theme}
+                    linking={linking}
+                    initialState={initialNavigationState}
+                    onStateChange={onNavigationStateChange}
+                  />
+                </BottomSheetModalProvider>
               </PaperProvider>
             </GestureHandlerRootView>
           </ErrorBoundary>

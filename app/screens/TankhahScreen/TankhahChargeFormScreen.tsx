@@ -22,6 +22,9 @@ export const TankhahChargeFromScreen: FC<AppStackScreenProps<"ChargeForm">> = ob
     const [doneAt, setDoneAt] = useState(new Date())
     const [isValid, setIsValid] = useState(false)
     const [errors, setErrors] = useState<Record<string, string>>()
+    // name!: string
+    // skill?: string
+    // proficiency?: string
     const realm = useRealm()
     const data = useObject(TankhahItem, new BSON.ObjectID(itemId))
 
@@ -62,7 +65,7 @@ export const TankhahChargeFromScreen: FC<AppStackScreenProps<"ChargeForm">> = ob
             index: 0,
             routes: [
               {
-                name: "TankhahTabs",
+                name: "AppTabs",
                 params: { screen: "TankhahHome", params: { itemId: res._id.toHexString() } },
               },
             ],
@@ -78,7 +81,7 @@ export const TankhahChargeFromScreen: FC<AppStackScreenProps<"ChargeForm">> = ob
         navigation.dispatch(
           CommonActions.reset({
             index: 0,
-            routes: [{ name: "TankhahTabs", params: { screen: "TankhahHome", params: {} } }],
+            routes: [{ name: "AppTabs", params: { screen: "TankhahHome", params: {} } }],
           }),
         )
       }

@@ -82,12 +82,12 @@ export const SpendFormStoreModel = types
       self.receiptItems.forEach((i) => (total += i.price * i.amount))
       return total
     },
-  })) // eslint-disable-line @typescript-eslint/no-unused-vars
+  }))
   .views((self) => ({
     get isValid() {
       return !!Object.keys(self.errors).length
     },
-  })) // eslint-disable-line @typescript-eslint/no-unused-vars
+  })) 
   .actions((self) => ({
     addReceiptItem(item: { title: string; _id: string; price: number }) {
       const { title, price, _id } = item

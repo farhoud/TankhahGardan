@@ -9,9 +9,10 @@ import {
   createMaterialBottomTabNavigator,
   MaterialBottomTabScreenProps,
 } from "react-native-paper/react-navigation"
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet"
 
 export type AppTabParamList = {
-  TankhahHome: {itemId?:string}
+  TankhahHome: { itemId?: string }
   AttendanceHome: undefined
 }
 
@@ -37,7 +38,7 @@ const Tab = createMaterialBottomTabNavigator<AppTabParamList>()
 export function AppTabNavigator() {
   const theme = useTheme()
   return (
-    <Tab.Navigator theme={theme} labeled={false} shifting>
+    <Tab.Navigator sceneAnimationEnabled theme={theme} labeled={false} shifting>
       <Tab.Screen
         name="TankhahHome"
         component={Screens.TankhahHomeScreen}
@@ -51,7 +52,9 @@ export function AppTabNavigator() {
         component={Screens.AttendanceHomeScreen}
         options={{
           tabBarLabel: translate("tabNavigator.attendanceTab"),
-          tabBarIcon: ({ color }) => <Icon source="calendar-account-outline" color={color} size={26} />,
+          tabBarIcon: ({ color }) => (
+            <Icon source="calendar-account-outline" color={color} size={26} />
+          ),
         }}
       />
     </Tab.Navigator>

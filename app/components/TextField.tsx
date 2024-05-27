@@ -3,6 +3,7 @@ import {
   TextStyle,
   View,
   ViewStyle,
+  StyleProp,
   TextInput as RNTextInput,
 } from "react-native"
 import { translate } from "../i18n"
@@ -60,9 +61,9 @@ export interface TextFieldProps extends Omit<TextInputProps, "ref"> {
    */
   placeholderTxOptions?: TextProps["txOptions"]
   
-  textStyle?: TextStyle
+  textStyle?: StyleProp<TextStyle>
 
-  containerStyle?: ViewStyle
+  containerStyle?: StyleProp<ViewStyle>
 }
 
 /**

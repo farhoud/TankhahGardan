@@ -1,24 +1,23 @@
-import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import React, { ReactNode, memo, useCallback, useEffect, useRef, useState } from "react"
 import { TextInput, TextStyle, View, ViewStyle } from "react-native"
 import { Text } from "../Text"
 import {
-  newDate,
   getYear,
   getDate,
   getMonth,
-  min,
-  max,
   getHours,
   getMinutes,
-  getSeconds,
-  differenceInDays,
+  setHours,
+  setMinutes,
+  setDate,
+  setMonth,
+  setYear,
 } from "date-fns-jalali"
 import { formatDateIR } from "app/utils/formatDate"
-import { Button, useTheme, Portal, Dialog } from "react-native-paper"
+import { Button, Portal, Dialog } from "react-native-paper"
 import { TextFieldProps, TextField } from "../TextField"
 import { createAnimatedPropAdapter } from "react-native-reanimated"
 import { Wheel } from "./Wheel"
-import { differenceInMinutes } from "date-fns"
 
 export interface DatePickerProps extends TextFieldProps {
   date?: Date
@@ -27,6 +26,7 @@ export interface DatePickerProps extends TextFieldProps {
   action?: (props: { open: () => void; close: () => void; value: Date }) => ReactNode
   minDate?: Date
   maxDate?: Date
+  modalMode?: "datetime" | "date" | "time"
 }
 
 /**
@@ -36,23 +36,29 @@ export interface DatePickerProps extends TextFieldProps {
  * @returns {JSX.Element} The rendered `TextField` component.
  */
 export const DatePicker = (props: DatePickerProps) => {
-  const { date, onDateChange, action, minDate, maxDate, ...TextInputProps } = props
+  const {
+    date,
+    onDateChange,
+    action,
+    minDate,
+    maxDate,
+    modalMode = "date",
+    ...TextInputProps
+  } = props
   const ref = useRef<TextInput>(null)
 
   const [_date, _setDate] = useState(date || new Date())
+  const [err, setErr] = useState(false)
 
   const [modalVisibility, setModalVisibility] = useState(false)
 
   const handleDateChange = (value: Date) => {
-    let res: Date = value
-    if (!!maxDate) {
-      res = min([value, maxDate])
+    if ((!!maxDate && value > maxDate) || (!!minDate && value < minDate)) {
+      setErr(true)
+    } else {
+      setErr(false)
     }
-    if (!!minDate) {
-      res = max([value, minDate])
-    }
-    _setDate(res)
-    // onDateChange && onDateChange(res)
+    _setDate(value)
   }
 
   const handleClose = () => {
@@ -66,7 +72,7 @@ export const DatePicker = (props: DatePickerProps) => {
     return action({
       open: () => setModalVisibility(true),
       close: handleClose,
-      value: date || new Date(),
+      value: _date || new Date(),
     })
   }, [action, _date])
 
@@ -95,8 +101,12 @@ export const DatePicker = (props: DatePickerProps) => {
         <Dialog visible={modalVisibility} onDismiss={handleClose}>
           <Dialog.Title>انتخاب تاریخ</Dialog.Title>
 
-          <Dialog.Content>
+          <Dialog.Content
+            style={{ borderColor: err ? "red" : undefined, borderWidth: err ? 1 : 0 }}
+          >
             <DatePickerModal
+              showDate={modalMode !== "time"}
+              showTime={modalMode !== "date"}
               maxDate={maxDate}
               minDate={minDate}
               value={_date}
@@ -104,7 +114,9 @@ export const DatePicker = (props: DatePickerProps) => {
             ></DatePickerModal>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={handleClose}>ثبت</Button>
+            <Button disabled={err} onPress={handleClose}>
+              ثبت
+            </Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
@@ -128,139 +140,20 @@ interface DatePickerModalProps {
  * @param {DatePickerModalProps} props - The props for the `DatePicker` component.
  * @returns {JSX.Element} The rendered `DatePicker` component.
  */
-export function DatePickerModal(props: DatePickerModalProps) {
-  const { value, onValueChange, minDate, maxDate, showDate = true, showTime = false } = props
-  const [year, setYear] = useState(getYear(value))
-  const [month, setMonth] = useState(getMonth(value) + 1)
-  const [day, setDay] = useState(getDate(value))
-  const [hour, setHour] = useState(getHours(value))
-  const [minute, setMinute] = useState(getMinutes(value))
-  const [second, setSecond] = useState(getSeconds(value))
-
-  const selectedDate = useMemo(() => {
-    const date = newDate(year, month - 1, day, hour, minute, second)
-    onValueChange(date)
-    return date
-  }, [year, month, day, hour, minute, second])
-
-  const minDay = useMemo(() => {
-    let base = 1
-    if (!minDate) {
-      return base
-    }
-    if (getYear(minDate) < year || getMonth(minDate) + 1 < month) {
-      return base
-    }
-    return getDate(minDate)
-  }, [month, minDate, year])
-
-  const maxDay = useMemo<number>(() => {
-    let base = month < 7 ? 31 : 30
-    if (!maxDate) {
-      return base
-    }
-    if (getYear(maxDate) > year || getMonth(maxDate) + 1 > month) {
-      return base
-    }
-    return Math.min(getDate(maxDate), base)
-  }, [month, maxDate, year])
-
-  const minMonth = useMemo(() => {
-    let base = 1
-    if (!minDate) {
-      return base
-    }
-    if (getYear(minDate) < year) {
-      return base
-    }
-    return getMonth(minDate) + 1
-  }, [minDate, year])
-
-  const maxMonth = useMemo(() => {
-    let base = 12
-    if (!maxDate) {
-      return base
-    }
-    if (getYear(maxDate) > year) {
-      return base
-    }
-    return Math.min(getMonth(maxDate) + 1, base)
-  }, [month, maxDate, year])
-
-  const maxHour = useMemo(() => {
-    if (!maxDate) {
-      return 24
-    }
-    if (1 > differenceInDays(selectedDate, maxDate)) {
-      return getHours(maxDate)
-    }
-  }, [selectedDate, maxDate])
-
-  const minHour = useMemo(() => {
-    if (!minDate) {
-      return 24
-    }
-    if (1 > differenceInDays(selectedDate, minDate)) {
-      return getHours(minDate)
-    }
-  }, [selectedDate, minDate])
-
-  const maxMinute = useMemo(() => {
-    if (!maxDate) {
-      return 24
-    }
-    if (1 > differenceInMinutes(selectedDate, maxDate)) {
-      return getMinutes(maxDate)
-    }
-  }, [selectedDate, maxDate])
-
-  const minMinute = useMemo(() => {
-    if (!minDate) {
-      return 24
-    }
-    if (1 > differenceInMinutes(selectedDate, minDate)) {
-      return getMinutes(minDate)
-    }
-  }, [selectedDate, minDate])
-
-  const maxSecond = useMemo(() => {
-    if (!maxDate) {
-      return 24
-    }
-    if (1 > differenceInMinutes(selectedDate, maxDate)) {
-      return getSeconds(maxDate)
-    }
-  }, [selectedDate, maxDate])
-
-  const minSecond = useMemo(() => {
-    if (!minDate) {
-      return 24
-    }
-    if (1 > differenceInMinutes(selectedDate, minDate)) {
-      return getSeconds(minDate)
-    }
-  }, [selectedDate, minDate])
-
-  useEffect(() => {
-    setYear(getYear(value))
-    setMonth(getMonth(value) + 1)
-    setDay(getDate(value))
-    setHour(getHours(value))
-    setMinute(getMinutes(value))
-    setSecond(getSeconds(value))
-  }, [])
+export const DatePickerModal = memo(function DatePickerModal(props: DatePickerModalProps) {
+  const { value, onValueChange, showDate = true, showTime = false } = props
 
   return (
     <>
       {showDate && (
         <View style={$dpkContentContainer}>
           <Wheel
-            min={(minDate && getYear(minDate)) || 1398}
-            max={(maxDate && getYear(maxDate)) || 1405}
+            // minValue={limitConstraint.minYear}
+            // maxValue={limitConstraint.maxYear}
             range={[1398, 1405]}
-            defaultValue={year}
-            onSelect={(i) => {
-              setYear(i)
+            value={getYear(value)}
+            onScroll={(i) => {
+              onValueChange(setYear(value, i))
             }}
           ></Wheel>
 
@@ -268,12 +161,12 @@ export function DatePickerModal(props: DatePickerModalProps) {
             ٫
           </Text>
           <Wheel
-            min={minMonth}
-            max={maxMonth}
+            // minValue={limitConstraint.minMonth}
+            // maxValue={limitConstraint.maxMonth}
             range={[1, 12]}
-            defaultValue={month}
-            onSelect={(i) => {
-              setMonth(i)
+            value={getMonth(value) + 1}
+            onScroll={(i) => {
+              onValueChange(setMonth(value, i - 1))
             }}
           ></Wheel>
           <Text style={{ alignSelf: "center" }} variant="labelLarge">
@@ -281,11 +174,11 @@ export function DatePickerModal(props: DatePickerModalProps) {
           </Text>
           <Wheel
             range={[1, 31]}
-            min={minDay}
-            max={maxDay}
-            defaultValue={day}
-            onSelect={(i) => {
-              setDay(i)
+            // minValue={limitConstraint.minDay}
+            // maxValue={limitConstraint.maxDay}
+            value={getDate(value)}
+            onScroll={(i) => {
+              onValueChange(setDate(value, i))
             }}
           ></Wheel>
         </View>
@@ -293,12 +186,12 @@ export function DatePickerModal(props: DatePickerModalProps) {
       {showTime && (
         <View style={$dpkContentContainer}>
           <Wheel
-            min={minHour}
-            max={maxHour}
+            // minValue={limitConstraint.minHour}
+            // maxValue={limitConstraint.maxHour}
             range={[0, 24]}
-            defaultValue={hour}
-            onSelect={(i) => {
-              setHour(i)
+            value={getHours(value)}
+            onScroll={(i) => {
+              onValueChange(setHours(value, i))
             }}
           ></Wheel>
 
@@ -306,31 +199,19 @@ export function DatePickerModal(props: DatePickerModalProps) {
             :
           </Text>
           <Wheel
-            min={minMinute}
-            max={maxMinute}
+            // minValue={limitConstraint.minMinute}
+            // maxValue={limitConstraint.maxMinute}
             range={[0, 60]}
-            defaultValue={minute}
-            onSelect={(i) => {
-              setMinute(i)
-            }}
-          ></Wheel>
-          <Text style={{ alignSelf: "center" }} variant="labelLarge">
-            :
-          </Text>
-          <Wheel
-            range={[0, 60]}
-            min={minSecond}
-            max={maxSecond}
-            defaultValue={second}
-            onSelect={(i) => {
-              setSecond(i)
+            value={getMinutes(value)}
+            onScroll={(i) => {
+              onValueChange(setMinutes(value, i))
             }}
           ></Wheel>
         </View>
       )}
     </>
   )
-}
+})
 
 const $dpkContentContainer: ViewStyle = {
   display: "flex",

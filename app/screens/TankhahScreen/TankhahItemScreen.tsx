@@ -30,7 +30,7 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
         navigation.dispatch(
           CommonActions.reset({
             index: 0,
-            routes: [{ name: "TankhahTabs", params: { screen: "TankhahHome", params: {} } }],
+            routes: [{ name: "AppTabs", params: { screen: "TankhahHome", params: {} } }],
           }),
         )
       }

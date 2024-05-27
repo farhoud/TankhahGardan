@@ -37,14 +37,17 @@ import { Appbar } from "react-native-paper"
 export type AppStackParamList = {
   Welcome: undefined
   Login: undefined
-  TankhahTabs: NavigatorScreenParams<AppTabParamList>
+  AppTabs: NavigatorScreenParams<AppTabParamList>
   TankhahSpendItem: { itemId: string }
   TankhahSpendForm: { itemId?: string }
   ChargeForm: { itemId?: string }
   TestScreen: undefined
   BuyItemForm: undefined
-  ImageView: { images: string[], index?: number }
+  ImageView: { images: string[]; index?: number }
   Attendance: undefined
+  Worker: { itemId?: string; mode?: "select" | "manage" }
+  AttendanceForm: undefined
+  TimePicker: {id: string}
 	// IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
 
@@ -76,7 +79,7 @@ const AppStack = observer(function AppStack() {
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
-          routes: [{ name: "TankhahTabs", params: { screen: "TankhahHome", params: {} } }],
+          routes: [{ name: "AppTabs", params: { screen: "TankhahHome", params: {} } }],
         }),
       )
     }
@@ -85,12 +88,12 @@ const AppStack = observer(function AppStack() {
   return (
     <Stack.Navigator
       screenOptions={{ headerShown: false }}
-      initialRouteName={isAuthenticated ? "TankhahTabs" : "Login"}
+      initialRouteName={isAuthenticated ? "AppTabs" : "Login"}
       // initialRouteName="TestScreen"
     >
       {isAuthenticated ? (
         <>
-          <Stack.Screen name="TankhahTabs" component={AppTabNavigator} />
+          <Stack.Screen name="AppTabs" component={AppTabNavigator} />
         </>
       ) : (
         <>
@@ -113,9 +116,14 @@ const AppStack = observer(function AppStack() {
             ),
           }}
         />
+        <Stack.Screen name="ChargeForm" component={Screens.TankhahChargeFromScreen} />
       </Stack.Group>
       <Stack.Group>
-        <Stack.Screen name="ChargeForm" component={Screens.TankhahChargeFromScreen} />
+        <Stack.Screen
+          name="Worker"
+          options={{ presentation: "modal" }}
+          component={Screens.WorkerScreen}
+        />
       </Stack.Group>
 
       {/** 🔥 Your screens go here */}
@@ -140,15 +148,11 @@ export interface NavigationProps
   extends Partial<React.ComponentProps<typeof NavigationContainer>> {}
 
 export const AppNavigator = observer(function AppNavigator(props: NavigationProps) {
-
   useBackButtonHandler((routeName) => exitRoutes.includes(routeName))
 
   return (
-    <NavigationContainer
-      ref={navigationRef}
-      {...props}
-    >
-      <AppStack />
+    <NavigationContainer ref={navigationRef} {...props}>
+        <AppStack />
     </NavigationContainer>
   )
 })

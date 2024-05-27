@@ -1,18 +1,8 @@
 import React, { forwardRef, Ref, useImperativeHandle, useMemo, useRef, useState } from "react"
-import {
-  StyleProp,
-  TextInput as RNTextInput,
-  TextStyle,
-  KeyboardAvoidingViewComponent,
-  StyleSheet,
-  KeyboardAvoidingView,
-  View,
-} from "react-native"
-import { TextFieldProps, TextField, AccountNumFieldProps, AccountNumField } from "."
-import { Card, Divider, List, Modal, Portal } from "react-native-paper"
-import { AccountNumType, PaymentMethod } from "app/models/realm/models"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { TouchableWithoutFeedback } from "react-native-gesture-handler"
+import { StyleProp, TextInput as RNTextInput, TextStyle } from "react-native"
+import { TextFieldProps, TextField, AccountNumField } from "."
+import { Dialog, Divider, List, Portal } from "react-native-paper"
+import { PaymentMethod } from "app/models/realm/models"
 
 export interface AutoCompleteProps extends Omit<TextFieldProps, "ref"> {
   suggestions?: Array<{ title: string }>
@@ -71,8 +61,6 @@ export const AutoComplete = forwardRef(function AutoComplete(
     return type ? AccountNumField : TextField
   }, [type])
 
-  const insets = useSafeAreaInsets()
-
   return (
     <>
       <Input
@@ -80,7 +68,9 @@ export const AutoComplete = forwardRef(function AutoComplete(
         showSoftInputOnFocus={false}
         onPressIn={openModal}
         value={value}
-        onChangeText={onChangeText}
+        onChangeText={(text) => {
+          onChangeText && onChangeText(text)
+        }}
         ref={inputRef}
         onFocus={(e) => {
           onFocus && onFocus(e)
@@ -89,59 +79,39 @@ export const AutoComplete = forwardRef(function AutoComplete(
         {...TextInputProps}
       />
       <Portal>
-        <Modal
-          style={{
-            flex: 1,
-            paddingHorizontal: "6%",
-            paddingBottom: insets.bottom,
-          }}
-          visible={modalShow}
-          onDismiss={closeModal}
-          contentContainerStyle={{
-            display: "flex",
-            justifyContent: "center",
-          }}
-        >
-          <KeyboardAvoidingView behavior={"padding"}>
-            <Card mode="contained">
-              <Card.Content>
-                <Input
-                  paymentMethod={type}
-                  ref={modalInputRef}
-                  autoFocus
-                  value={value}
-                  onChangeText={onChangeText}
-                  onFocus={onFocus}
-                  {...TextInputProps}
+        <Dialog visible={modalShow} onDismiss={closeModal}>
+          <Dialog.Content>
+            <Input
+              paymentMethod={type}
+              ref={modalInputRef}
+              autoFocus
+              value={value}
+              onChangeText={onChangeText}
+              onFocus={onFocus}
+              {...TextInputProps}
+            />
+            {value && !names?.includes(value) && (
+              <>
+                <List.Item
+                  onPress={() => selectSuggestion(value)}
+                  left={() => <List.Icon icon="account-plus" />}
+                  description="جدید"
+                  title={value}
                 />
-                {value && !names?.includes(value) && (
-                  <>
-                    <List.Item
-                      onPress={() => selectSuggestion(value)}
-                      left={() => <List.Icon icon="account-plus" />}
-                      description="جدید"
-                      title={value}
-                    />
-                    <Divider />
-                  </>
-                )}
-                {suggestions?.map((item, index) => {
-                  return (
-                    <List.Item
-                      key={index}
-                      onPress={() => selectSuggestion(item.title)}
-                      title={item.title}
-                    />
-                  )
-                })}
-              </Card.Content>
-            </Card>
-            <TouchableWithoutFeedback
-              onPress={closeModal}
-              style={{ height: 100 }}
-            ></TouchableWithoutFeedback>
-          </KeyboardAvoidingView>
-        </Modal>
+                <Divider />
+              </>
+            )}
+            {suggestions?.map((item, index) => {
+              return (
+                <List.Item
+                  key={index}
+                  onPress={() => selectSuggestion(item.title)}
+                  title={item.title}
+                />
+              )
+            })}
+          </Dialog.Content>
+        </Dialog>
       </Portal>
     </>
   )

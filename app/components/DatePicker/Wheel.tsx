@@ -1,151 +1,161 @@
-import React, { FC, useEffect } from "react"
+import React, { FC, useCallback, useEffect } from "react"
 import { View, ViewStyle } from "react-native"
 import { Icon } from "react-native-paper"
 import { GestureDetector, Gesture } from "react-native-gesture-handler"
 import Animated, {
   useSharedValue,
   useDerivedValue,
-  withClamp,
   interpolate,
   Extrapolation,
   useAnimatedRef,
   scrollTo,
-  withSpring,
   useAnimatedStyle,
   runOnJS,
   withTiming,
+  SharedValue,
+  useAnimatedReaction,
 } from "react-native-reanimated"
 
-const ICON_SIZE = 25
+const ICON_SIZE = 30
+const ITEM_HEIGHT = 40
 
 interface WheelProps {
   range: [number, number]
-  min?: number
-  max?: number
-  defaultValue?: number
-  onSelect?: (value: number) => void
+  minValue?: number
+  maxValue?: number
+  value?: number
+  onScroll?: (size: number) => void
 }
 
 export const Wheel: FC<WheelProps> = (_props) => {
   const {
     range: [start, end],
-    defaultValue,
-    onSelect,
+    minValue = start,
+    maxValue = end,
+    value,
+    onScroll,
   } = _props
 
-  const minNumber = useSharedValue(0)
-  const maxNumber = useSharedValue(0)
-  const scroll = useSharedValue<number>(0)
-  const childrenHeight = useSharedValue(0)
+  const animatedRef = useAnimatedRef<Animated.FlatList<any>>()
+  const scroll = useSharedValue(0)
   const selected = useSharedValue(0)
-  const animatedRef = useAnimatedRef<Animated.ScrollView>()
+  const touches = useSharedValue(0)
+  const touchStart = useSharedValue(0)
+  const startScroll = useSharedValue(0)
 
-  const handleSelect = (index: number) => {
-    onSelect && onSelect(index + start)
+  const handleScroll = (size: number) => {
+    onScroll && onScroll(size)
   }
 
-  const fling = Gesture.Pan()
+  useAnimatedReaction(
+    () => {
+      return touches.value
+    },
+    (currentValue, previousValue) => {
+      if (currentValue === 0) {
+        return
+      }
+      const diff = (previousValue || 0) - currentValue
+      const direction = Math.sign(diff)
+      if (!!previousValue && currentValue !== previousValue && Math.abs(diff) > 1) {
+        const size =
+          interpolate(
+            Math.abs(touches.value - touchStart.value),
+            [1, 40, 80, 120, 160],
+            [3, 3, 9, 12, 22],
+            Extrapolation.CLAMP,
+          ) * direction
+        const newOffset = size + scroll.value
+        const isInBound = newOffset <= ITEM_HEIGHT * (end - start) && newOffset > 0
+        scroll.value = isInBound ? newOffset : scroll.value
+      }
+    },
+  )
+
+  const pan = Gesture.Pan()
+    .onStart((evt) => {
+      startScroll.value = scroll.value
+      touchStart.value = evt.absoluteY
+      touches.value = 0
+      selected.value = -1
+    })
+    .onTouchesMove((evt) => {
+      touches.value = evt.allTouches[0].absoluteY
+    })
     .onEnd((e) => {
-      const direction = Math.sign(e.translationY) * -1
-      const size = Math.floor(
-        interpolate(Math.abs(e.translationY), [1, 30, 60, 150], [1, 1, 2, 5], Extrapolation.CLAMP),
+      if (Math.abs(e.translationX) < 150) {
+        const item = Math.round(scroll.value / ITEM_HEIGHT)
+        scroll.value = item * ITEM_HEIGHT
+        selected.value = item + 1
+        runOnJS(handleScroll)(item + start)
+      }
+    })
+
+  const renderNumber = useCallback(
+    (index: number) => {
+      return (
+        <RenderNumber
+          value={index + start - 1}
+          selectedIndex={selected}
+          index={index}
+        ></RenderNumber>
       )
-      if (Math.abs(e.translationX) < 80) {
-        const temp = scroll.value + size * direction
-        const minScroll = minNumber.value - start
-        const maxScroll = maxNumber.value - start 
-        const scrollValue = Math.max(minScroll, Math.min(temp, maxScroll))
-        selected.value = scrollValue
-        scroll.value = withClamp(
-          { min: minScroll, max: maxScroll },
-          withSpring(temp),
-        )
-        runOnJS(handleSelect)(scrollValue)
-      }
-    })
-    .hitSlop({ vertical: 10 })
+    },
+    [start],
+  )
 
-
-  const renderNumber = (index: number) => {
-    const aref = useAnimatedRef<View>()
-    const m = useDerivedValue(() => {
-      return index === selected.value
-    })
-    const $selectedStyle = useAnimatedStyle(() => {
-      return {
-        transform: [{ scale: withTiming(m.value ? 1.3 : 1,{duration:500}) }],
-      }
-    })
-    const i = index + start
-    const pos = i.toString().split("").reverse()
-
-    useEffect(() => {
-      minNumber.value = _props.min || start
-      maxNumber.value = _props.max || end
-      if (_props.max && scroll.value > _props.max - start) {
-        scroll.value = _props.max
-        selected.value = _props.max
-      }
-      if (_props.min && scroll.value < _props.min - start) {
-        scroll.value = _props.min
-        selected.value = _props.min
-      }
-    }, [_props.min, _props.max, start, end])
-
-    return (
-      <Animated.View
-        ref={aref}
-        key={i}
-        style={[
-          $wheelItem,
-          $selectedStyle,
-        ]}
-      >
-        <Icon source={`numeric-${pos[0]}-box-outline`} size={ICON_SIZE} />
-        <Icon source={`numeric-${pos[1] || 0}-box-outline`} size={ICON_SIZE} />
-      </Animated.View>
-    )
+  const $fakeItemStyle = {
+    height: ITEM_HEIGHT,
   }
-  const fakeItemStyle = useAnimatedStyle(() => ({
-    height: childrenHeight.value,
-  }))
 
   useDerivedValue(() => {
-    scrollTo(animatedRef, 0, scroll.value * childrenHeight.value, true)
+    scrollTo(animatedRef, 0, scroll.value, true)
   })
   useEffect(() => {
-    if (defaultValue) {
-      scroll.value = defaultValue - start
-      selected.value = defaultValue - start
-    }
+    setTimeout(() => {
+      if (value) {
+        scroll.value = (value - start) * ITEM_HEIGHT
+        selected.value = value - start + 1
+      }
+    }, 200)
   }, [])
-  const containerStyle = useAnimatedStyle(() => ({ height: childrenHeight.value * 3 + 3 }))
+  const containerStyle = { height: ITEM_HEIGHT * 3 }
   return (
-    <>
-      <MeasureElement onLayout={(h) => (childrenHeight.value = h)}>
-        {renderNumber(1)}
-      </MeasureElement>
-      <GestureDetector gesture={fling}>
-        <Animated.ScrollView
-          ref={animatedRef}
-          showsVerticalScrollIndicator={false}
-          scrollEnabled
-          style={[$wheel, containerStyle]}
-          contentContainerStyle={$wheelContent}
-        >
-          <Animated.View style={fakeItemStyle} />
-          <Cloner count={end - start + 1} renderNumber={renderNumber} />
-          <Animated.View style={fakeItemStyle} />
-          <Animated.View style={fakeItemStyle} />
-        </Animated.ScrollView>
+    <View style={{ marginVertical: 0 }}>
+      <GestureDetector gesture={pan}>
+        <View style={[{ paddingVertical: 30 }]}>
+          <Animated.FlatList
+            getItemLayout={(data, index) => {
+              return { length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index }
+            }}
+            initialNumToRender={4}
+            ref={animatedRef}
+            scrollEventThrottle={16}
+            showsVerticalScrollIndicator={false}
+            scrollEnabled
+            style={[containerStyle]}
+            contentContainerStyle={$wheelContent}
+            snapToAlignment="start"
+            decelerationRate={"fast"}
+            onScrollToIndexFailed={() => {}}
+            snapToInterval={ITEM_HEIGHT}
+            data={getIndicesArray(end - start + 3)}
+            renderItem={({ index }) => {
+              if (index === 0) {
+                return <View style={$fakeItemStyle} />
+              }
+              if (index > end - start + 1) {
+                return <View style={$fakeItemStyle} />
+              }
+              return renderNumber(index)
+            }}
+          ></Animated.FlatList>
+        </View>
       </GestureDetector>
-    </>
+    </View>
   )
 }
 
-const $wheel: ViewStyle = {
-  maxWidth: 70,
-}
 const $wheelContent: ViewStyle = {
   flexDirection: "column",
 }
@@ -154,32 +164,43 @@ const $wheelItem: ViewStyle = {
   flexDirection: "row",
   justifyContent: "center",
   alignItems: "center",
-  paddingVertical: 2
+  paddingVertical: 3,
 }
-
-const MeasureElement = ({
-  onLayout,
-  children,
-}: {
-  onLayout: (height: number) => void
-  children: React.ReactNode
-}) => (
-  <Animated.ScrollView
-    style={{ opacity: 0, zIndex: -3, position: "absolute" }}
-    pointerEvents="box-none"
-  >
-    <View onLayout={(ev) => onLayout(ev.nativeEvent.layout.height)}>{children}</View>
-  </Animated.ScrollView>
-)
-
 
 const getIndicesArray = (length: number) => Array.from({ length }, (_, i) => i)
 
-const Cloner = ({
-  count,
-  renderNumber,
+const RenderNumber = ({
+  index,
+  selectedIndex,
+  value,
 }: {
-  count: number
-  renderNumber: (i: number) => React.ReactNode
-}) => <>{getIndicesArray(count).map(renderNumber)}</>
+  index?: number
+  selectedIndex: SharedValue<number>
+  value: number
+}) => {
+  const aref = useAnimatedRef<View>()
+  const $selectedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: withTiming(index === selectedIndex.value ? 1.3 : 1) }],
+    }
+  }, [selectedIndex])
 
+  const pos = value.toString().split("").reverse()
+
+  return (
+    <View style={[$wheelContainer]}>
+      <Animated.View ref={aref} key={value} style={[$wheelItem, $selectedStyle]}>
+        <Icon source={`numeric-${pos[0]}-box-outline`} size={ICON_SIZE} />
+        <Icon source={`numeric-${pos[1] || 0}-box-outline`} size={ICON_SIZE} />
+      </Animated.View>
+    </View>
+  )
+}
+
+const $wheelContainer: ViewStyle = {
+  height: ITEM_HEIGHT,
+  width: 80,
+  margin: 0,
+  padding: 0,
+  overflow: "hidden",
+}
