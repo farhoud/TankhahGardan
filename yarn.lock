@@ -1239,11 +1239,6 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@dpelkey98/react-native-picker@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@dpelkey98/react-native-picker/-/react-native-picker-1.0.0.tgz#045de1d3cdde9042e4976af6435df3606f43ee50"
-  integrity sha512-USlpbk+M27tuuZ/siLX55SLmJJhSB2GmcukVH3aVLmcCxy9AFEgG20PiDK8CulJQ/SZAIl/3Z6XSffeA70Gpag==
-
 "@egjs/hammerjs@^2.0.17":
   version "2.0.17"
   resolved "https://registry.npmjs.org/@egjs/hammerjs/-/hammerjs-2.0.17.tgz"
@@ -4849,6 +4844,11 @@ expo-modules-core@1.11.13:
   dependencies:
     invariant "^2.2.4"
 
+expo-print@~12.8.1:
+  version "12.8.1"
+  resolved "https://registry.yarnpkg.com/expo-print/-/expo-print-12.8.1.tgz#493965ca9bd22c865121b786cb33d5008d5538de"
+  integrity sha512-u7RfOC21nllv0EBiyuqzrKB5pIjUAS5//2u0qn90WrHPEBa4Z7VkAQLtmOpWcHZfJ2iW33zsykherQhn2ZmRBA==
+
 expo-share-intent@^1.5.2:
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/expo-share-intent/-/expo-share-intent-1.5.2.tgz#dd1f480aa874056a0288f12b857f713d24e46b44"
@@ -4857,6 +4857,11 @@ expo-share-intent@^1.5.2:
     "@expo/config-plugins" "~7.9.1"
     expo-constants "~15.4.6"
     expo-linking "~6.2.2"
+
+expo-sharing@~11.10.0:
+  version "11.10.0"
+  resolved "https://registry.yarnpkg.com/expo-sharing/-/expo-sharing-11.10.0.tgz#0e85197ee4d2634b00fe201e571fbdc64cf83eef"
+  integrity sha512-/64RyyKlZ25WfnMXa87HbPXhIIqWwNbIku/RaIYAq4SE0XTRC+KTH3v0XFkfDa+SCG/jKsAr1pJ3vQvsNo1sCQ==
 
 expo-splash-screen@~0.26.3:
   version "0.26.4"

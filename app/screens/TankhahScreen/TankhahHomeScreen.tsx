@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useEffect, useMemo, useState } from "react"
+import React, { FC, useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react"
 import { observer } from "mobx-react-lite"
 import { TouchableOpacity, View, ViewStyle, Animated } from "react-native"
 import { StackNavigation } from "app/navigators"
@@ -11,12 +11,23 @@ import { PieChart } from "react-native-gifted-charts"
 import { formatDateIR, tomanFormatter } from "app/utils/formatDate"
 import { useNavigation } from "@react-navigation/native"
 import { AppTabScreenProps } from "app/navigators/AppTabNavigator"
-import { Chip, Surface, Icon, Button, useTheme, FAB, IconButton, Menu } from "react-native-paper"
+import {
+  Chip,
+  Surface,
+  Icon,
+  Button,
+  useTheme,
+  FAB,
+  IconButton,
+  Menu,
+  Appbar,
+} from "react-native-paper"
 import { DatePicker } from "app/components/DatePicker/DatePicker"
 import { ListRenderItemInfo } from "@shopify/flash-list"
 import Reanimated, { BounceIn, FadeOut } from "react-native-reanimated"
 import { RectButton, Swipeable } from "react-native-gesture-handler"
 import { TxKeyPath, translate } from "app/i18n"
+import { usePrint } from "app/utils/usePrint"
 
 const PieCharColors = [
   { color: "#009FFF", gradientCenterColor: "#006DFF" },
@@ -52,6 +63,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
     const navigation = useNavigation<StackNavigation>()
     const theme = useTheme()
     const realm = useRealm()
+    const printer = usePrint()
 
     const [startDate, setStartDate] = useState(subMonths(new Date(), 1))
     const [endDate, setEndDate] = useState(addDays(new Date(), 1))
@@ -157,13 +169,13 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
           .objects(TankhahItem)
           .filtered(...getQueryString(startDate, endDate, "not_spend", item))
           .sum("total")
-        if(res && total){
+        if (res && total) {
           pieData.push({
             ...PieCharColors[index],
             value: (res * 100) / total,
             focused: index + 1 === selectedGroup,
           })
-        }  
+        }
       }
       return (
         <PieChart
@@ -315,14 +327,27 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
       <>
         <Screen style={$root} safeAreaEdges={["top", "bottom"]} preset="fixed">
           <View>
+            <Appbar>
+              <Appbar.Content titleStyle={{fontSize:18}} mode="small" title={tomanFormatter(totalFund - totalSpend)} />
+              <Appbar.Action
+                icon={"printer"}
+                onPress={() =>
+                  printer.printTankhah(
+                    tankhahItemList.map((i) => {
+                      return {
+                        date: formatDateIR(i.doneAt),
+                        opType: i.opType === "fund" ? "واریز" : "برداشت",
+                        amount: i.amount.toString(),
+                        description: !!i.description
+                          ? i.description
+                          : i.receiptItems?.map((j) => `${j.amount?.toString()} * ${j.title}`).join(" "),
+                      }
+                    }),
+                  )
+                }
+              />
+            </Appbar>
             <Surface>
-              <Surface elevation={5}>
-                <View style={{ margin: 3, padding: 3 }}>
-                  <Text variant="bodyMedium" style={{ textAlign: "center" }}>
-                    {tomanFormatter(totalFund - totalSpend) + " مانده"}
-                  </Text>
-                </View>
-              </Surface>
               <View style={{ display: "flex", flexDirection: "row" }}>
                 <View
                   style={{
