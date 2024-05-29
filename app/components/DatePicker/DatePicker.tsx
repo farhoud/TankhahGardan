@@ -148,8 +148,6 @@ export const DatePickerModal = memo(function DatePickerModal(props: DatePickerMo
       {showDate && (
         <View style={$dpkContentContainer}>
           <Wheel
-            // minValue={limitConstraint.minYear}
-            // maxValue={limitConstraint.maxYear}
             range={[1398, 1405]}
             value={getYear(value)}
             onScroll={(i) => {
@@ -161,8 +159,6 @@ export const DatePickerModal = memo(function DatePickerModal(props: DatePickerMo
             ٫
           </Text>
           <Wheel
-            // minValue={limitConstraint.minMonth}
-            // maxValue={limitConstraint.maxMonth}
             range={[1, 12]}
             value={getMonth(value) + 1}
             onScroll={(i) => {
@@ -174,8 +170,6 @@ export const DatePickerModal = memo(function DatePickerModal(props: DatePickerMo
           </Text>
           <Wheel
             range={[1, 31]}
-            // minValue={limitConstraint.minDay}
-            // maxValue={limitConstraint.maxDay}
             value={getDate(value)}
             onScroll={(i) => {
               onValueChange(setDate(value, i))
@@ -186,8 +180,6 @@ export const DatePickerModal = memo(function DatePickerModal(props: DatePickerMo
       {showTime && (
         <View style={$dpkContentContainer}>
           <Wheel
-            // minValue={limitConstraint.minHour}
-            // maxValue={limitConstraint.maxHour}
             range={[0, 24]}
             value={getHours(value)}
             onScroll={(i) => {
@@ -199,8 +191,6 @@ export const DatePickerModal = memo(function DatePickerModal(props: DatePickerMo
             :
           </Text>
           <Wheel
-            // minValue={limitConstraint.minMinute}
-            // maxValue={limitConstraint.maxMinute}
             range={[0, 60]}
             value={getMinutes(value)}
             onScroll={(i) => {
@@ -218,7 +208,6 @@ const $dpkContentContainer: ViewStyle = {
   flexDirection: "row-reverse",
   alignItems: "center",
   justifyContent: "center",
-  paddingVertical: 10,
 }
 
 export const TextInputAdapter = createAnimatedPropAdapter(

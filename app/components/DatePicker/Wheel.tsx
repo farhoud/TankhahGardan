@@ -14,15 +14,14 @@ import Animated, {
   withTiming,
   SharedValue,
   useAnimatedReaction,
+  withSpring,
 } from "react-native-reanimated"
 
-const ICON_SIZE = 30
-const ITEM_HEIGHT = 40
+const ICON_SIZE = 25
+const ITEM_HEIGHT = 35
 
 interface WheelProps {
   range: [number, number]
-  minValue?: number
-  maxValue?: number
   value?: number
   onScroll?: (size: number) => void
 }
@@ -30,8 +29,6 @@ interface WheelProps {
 export const Wheel: FC<WheelProps> = (_props) => {
   const {
     range: [start, end],
-    minValue = start,
-    maxValue = end,
     value,
     onScroll,
   } = _props
@@ -52,23 +49,15 @@ export const Wheel: FC<WheelProps> = (_props) => {
       return touches.value
     },
     (currentValue, previousValue) => {
-      if (currentValue === 0) {
-        return
-      }
       const diff = (previousValue || 0) - currentValue
       const direction = Math.sign(diff)
-      if (!!previousValue && currentValue !== previousValue && Math.abs(diff) > 1) {
-        const size =
-          interpolate(
-            Math.abs(touches.value - touchStart.value),
-            [1, 40, 80, 120, 160],
-            [3, 3, 9, 12, 22],
-            Extrapolation.CLAMP,
-          ) * direction
-        const newOffset = size + scroll.value
-        const isInBound = newOffset <= ITEM_HEIGHT * (end - start) && newOffset > 0
-        scroll.value = isInBound ? newOffset : scroll.value
-      }
+
+      const size = 8 * direction
+      const newOffset = size + scroll.value
+      const isInBound = newOffset <= ITEM_HEIGHT * (end - start) && newOffset > 0
+      scroll.value = withTiming(isInBound
+        ? newOffset
+        : scroll.value)
     },
   )
 
@@ -84,8 +73,13 @@ export const Wheel: FC<WheelProps> = (_props) => {
     })
     .onEnd((e) => {
       if (Math.abs(e.translationX) < 150) {
-        const item = Math.round(scroll.value / ITEM_HEIGHT)
-        scroll.value = item * ITEM_HEIGHT
+        let item = Math.round(
+          (scroll.value + (Math.abs(e.translationY) > 15 ? -e.translationY / 1.1 : 0)) /
+            ITEM_HEIGHT,
+        )
+        item = Math.min((end-start)*ITEM_HEIGHT,item)
+        item = Math.max(item, 0)
+        scroll.value = withTiming(item * ITEM_HEIGHT)
         selected.value = item + 1
         runOnJS(handleScroll)(item + start)
       }
