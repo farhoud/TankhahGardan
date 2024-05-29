@@ -1,12 +1,12 @@
 {
-  "name": "TankhahGardan",
-  "displayName": "TankhahGardan",
+  "name": "Fundo",
+  "displayName": "Fundo",
   "expo": {
-    "name": "TankhahGardan",
-    "slug": "TankhahGardan",
-    "scheme": "tankhahgardan",
+    "name": "Fundo",
+    "slug": "Fundo",
+    "scheme": "fundo",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "fundo",
     "userInterfaceStyle": "dark",
     "icon": "./assets/images/app-icon-all.png",
     "splash": {
@@ -21,7 +21,7 @@
     "assetBundlePatterns": ["**/*"],
     "android": {
       "icon": "./assets/images/app-icon-android-legacy.png",
-      "package": "com.tankhahgardan",
+      "package": "com.fundo",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/app-icon-android-adaptive-foreground.png",
         "backgroundImage": "./assets/images/app-icon-android-adaptive-background.png"
@@ -35,7 +35,7 @@
     "ios": {
       "icon": "./assets/images/app-icon-ios.png",
       "supportsTablet": true,
-      "bundleIdentifier": "com.tankhahgardan",
+      "bundleIdentifier": "com.fundo",
       "splash": {
         "image": "./assets/images/splash-logo-ios-mobile.png",
         "tabletImage": "./assets/images/splash-logo-ios-tablet.png",
