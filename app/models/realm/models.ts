@@ -1,7 +1,7 @@
 import Realm, { BSON, ObjectSchema } from "realm"
 import { Attendance, Worker } from "./attendance"
 
-export type PaymentMethod = "satna" | "paya" | "cash" | "ctc" | "pos" | "other"
+export type PaymentMethod = "satna" | "paya" | "cash" | "ctc" | "pos" | "other" | "sts"
 export type AccountNumType = "sheba" | "card" | "other" | "none"
 export type PaymentType = "buy" | "transfer"
 export type OperationType = "buy" | "transfer" | "fund"

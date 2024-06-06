@@ -1,10 +1,10 @@
 import { CurrencyField, ListView, TextField, Text } from "app/components"
 import { observer } from "mobx-react-lite"
-import { FC, useMemo } from "react"
+import { FC, useMemo, useRef } from "react"
 import { useStores } from "app/models"
 import { RectButton, Swipeable } from "react-native-gesture-handler"
 import { Divider, Icon, IconButton, List, Surface, useTheme } from "react-native-paper"
-import { Animated, TextStyle, View, ViewStyle } from "react-native"
+import { Animated, TextInput, TextStyle, View, ViewStyle } from "react-native"
 import { spacing } from "app/theme"
 
 type AnimatedInterpolation = Animated.AnimatedInterpolation<string | number>
@@ -92,6 +92,7 @@ const ReceiptForm: FC<ReceiptFormProps> = observer(function ReceiptFormProps(pro
   } = useStores()
   const theme = useTheme()
   const item = useMemo(() => itemByKeys(itemKey), [itemKey])
+  const textRef = useRef<TextInput>(null)
 
   return (
     <List.Accordion
@@ -136,6 +137,7 @@ const ReceiptForm: FC<ReceiptFormProps> = observer(function ReceiptFormProps(pro
         <View style={$counterContainer}>
           {/* <IconButton icon="plus" size={15} mode="contained" /> */}
           <TextField
+            ref={textRef}
             dense
             label="مقدار"
             value={item?.amount.toString()}
@@ -144,8 +146,10 @@ const ReceiptForm: FC<ReceiptFormProps> = observer(function ReceiptFormProps(pro
               item?.setProp("amount", Number(value))
             }}
             helper="  "
+            onFocus={(e)=>{
+              textRef?.current?.clear()
+            }}
           />
-          {/* <IconButton icon="minus" size={15} mode="contained" /> */}
         </View>
       </Surface>
     </List.Accordion>

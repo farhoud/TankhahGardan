@@ -1,33 +1,35 @@
-import React, { FC, useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react"
+import React, { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { observer } from "mobx-react-lite"
-import { TouchableOpacity, View, ViewStyle, Animated } from "react-native"
-import { StackNavigation } from "app/navigators"
-import { ListView, Screen, Text } from "app/components"
+import { View, ViewStyle } from "react-native"
+import { AppNavigation } from "app/navigators"
+import { ListView, Text } from "app/components"
 import { useObject, useQuery, useRealm } from "@realm/react"
 import { BSON } from "realm"
 import { TankhahItem, OperationType } from "app/models/realm/models"
-import { subMonths, addDays } from "date-fns"
 import { PieChart } from "react-native-gifted-charts"
 import { formatDateIR, tomanFormatter } from "app/utils/formatDate"
 import { useNavigation } from "@react-navigation/native"
 import { AppTabScreenProps } from "app/navigators/AppTabNavigator"
 import {
   Chip,
-  Surface,
   Icon,
   Button,
   useTheme,
   FAB,
-  IconButton,
   Menu,
   Appbar,
+  List,
+  Divider,
 } from "react-native-paper"
 import { DatePicker } from "app/components/DatePicker/DatePicker"
 import { ListRenderItemInfo } from "@shopify/flash-list"
 import Reanimated, { BounceIn, FadeOut } from "react-native-reanimated"
-import { RectButton, Swipeable } from "react-native-gesture-handler"
 import { TxKeyPath, translate } from "app/i18n"
 import { usePrint } from "app/utils/usePrint"
+import { $row, spacing } from "app/theme"
+import { useStores } from "app/models"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { addYears } from "date-fns"
 
 const PieCharColors = [
   { color: "#009FFF", gradientCenterColor: "#006DFF" },
@@ -53,22 +55,27 @@ enum FilterEnum {
   fund = "fund",
 }
 
-type AnimatedInterpolation = Animated.AnimatedInterpolation<string | number>
-type ItemFilterPreset = OperationType | "all" | "not_spend"
+const iconMap = {
+  fund: "cash-plus",
+  buy: "cash-register",
+  transfer: "cash-fast",
+}
+
+type ItemFilterPreset = OperationType | "all" | "spend"
 
 export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
   function TankhahHomeScreen(_props) {
     const itemId = _props.route.params?.itemId
 
-    const navigation = useNavigation<StackNavigation>()
+    const {
+      tankhahHomeStore: { startDate, endDate, selectedGroup, selectedOp, setProp },
+    } = useStores()
+
+    const navigation = useNavigation<AppNavigation>()
     const theme = useTheme()
     const realm = useRealm()
     const printer = usePrint()
 
-    const [startDate, setStartDate] = useState(subMonths(new Date(), 1))
-    const [endDate, setEndDate] = useState(addDays(new Date(), 1))
-    const [selectedGroup, setSelectedGroup] = useState(0)
-    const [selectedFilter, setSelectedFilter] = useState<ItemFilterPreset>("all")
     const [openFilterMenu, setOpenFilterMenu] = useState(false)
     const [fabOpen, setFabOpen] = useState(false)
 
@@ -102,11 +109,13 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
     const handleToggleFilterMenu = () => {
       setOpenFilterMenu((prev) => !prev)
     }
+
     const selectFilter = (i: ItemFilterPreset) => () => {
-      setSelectedFilter(i)
+      setProp("selectedOp", i)
       setOpenFilterMenu(false)
     }
 
+    const headItem = useObject(TankhahItem, new BSON.ObjectID(itemId))
     const totalFund = useQuery(TankhahItem, (items) => {
       return items.filtered('opType == "fund"')
     }).sum("total")
@@ -126,7 +135,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
       TankhahItem,
       (items) => {
         const groupName = groupNames && groupNames[selectedGroup]
-        return items.filtered(...getQueryString(startDate, endDate, selectedFilter, groupName))
+        return items.filtered(...getQueryString(startDate, endDate, selectedOp, groupName))
       },
       [groupNames, selectedGroup],
     )
@@ -138,12 +147,12 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
           onDismiss={handleToggleFilterMenu}
           anchor={
             <Button
-              style={{ marginTop: 10 }}
+              style={$controlsBtn}
               mode="contained-tonal"
               onPress={handleToggleFilterMenu}
               icon="filter"
             >
-              {translate(("opType." + selectedFilter) as TxKeyPath)}
+              {translate(("opType." + selectedOp) as TxKeyPath)}
             </Button>
           }
         >
@@ -156,9 +165,9 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
           ))}
         </Menu>
       )
-    }, [openFilterMenu, selectedFilter])
+    }, [openFilterMenu, selectedOp])
 
-    const renderSpendsChart = useCallback(() => {
+    const renderPieChart = useCallback(() => {
       let pieData = []
       const total = realm
         .objects(TankhahItem)
@@ -167,7 +176,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
       for (const [index, item] of spendGroupsNames.entries()) {
         const res = realm
           .objects(TankhahItem)
-          .filtered(...getQueryString(startDate, endDate, "not_spend", item))
+          .filtered(...getQueryString(startDate, endDate, "spend", item))
           .sum("total")
         if (res && total) {
           pieData.push({
@@ -183,18 +192,17 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
           donut
           showGradient
           sectionAutoFocus
-          radius={100}
-          innerRadius={80}
+          radius={80}
+          innerRadius={75}
           innerCircleColor={"#232B5D"}
           showValuesAsLabels
           centerLabelComponent={() => {
             return (
               <View style={{ justifyContent: "center", alignItems: "center" }}>
-                <Text style={{ fontSize: 22, color: "white", fontWeight: "bold" }}>
+                <Text variant="bodyLarge">
                   {tomanFormatter(tankhahItemList.filtered('opType != "fund"').sum("total"))}
                 </Text>
-
-                <Text style={{ fontSize: 14, color: "white" }} text="مخارج " />
+                <Text variant="bodySmall" text="مخارج " />
               </View>
             )
           }}
@@ -202,118 +210,185 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
       )
     }, [spendGroupsNames, startDate, endDate, selectedGroup])
 
-    const renderItemActions =
-      (item: TankhahItem) => (progress: AnimatedInterpolation, dragX: AnimatedInterpolation) => {
-        const trans = dragX.interpolate({
-          inputRange: [0, 50, 100, 101],
-          outputRange: [0, 5, 10, 15],
-        })
-        return (
-          <RectButton
-            style={{
-              backgroundColor: theme.colors.surfaceVariant,
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-            onPress={() => {
-              realm.write(() => {
-                realm.delete(item)
-              })
-            }}
-          >
-            <IconButton animated icon="delete"></IconButton>
-          </RectButton>
-        )
+    const renderItem = (item: TankhahItem) => {
+      const icon = iconMap[item.opType]
+      const mapDescription = {
+        fund: `دریافت`,
+        buy: `خرید  ${item.receiptItems?.map((i) => `${i.title}`).join("، ")}`,
+        transfer: `انتقال وجه ${translate(
+          ("paymentMethod." + item.paymentMethod) as TxKeyPath,
+        )} به ${item.recipient || item.accountNum || "نامشخص"}`,
       }
-
-    const renderSpendItem = (item: TankhahItem) => {
       return (
-        <TouchableOpacity
+        <List.Item
+          unstable_pressDelay={50}
+          left={(props) => <List.Icon {...props} icon={icon} />}
+          right={() => (
+            <View>
+              <Text style={{ textAlign: "right" }} variant="labelSmall">
+                {formatDateIR(item.doneAt)}
+              </Text>
+              <Text style={{ textAlign: "right" }}>{tomanFormatter(item.total)}</Text>
+            </View>
+          )}
+          titleStyle={{ fontFamily: "IRANSansXFaNum-Regular", fontSize: 14 }}
+          descriptionStyle={{ fontFamily: "IRANSansXFaNum-Regular", fontSize: 12 }}
+          title={mapDescription[item.opType]}
+          titleNumberOfLines={2}
+          description={item.description}
           onPress={() => {
-            navigation.navigate("TankhahSpendItem", {
+            navigation.navigate("TankhahItem", {
               itemId: item._id.toHexString(),
             })
           }}
           onLongPress={() => {
-            navigation.navigate("TankhahSpendForm", {
-              itemId: item._id.toHexString(),
-            })
+            if (item?.opType === "fund") {
+              navigation.navigate("TankhahFundForm", { itemId })
+              return
+            }
+            navigation.navigate("TankhahSpendForm", { itemId })
           }}
-        >
-          <Surface
-            style={{
-              // display: "flex",
-              // elevation: 5,
-              // margin: 2,
-              paddingHorizontal: 20,
-              paddingVertical: 10,
-              marginBottom: 2,
-              // backgroundColor: "#EAEAEA",
-            }}
-            elevation={2}
-          >
-            <View style={$detail}>
-              <Text
-                style={{
-                  color: item.opType === "fund" ? theme.colors.primary : theme.colors.tertiary,
-                }}
-                variant="labelMedium"
-                tx={("opType." + item.opType) as TxKeyPath}
-              />
-              <Text variant="labelMedium">{formatDateIR(item.doneAt)}</Text>
-            </View>
-            {item.opType === "transfer" && (
-              <View style={$detail}>
-                <Text variant="labelMedium">دریافت کننده</Text>
-                <Text>{item.recipient ?? "ثبت نشده"}</Text>
-              </View>
-            )}
-            {item.opType === "buy" && (
-              <View style={$detail}>
-                <Text variant="labelMedium">اجناس</Text>
-                <Text>{item.receiptItems?.map((i) => `${i.title}`).join("، ") || "ثبت نشده"}</Text>
-              </View>
-            )}
-            {item.opType === "fund" && !!item.description && (
-              <View style={$detail}>
-                <Text variant="labelMedium">توضیحات</Text>
-                <Text>{item.description}</Text>
-              </View>
-            )}
-            <View style={$detail}>
-              <Text variant="labelMedium">مبلغ</Text>
-              <Text variant="bodyLarge">{tomanFormatter(item.amount)}</Text>
-            </View>
-          </Surface>
-        </TouchableOpacity>
+        />
       )
     }
 
-    const renderListItem = ({ item }: ListRenderItemInfo<TankhahItem>) => {
+    // const renderItem = (item: TankhahItem) => {
+    //   return (
+    //     <TouchableOpacity
+    //       onPress={() => {
+    //         navigation.navigate("TankhahItem", {
+    //           itemId: item._id.toHexString(),
+    //         })
+    //       }}
+    //       onLongPress={() => {
+    //         if (item?.opType === "fund") {
+    //           navigation.navigate("TankhahFundForm", { itemId })
+    //           return
+    //         }
+    //         navigation.navigate("TankhahSpendForm", { itemId })
+    //       }}
+    //     >
+    //       <Surface
+    //         style={{
+    //           paddingHorizontal: 20,
+    //           paddingVertical: 10,
+    //           marginBottom: 2,
+    //         }}
+    //         elevation={2}
+    //       >
+    //         <View style={$detail}>
+    //           <Text
+    //             style={{
+    //               color: item.opType === "fund" ? theme.colors.primary : theme.colors.tertiary,
+    //             }}
+    //             variant="labelMedium"
+    //             tx={("opType." + item.opType) as TxKeyPath}
+    //           />
+    //           <Text variant="labelMedium">{formatDateIR(item.doneAt)}</Text>
+    //         </View>
+    //         {item.opType === "transfer" && (
+    //           <View style={$detail}>
+    //             <Text variant="labelMedium">دریافت کننده</Text>
+    //             <Text>{item.recipient ?? "ثبت نشده"}</Text>
+    //           </View>
+    //         )}
+    //         {item.opType === "buy" && (
+    //           <View style={$detail}>
+    //             <Text variant="labelMedium">اجناس</Text>
+    //             <Text>{item.receiptItems?.map((i) => `${i.title}`).join("، ") || "ثبت نشده"}</Text>
+    //           </View>
+    //         )}
+    //         {item.opType === "fund" && !!item.description && (
+    //           <View style={$detail}>
+    //             <Text variant="labelMedium">توضیحات</Text>
+    //             <Text>{item.description}</Text>
+    //           </View>
+    //         )}
+    //         <View style={$detail}>
+    //           <Text variant="labelMedium">مبلغ</Text>
+    //           <Text variant="bodyLarge">{tomanFormatter(item.amount)}</Text>
+    //         </View>
+    //       </Surface>
+    //     </TouchableOpacity>
+    //   )
+    // }
+
+    const renderListItem = ({ item }: ListRenderItemInfo<TankhahItem>) => renderItem(item)
+
+    const renderHeadItem = () => {
       return (
-        <Swipeable
-          key={item._objectKey()}
-          renderLeftActions={renderItemActions(item)}
-          renderRightActions={renderItemActions(item)}
-          // leftThreshold={160}
-          // rightThreshold={160}
-        >
-          {renderSpendItem(item)}
-        </Swipeable>
+        <>
+          {!!headItem && (
+            <Reanimated.View entering={BounceIn} exiting={FadeOut}>
+              {renderItem(headItem)}
+            </Reanimated.View>
+          )}
+        </>
       )
     }
-    const headItem = useObject(TankhahItem, new BSON.ObjectID(itemId))
-    const renderHeadItem = () => {
-      if (headItem) {
-        return (
-          <Reanimated.View entering={BounceIn} exiting={FadeOut}>
-            {renderSpendItem(headItem)}
-          </Reanimated.View>
-        )
-      }
-      return undefined
+
+    const renderTimeRangeBtn = (value: Date, type: "start" | "end" = "start", open: () => void) => {
+      return (
+        <Button
+          style={$controlsBtn}
+          icon={(props) => (
+            <Icon
+              source={type === "start" ? "calendar-start" : "calendar-end"}
+              size={26}
+              color={theme.colors.inverseSurface}
+            />
+          )}
+          mode="contained-tonal"
+          onPress={open}
+        >
+          {formatDateIR(value)}
+        </Button>
+      )
     }
+
+    const handlePrint = () => {
+      const totalFund = realm
+        .objects(TankhahItem)
+        .filtered(...getQueryString(startDate, endDate, "fund"))
+        .sum("total")
+      const totalSpend = realm
+        .objects(TankhahItem)
+        .filtered(...getQueryString(startDate, endDate, "spend"))
+        .sum("total")
+
+      const totalFundAll = realm
+        .objects(TankhahItem)
+        .filtered(...getQueryString(addYears(startDate, -50), endDate, "fund"))
+        .sum("total")
+      const totalSpendAll = realm
+        .objects(TankhahItem)
+        .filtered(...getQueryString(addYears(startDate, -50), endDate, "spend"))
+        .sum("total")
+
+      printer.printTankhah(
+        tankhahItemList.map((item) => {
+          const mapInfo = {
+            fund: `دریافت`,
+            buy: `خرید  ${item.receiptItems?.map((i) => `${i.title}`).join("، ")}`,
+            transfer: `انتقال وجه ${translate(
+              ("paymentMethod." + item.paymentMethod) as TxKeyPath,
+            )} به ${item.recipient || item.accountNum || "نامشخص"}`,
+          }
+          return {
+            date: formatDateIR(item.doneAt),
+            opType: item.opType,
+            amount: tomanFormatter(item.amount),
+            fee: tomanFormatter(item.transferFee),
+            description: item.description || "",
+            info: mapInfo[item.opType]
+          }
+        }),
+        tomanFormatter(totalSpend),
+        tomanFormatter(totalFund),
+        tomanFormatter(totalFundAll-totalSpendAll),
+      )
+    }
+
     useEffect(() => {
       if (itemId) {
         setTimeout(() => {
@@ -322,165 +397,93 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
       }
       return () => navigation.setParams({ itemId: undefined })
     }, [])
-
+    const safeArea = useSafeAreaInsets()
     return (
       <>
-        <Screen style={$root} safeAreaEdges={["top", "bottom"]} preset="fixed">
-          <View>
-            <Appbar>
-              <Appbar.Content titleStyle={{fontSize:18}} mode="small" title={tomanFormatter(totalFund - totalSpend)} />
-              <Appbar.Action
-                icon={"printer"}
-                onPress={() =>
-                  printer.printTankhah(
-                    tankhahItemList.map((i) => {
-                      return {
-                        date: formatDateIR(i.doneAt),
-                        opType: i.opType === "fund" ? "واریز" : "برداشت",
-                        amount: i.amount.toString(),
-                        description: !!i.description
-                          ? i.description
-                          : i.receiptItems?.map((j) => `${j.amount?.toString()} * ${j.title}`).join(" "),
-                      }
-                    }),
-                  )
-                }
-              />
-            </Appbar>
-            <Surface>
-              <View style={{ display: "flex", flexDirection: "row" }}>
-                <View
-                  style={{
-                    flex: 1,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    paddingLeft: 10,
-                  }}
-                >
-                  <DatePicker
-                    date={startDate}
-                    maxDate={endDate}
-                    onDateChange={(value) => {
-                      setStartDate(value)
-                    }}
-                    action={({ open, close, value }) => {
-                      return (
-                        <Button
-                          icon={(props) => (
-                            <Icon
-                              source="calendar-start"
-                              size={26}
-                              color={theme.colors.inverseSurface}
-                            />
-                          )}
-                          dark={false}
-                          mode="contained-tonal"
-                          onPress={open}
-                        >
-                          <Text
-                            variant="bodyLarge"
-                            style={{ textAlign: "center" }}
-                            text={formatDateIR(value)}
-                          />
-                        </Button>
-                      )
-                    }}
-                  />
-                  <DatePicker
-                    date={endDate}
-                    minDate={startDate}
-                    onDateChange={(value) => {
-                      setEndDate(value)
-                    }}
-                    action={({ open, close, value }) => {
-                      return (
-                        <Button
-                          style={{ marginTop: 10 }}
-                          icon={(props) => (
-                            <Icon
-                              source="calendar-end"
-                              size={26}
-                              color={theme.colors.inverseSurface}
-                            />
-                          )}
-                          mode="contained-tonal"
-                          onPress={open}
-                        >
-                          <Text
-                            variant="bodyLarge"
-                            style={{ textAlign: "center" }}
-                            text={formatDateIR(value)}
-                          />
-                        </Button>
-                      )
-                    }}
-                  />
-                  {renderFilterMenu()}
-                </View>
-                {renderSpendsChart()}
-              </View>
-              <View
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  flexWrap: "wrap",
+        <Appbar mode="small" safeAreaInsets={{ top: safeArea.top }}>
+          <Appbar.Content
+            titleStyle={{ fontSize: 16 }}
+            mode="small"
+            title={tomanFormatter(totalFund - totalSpend)}
+          />
+          <Appbar.Action icon={"printer"} onPress={handlePrint} />
+        </Appbar>
+        <View>
+          <View style={$row}>
+            <View>
+              <DatePicker
+                date={startDate}
+                maxDate={endDate}
+                onDateChange={(value) => {
+                  setProp("startDate", value)
                 }}
-              >
-                {groupNames.map((i, index) => {
-                  return (
-                    <View key={index} style={{ margin: 2 }}>
-                      <Chip
-                        textStyle={{ fontSize: 10 }}
-                        maxFontSizeMultiplier={1}
-                        showSelectedOverlay
-                        selected={index === selectedGroup}
-                        // style={{ width: "100%" }}
-                        onPress={() => {
-                          setSelectedGroup(index)
-                        }}
-                        icon={(props) => (
-                          <Icon
-                            {...props}
-                            source={index === selectedGroup ? "check-circle" : "circle"}
-                            size={10}
-                            color={PieCharColors[index - 1]?.color || theme.colors.background}
-                          />
-                        )}
-                      >
-                        {i === "all" ? "همه" : i}
-                      </Chip>
-                    </View>
-                  )
-                })}
-              </View>
-            </Surface>
+                action={({ open, close, value }) => {
+                  return renderTimeRangeBtn(value, "start", open)
+                }}
+              />
+              <DatePicker
+                date={endDate}
+                minDate={startDate}
+                onDateChange={(value) => {
+                  setProp("endDate", value)
+                }}
+                action={({ open, close, value }) => renderTimeRangeBtn(value, "end", open)}
+              />
+              {renderFilterMenu()}
+            </View>
+            {renderPieChart()}
           </View>
-
-          <View style={{ height: "61%" }}>
-            <ListView
-              // contentContainerStyle={{flexGrow:1}}
-              keyExtractor={(i) => i._objectKey()}
-              data={tankhahItemList.filter((i) => i._id.toHexString() !== itemId)}
-              ListHeaderComponent={renderHeadItem}
-              renderItem={renderListItem}
-            ></ListView>
+          <View
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              flexWrap: "wrap",
+            }}
+          >
+            {groupNames.map((i, index) => {
+              return (
+                <View key={index} style={{ margin: 2 }}>
+                  <Chip
+                    textStyle={{ fontSize: 10 }}
+                    maxFontSizeMultiplier={1}
+                    showSelectedOverlay
+                    selected={index === selectedGroup}
+                    onPress={() => {
+                      setProp("selectedGroup", index)
+                    }}
+                    icon={(props) => (
+                      <Icon
+                        {...props}
+                        source={index === selectedGroup ? "check-circle" : "circle"}
+                        size={10}
+                        color={PieCharColors[index - 1]?.color || theme.colors.background}
+                      />
+                    )}
+                  >
+                    {i === "all" ? "همه" : i}
+                  </Chip>
+                </View>
+              )
+            })}
           </View>
-        </Screen>
+        </View>
+        <Divider />
+        <ListView
+          keyExtractor={(i) => i._objectKey()}
+          data={tankhahItemList.filter((i) => i._id.toHexString() !== itemId)}
+          ListHeaderComponent={renderHeadItem}
+          renderItem={renderListItem}
+        ></ListView>
         <FAB.Group
           open={fabOpen}
           visible
           icon={fabOpen ? "cash-fast" : "plus"}
+          label={fabOpen ? "خرج" : ""}
           actions={[
             {
               icon: "wallet-plus",
-              label: "شارژ تنخواه",
-              onPress: () => navigation.navigate("ChargeForm", {}),
-            },
-            {
-              icon: "cash-fast",
-              label: "خرج",
-              onPress: () => navigation.navigate("TankhahSpendForm", {}),
+              label: "دریافت",
+              onPress: () => navigation.navigate("TankhahFundForm", {}),
             },
           ]}
           onStateChange={({ open }) => {
@@ -492,16 +495,12 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
               // do something if the speed dial is open
             }
           }}
+          style={{ position: "absolute", bottom: 40, right: 20 }}
         />
       </>
     )
   },
 )
-
-const $root: ViewStyle = {
-  flex: 1,
-  // marginTop: 50,
-}
 
 const $detail: ViewStyle = {
   display: "flex",
@@ -512,3 +511,5 @@ const $detail: ViewStyle = {
   margin: 5,
   // padding: 20
 }
+
+const $controlsBtn: ViewStyle = { margin: spacing.xxs }

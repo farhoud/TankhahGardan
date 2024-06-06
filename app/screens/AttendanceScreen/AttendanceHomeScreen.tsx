@@ -1,7 +1,7 @@
 import { FC, useCallback, useRef, useState, useEffect } from "react"
 import { observer } from "mobx-react-lite"
 import { View, ViewStyle } from "react-native"
-import { AppTabScreenProps, StackNavigation } from "app/navigators"
+import { AppTabScreenProps, AppNavigation } from "app/navigators"
 import { Button, DatePicker, ListView, TimeIndicator, Text } from "app/components"
 import { SceneMap } from "react-native-tab-view"
 import { Appbar, Card, Divider, FAB, Icon, IconButton, List, Menu } from "react-native-paper"
@@ -39,7 +39,7 @@ export const AttendanceHomeScreen: FC<AttendanceHomeScreenProps> = observer(
       attendanceFormStore: { clear, load, setProp, workerId, selecting },
     } = useStores()
     // Pull in navigation via hook
-    const navigation = useNavigation<StackNavigation>()
+    const navigation = useNavigation<AppNavigation>()
     // Pull in real via hook
     const realm = useRealm()
     // refs
@@ -64,7 +64,7 @@ export const AttendanceHomeScreen: FC<AttendanceHomeScreenProps> = observer(
         startOfDay(currentDate),
         endOfDay(currentDate),
       )
-    })
+    },[currentDate])
 
     const attendanceList = useQuery(
       Attendance,
@@ -93,9 +93,8 @@ export const AttendanceHomeScreen: FC<AttendanceHomeScreenProps> = observer(
       setOpenFilterMenu(false)
     }
     const handleFormNew = () => {
-      clear()
+      clear(currentDate)
       setProp("group", groups.map((i) => i.group)[currentPage])
-
       bottomSheetRef.current?.present()
     }
     const handleFormEdit = (item: Attendance) => (e: any) => {

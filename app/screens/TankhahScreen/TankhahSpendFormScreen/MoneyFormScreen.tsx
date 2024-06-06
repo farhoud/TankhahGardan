@@ -8,7 +8,7 @@ import { useStores } from "app/models"
 import * as ImagePicker from "expo-image-picker"
 import * as FileSystem from "expo-file-system"
 import { calcTransferFee } from "app/utils/finance"
-import { StackNavigation } from "app/navigators"
+import { AppNavigation } from "app/navigators"
 
 // interface MoneyFormScreenProps extends AppStackScreenProps<"TestScreen"> {}
 
@@ -30,7 +30,7 @@ export const MoneyFormScreen: FC = memo(
     } = useStores()
 
     // Pull in navigation via hook
-    const navigation = useNavigation<StackNavigation>()
+    const navigation = useNavigation<AppNavigation>()
 
     const [statusCamera, requestCamerPermission] = ImagePicker.useCameraPermissions()
     const [statusMedia, requestMediaPermission] = ImagePicker.useMediaLibraryPermissions()

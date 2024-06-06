@@ -1,27 +1,55 @@
 import React, { FC, useLayoutEffect, useState } from "react"
 import { observer } from "mobx-react-lite"
 import { View, ViewStyle } from "react-native"
-import { AppStackScreenProps, StackNavigation } from "app/navigators"
-import { AutoImage, EmptyState, Screen, Text } from "app/components"
+import { AppStackScreenProps, AppNavigation } from "app/navigators"
+import { AutoImage, Button, EmptyState, Screen, Text } from "app/components"
 import { CommonActions, useNavigation } from "@react-navigation/native"
 import { TankhahItem } from "app/models/realm/models"
-import { useObject } from "@realm/react"
+import { useObject, useRealm } from "@realm/react"
 import { formatDateIR, tomanFormatter } from "app/utils/formatDate"
 import { BSON } from "realm"
 import { TouchableOpacity } from "react-native-gesture-handler"
-import { Appbar, Surface } from "react-native-paper"
+import { Appbar, Dialog, Modal, Portal, Surface } from "react-native-paper"
 import { TxKeyPath } from "app/i18n"
 
-export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">> = observer(
-  function TankhahSpendItemScreen(_props) {
+export const TankhahItemScreen: FC<AppStackScreenProps<"TankhahItem">> = observer(
+  function TankhahItemScreen(_props) {
     const itemId = _props.route.params.itemId
+    const [confirmVisible, setConfirmVisible] = useState(false)
     // Pull in one of our MST stores
     // const { someStore, anotherStore } = useStores()
 
     // Pull in navigation via hook
-    const navigation = useNavigation<StackNavigation>()
+    const navigation = useNavigation<AppNavigation>()
 
-    const spend = useObject(TankhahItem, new BSON.ObjectID(itemId))
+    const tankhahItem = useObject(TankhahItem, new BSON.ObjectID(itemId))
+
+    const realm = useRealm()
+
+    const dismissConfirm = () => {
+      setConfirmVisible(false)
+    }
+
+    const handleDelete = () => {
+      realm.write(() => {
+        return realm.delete(tankhahItem)
+      })
+      goBack()
+    }
+
+    const renderConfirm = () => (
+      <Portal>
+        <Dialog visible={confirmVisible} onDismiss={dismissConfirm}>
+          <Dialog.Content>
+            <Text>آیا از پاک کردن ایتم مطمئن هستید راه برگشتی نیست؟</Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={handleDelete}>بله</Button>
+            <Button onPress={dismissConfirm}>خیر</Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+    )
 
     const goBack = () => {
       if (navigation.canGoBack()) {
@@ -37,11 +65,15 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
     }
 
     const goToEdit = () => {
-      if(spend?.opType==="fund"){
-        navigation.navigate("ChargeForm", { itemId })
+      if (tankhahItem?.opType === "fund") {
+        navigation.navigate("TankhahFundForm", { itemId })
         return
       }
       navigation.navigate("TankhahSpendForm", { itemId })
+    }
+
+    const showConfirm = () => {
+      setConfirmVisible(true)
     }
 
     useLayoutEffect(() => {
@@ -51,13 +83,14 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
           <Appbar.Header>
             <Appbar.BackAction onPress={goBack} />
             <Appbar.Content title="خرج" />
+            <Appbar.Action icon="delete" onPress={showConfirm} />
             <Appbar.Action icon="pencil" onPress={goToEdit} />
           </Appbar.Header>
         ),
       })
     }, [])
 
-    if (!spend) {
+    if (!tankhahItem) {
       return <EmptyState headingTx="common.not_found"></EmptyState>
     }
     return (
@@ -65,65 +98,65 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
         <Surface style={$root}>
           <View style={$row}>
             <Text tx="spend.doneAt" />
-            <Text text={formatDateIR(spend.doneAt)} />
+            <Text text={formatDateIR(tankhahItem.doneAt)} />
           </View>
           <View style={$row}>
             <Text tx="spend.group" />
-            <Text text={spend?.group || "ندارد"} />
+            <Text text={tankhahItem?.group || "ندارد"} />
           </View>
           <View style={$row}>
             <Text tx="spend.opType" />
-            <Text tx={("opType." + spend.opType) as TxKeyPath} />
+            <Text tx={("opType." + tankhahItem.opType) as TxKeyPath} />
           </View>
           <View style={$row}>
             <Text tx="spend.amount" />
-            <Text text={tomanFormatter(spend.amount ?? 0)} />
+            <Text text={tomanFormatter(tankhahItem.amount ?? 0)} />
           </View>
           <View style={$row}>
             <Text tx="spend.paymentMethod" />
-            <Text tx={("paymentMethod." + spend.paymentMethod) as TxKeyPath} />
+            <Text tx={("paymentMethod." + tankhahItem.paymentMethod) as TxKeyPath} />
           </View>
-          {!["cash", "pos"].includes(spend.paymentMethod) && (
+          {!["cash", "pos"].includes(tankhahItem.paymentMethod) && (
             <>
-              {spend.recipient && (
+              {!!tankhahItem.recipient && (
                 <View style={$row}>
                   <Text tx="spend.recipient" />
-                  <Text text={spend.recipient} />
+                  <Text text={tankhahItem.recipient} />
                 </View>
               )}
-              {spend.accountNum && (
+              {!!tankhahItem.accountNum && (
                 <View style={$row}>
                   <Text tx="spend.accountNum" />
-                  <Text text={spend.accountNum} />
+                  <Text text={tankhahItem.accountNum} />
                 </View>
               )}
-              {spend.transferFee && (
+              {!!tankhahItem.transferFee && (
                 <View style={$row}>
                   <Text tx="spend.transferFee" />
-                  <Text text={tomanFormatter(spend.transferFee)} />
+                  <Text text={tomanFormatter(tankhahItem.transferFee)} />
                 </View>
               )}
-              {spend.trackingNum && (
+              {!!tankhahItem.trackingNum && (
                 <View style={$row}>
                   <Text tx="spend.trackingNum" />
-                  <Text text={spend.trackingNum} />
+                  <Text text={tankhahItem.trackingNum} />
                 </View>
               )}
             </>
           )}
-          {spend.description && (
+          {!!tankhahItem.description && (
             <View style={$row}>
               <Text tx="spend.description" />
-              <Text text={spend.description || "ندارد"} />
+              <Text text={tankhahItem.description || "ندارد"} />
             </View>
           )}
-          {spend.receiptItems && spend.receiptItems.length > 0 && (
+          {!!tankhahItem.receiptItems && tankhahItem.receiptItems.length > 0 && (
             <>
               <View style={$row}>
                 <Text tx="spend.items" />
               </View>
               <View style={{ paddingHorizontal: 20 }}>
-                {spend.receiptItems.map((i) => (
+                {tankhahItem.receiptItems.map((i) => (
                   <View style={$row} key={i._objectKey()}>
                     <Text text={i.title} />
                     <Text text={`${i.amount} X ${i.price}`} />
@@ -134,9 +167,9 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
           )}
           <View style={$row}>
             <Text tx="spend.total" />
-            <Text text={tomanFormatter(spend.total ?? 0)} />
+            <Text text={tomanFormatter(tankhahItem.total ?? 0)} />
           </View>
-          {!!spend.attachments?.length && (
+          {!!tankhahItem.attachments?.length && (
             <>
               <View style={$row}>
                 <Text tx="spend.attachments" />
@@ -151,13 +184,16 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
                   flexWrap: "wrap",
                 }}
               >
-                {spend.attachments.map((uri, index) => {
+                {tankhahItem.attachments.map((uri, index) => {
                   return (
                     <TouchableOpacity
                       key={index}
                       onPress={() => {
-                        spend.attachments &&
-                          navigation.navigate("ImageView", { images: spend.attachments, index })
+                        tankhahItem.attachments &&
+                          navigation.navigate("ImageView", {
+                            images: tankhahItem.attachments,
+                            index,
+                          })
                       }}
                     >
                       <AutoImage
@@ -173,6 +209,7 @@ export const TankhahSpendItemScreen: FC<AppStackScreenProps<"TankhahSpendItem">>
             </>
           )}
         </Surface>
+        {renderConfirm()}
       </Screen>
     )
   },
@@ -191,4 +228,3 @@ const $row: ViewStyle = {
   marginVertical: 10,
   marginHorizontal: 20,
 }
-

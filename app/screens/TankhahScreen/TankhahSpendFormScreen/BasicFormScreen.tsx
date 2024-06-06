@@ -64,7 +64,7 @@ export const BasicFormScreen: FC = memo(
 
     useEffect(() => {
       if (focused === "recipient" && !accountNum) {
-        setProp("accountNum", accountNumSuggestions.at(0)?.accountNum||undefined)
+        setProp("accountNum", accountNumSuggestions.at(0)?.accountNum || undefined)
       }
     }, [accountNumSuggestions, focused])
 
@@ -166,17 +166,15 @@ export const BasicFormScreen: FC = memo(
           placeholderTx="tankhahSpendFormScreen.destPlaceholder"
         />
 
-        {opType === "transfer" && (
-          <TextField
-            value={description}
-            onChangeText={(value) => setProp("description", value)}
-            multiline
-            label="Name"
-            labelTx="tankhahChargeScreen.descriptionLabel"
-            placeholder="John Doe"
-            placeholderTx="tankhahChargeScreen.descriptionPlaceholder"
-          />
-        )}
+        <TextField
+          value={description}
+          onChangeText={(value) => setProp("description", value)}
+          multiline
+          label="Name"
+          labelTx="tankhahChargeScreen.descriptionLabel"
+          placeholder="John Doe"
+          placeholderTx="tankhahChargeScreen.descriptionPlaceholder"
+        />
       </Surface>
     )
   }),

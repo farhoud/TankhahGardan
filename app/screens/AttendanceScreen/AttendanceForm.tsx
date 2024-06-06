@@ -1,11 +1,11 @@
-import React, { Ref, forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from "react"
+import React, { Ref, forwardRef, useImperativeHandle, useMemo, useRef } from "react"
 import { View, ViewStyle } from "react-native"
-import { StackNavigation } from "app/navigators"
+import { AppNavigation } from "app/navigators"
 import { AutoComplete, Button, DatePicker, TextField,Text } from "app/components"
 import { $row } from "app/theme"
-import { Icon, useTheme, IconButton } from "react-native-paper"
+import { Icon, useTheme } from "react-native-paper"
 import { useNavigation } from "@react-navigation/native"
-import { endOfDay, format, startOfDay } from "date-fns"
+import { format } from "date-fns"
 import {
   BottomSheetModal,
   BottomSheetModalProps,
@@ -49,7 +49,7 @@ export const AttendanceForm = observer(
     } = useStores()
 
     // Pull in navigation via hook
-    const navigation = useNavigation<StackNavigation>()
+    const navigation = useNavigation<AppNavigation>()
 
     const theme = useTheme()
 

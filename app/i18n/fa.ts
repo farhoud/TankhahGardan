@@ -2,7 +2,7 @@ const fa = {
   opType: {
     buy:"خرید",
     transfer: "واریز",
-    fund: "شارژ",
+    fund: "دریافتی",
     all: "همه"
   },
   paymentMethod: {
@@ -11,7 +11,8 @@ const fa = {
     cash: "نقد",
     ctc: "کارت به کارت",
     pos: "پوز",
-    other: "دریافت کننده",
+    sts: "سپرده به سپرده",
+    other: "دیگر",
   },
   accountNumType: {
     sheba: "شبا",

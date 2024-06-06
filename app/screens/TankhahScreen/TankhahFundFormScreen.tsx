@@ -1,35 +1,34 @@
 import { observer } from "mobx-react-lite"
-import React, { FC, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import React, { FC, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { TextInput, ViewStyle } from "react-native"
 import { CurrencyField, Screen, TextField } from "../../components"
 import { DatePicker } from "app/components/DatePicker/DatePicker"
 import { isNumber } from "app/utils/validation"
 import { useObject, useRealm } from "@realm/react"
 import { TankhahItem } from "app/models/realm/models"
-import { tomanFormatter } from "app/utils/formatDate"
-import { AppStackScreenProps, StackNavigation } from "app/navigators"
+import { AppStackScreenProps, AppNavigation } from "app/navigators"
 import { CommonActions, useNavigation } from "@react-navigation/native"
 import { BSON, UpdateMode } from "realm"
 import { Appbar, Button } from "react-native-paper"
-import MaskInput, { createNumberMask } from "react-native-mask-input"
 
-export const TankhahChargeFromScreen: FC<AppStackScreenProps<"ChargeForm">> = observer(
+export const TankhahChargeFromScreen: FC<AppStackScreenProps<"TankhahFundForm">> = observer(
   function TankhahChargeScreen(_props) {
     const itemId = _props.route.params?.itemId
-    const navigation = useNavigation<StackNavigation>()
+
+    const navigation = useNavigation<AppNavigation>()
+    const realm = useRealm()
+
+    const refAmount = useRef<TextInput>(null)
+    const refDescription = useRef<TextInput>(null)
+
     const [amount, setAmount] = useState(0)
     const [description, setDescription] = useState("")
     const [doneAt, setDoneAt] = useState(new Date())
     const [isValid, setIsValid] = useState(false)
     const [errors, setErrors] = useState<Record<string, string>>()
-    // name!: string
-    // skill?: string
-    // proficiency?: string
-    const realm = useRealm()
+
     const data = useObject(TankhahItem, new BSON.ObjectID(itemId))
 
-    const refAmount = useRef<TextInput>(null)
-    const refDescription = useRef<TextInput>(null)
 
     const validateForm = () => {
       let errors: Record<string, string> = {}
@@ -86,13 +85,6 @@ export const TankhahChargeFromScreen: FC<AppStackScreenProps<"ChargeForm">> = ob
         )
       }
     }
-
-    const dollarMask = createNumberMask({
-      prefix: ["﷼", " "],
-      delimiter: "٫",
-      separator: ".",
-      precision: 0,
-    })
 
     useEffect(() => {
       if (data) {

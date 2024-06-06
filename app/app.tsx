@@ -96,7 +96,7 @@ const config = {
         ChargeList: "chargelist",
       },
     },
-    TankhahSpendItem: { path: "spenditem/:itemId?" },
+    TankhahItem: { path: "spenditem/:itemId?" },
     TankhahSpendForm: { path: "spendform/:itemId?" },
     BuyItemForm: "buyform",
   },

@@ -4,18 +4,18 @@ import Realm, { BSON, UpdateMode } from "realm"
 import { Attendance, Worker } from "app/models/realm/attendance"
 import { Alert } from "react-native"
 
-const defaultStartTime = () => {
-  const date = new Date()
-  date.setHours(6)
+const defaultStartTime = (_date?:Date) => {
+  const date = !!_date?new Date(_date):new Date()
+  date.setHours(8)
   date.setMinutes(0)
   date.setSeconds(0)
   date.setMilliseconds(0)
   return date
 }
 
-const defaultEndTime = () => {
-  const date = new Date()
-  date.setHours(18)
+const defaultEndTime = (_date?:Date) => {
+  const date =  !!_date?new Date(_date):new Date()
+  date.setHours(17)
   date.setMinutes(0)
   date.setSeconds(0)
   date.setMilliseconds(0)
@@ -96,10 +96,10 @@ export const AttendanceFormStoreModel = types
         return undefined
       }
     },
-    clear: () => {
+    clear: (date?:Date) => {
       self._id = undefined
-      self.from = defaultStartTime()
-      self.to = defaultEndTime()
+      self.from = defaultStartTime(date)
+      self.to = defaultEndTime(date)
       self.description = undefined
       self.group = undefined
       self.workerId = undefined

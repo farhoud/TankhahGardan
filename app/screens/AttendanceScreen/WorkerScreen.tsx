@@ -1,7 +1,7 @@
-import React, { FC, useEffect, useLayoutEffect, useRef, useState } from "react"
+import { FC, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { observer } from "mobx-react-lite"
 import { ViewStyle } from "react-native"
-import { AppStackScreenProps, StackNavigation } from "app/navigators"
+import { AppStackScreenProps, AppNavigation } from "app/navigators"
 import { Worker } from "app/models/realm/attendance"
 import { Appbar, Dialog, DialogProps, List, Portal, Searchbar, useTheme } from "react-native-paper"
 import { useObject, useQuery, useRealm } from "@realm/react"
@@ -18,7 +18,7 @@ export const WorkerScreen: FC<WorkerScreenProps> = observer(function WorkerScree
   const {
     attendanceFormStore: { setProp },
   } = useStores()
-  const navigation = useNavigation<StackNavigation>()
+  const navigation = useNavigation<AppNavigation>()
 
   const refList = useRef<ListViewRef<Worker>>(null)
   const [visible, setVisible] = useState(false)
@@ -64,7 +64,8 @@ export const WorkerScreen: FC<WorkerScreenProps> = observer(function WorkerScree
             switch (mode) {
               case "manage":
                 setSelected(item)
-                setVisible(true)
+                // setVisible(true)
+                navigation.navigate("WorkerDetail",{itemId:item._id.toHexString()})
                 break
               case "select":
                 setProp("workerId", item._id.toHexString())
@@ -129,7 +130,7 @@ interface WorkerModalProps extends Omit<DialogProps, "children"> {
   onDone?: (item?: Worker) => void
 }
 
-const WorkerModal: FC<WorkerModalProps> = (_props) => {
+export const WorkerModal: FC<WorkerModalProps> = (_props) => {
   const { itemId, onDone, ...dialogProps } = _props
   const realm = useRealm()
   const data = useObject(Worker, new BSON.ObjectID(itemId))
@@ -151,15 +152,7 @@ const WorkerModal: FC<WorkerModalProps> = (_props) => {
     setIsValid(Object.keys(errors).length === 0)
   }
 
-  const handleDeleteItem = () => {
-    if (data) {
-      realm.write(() => {
-        return realm.create(Worker, { ...data, deleted: true }, UpdateMode.Modified)
-      })
-    }
-    onDone && onDone()
-    clear()
-  }
+
 
   const handleSubmit = () => {
     validateForm()
@@ -234,11 +227,6 @@ const WorkerModal: FC<WorkerModalProps> = (_props) => {
         </Dialog.Content>
         <Dialog.Actions>
           <Button tx={!itemId ? "common.add" : "common.save"} onPress={handleSubmit} />
-          {!!itemId && (
-            <Button onPress={handleDeleteItem} textColor={theme.colors.error}>
-              حذف
-            </Button>
-          )}
         </Dialog.Actions>
       </Dialog>
     </Portal>

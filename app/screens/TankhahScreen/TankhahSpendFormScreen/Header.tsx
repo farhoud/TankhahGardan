@@ -2,7 +2,7 @@ import { CommonActions, useNavigation } from "@react-navigation/native"
 import { useRealm } from "@realm/react"
 import { Button, Text } from "app/components"
 import { useStores } from "app/models"
-import { StackNavigation } from "app/navigators"
+import { AppNavigation } from "app/navigators"
 import { observer } from "mobx-react-lite"
 import { FC, useEffect, useState } from "react"
 import { BackHandler } from "react-native"
@@ -20,7 +20,7 @@ export const Header: FC<Props> = observer(function Header(_props) {
     spendFormStore: { isValid, reset, submit },
   } = useStores()
   const [dialogVisible, setDialogVisible] = useState(false)
-  const navigation = useNavigation<StackNavigation>()
+  const navigation = useNavigation<AppNavigation>()
   const realm = useRealm()
 
   const close = (save: boolean, itemId?: string) => {

@@ -38,16 +38,15 @@ export type AppStackParamList = {
   Welcome: undefined
   Login: undefined
   AppTabs: NavigatorScreenParams<AppTabParamList>
-  TankhahSpendItem: { itemId: string }
+  TankhahItem: { itemId: string }
   TankhahSpendForm: { itemId?: string }
-  ChargeForm: { itemId?: string }
+  TankhahFundForm: { itemId?: string }
   TestScreen: undefined
-  BuyItemForm: undefined
   ImageView: { images: string[]; index?: number }
   Attendance: undefined
   Worker: { itemId?: string; mode?: "select" | "manage" }
   AttendanceForm: undefined
-  TimePicker: {id: string}
+	WorkerDetail: { itemId?: string }
 	// IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
 
@@ -62,7 +61,7 @@ export type AppStackScreenProps<T extends keyof AppStackParamList> = NativeStack
   T
 >
 
-export type StackNavigation = NavigationProp<AppStackParamList>
+export type AppNavigation = NavigationProp<AppStackParamList>
 
 // Documentation: https://reactnavigation.org/docs/stack-navigator/
 const Stack = createNativeStackNavigator<AppStackParamList>()
@@ -71,7 +70,7 @@ const AppStack = observer(function AppStack() {
   const {
     authenticationStore: { isAuthenticated },
   } = useStores()
-  const navigation = useNavigation<StackNavigation>()
+  const navigation = useNavigation<AppNavigation>()
   const goBack = () => {
     if (navigation.canGoBack()) {
       navigation.goBack()
@@ -102,7 +101,7 @@ const AppStack = observer(function AppStack() {
       )}
 
       <Stack.Group>
-        <Stack.Screen name="TankhahSpendItem" component={Screens.TankhahSpendItemScreen} />
+        <Stack.Screen name="TankhahItem" component={Screens.TankhahItemScreen} />
         <Stack.Screen
           name="TankhahSpendForm"
           component={Screens.TankhahSpendFormScreen}
@@ -116,7 +115,7 @@ const AppStack = observer(function AppStack() {
             ),
           }}
         />
-        <Stack.Screen name="ChargeForm" component={Screens.TankhahChargeFromScreen} />
+        <Stack.Screen name="TankhahFundForm" component={Screens.TankhahChargeFromScreen} />
       </Stack.Group>
       <Stack.Group>
         <Stack.Screen
@@ -124,6 +123,7 @@ const AppStack = observer(function AppStack() {
           options={{ presentation: "modal" }}
           component={Screens.WorkerScreen}
         />
+        <Stack.Screen name="WorkerDetail" component={Screens.WorkerDetailScreen} />
       </Stack.Group>
 
       {/** 🔥 Your screens go here */}
@@ -139,6 +139,7 @@ const AppStack = observer(function AppStack() {
           ),
         }}
       />
+			
 			{/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
     </Stack.Navigator>
   )

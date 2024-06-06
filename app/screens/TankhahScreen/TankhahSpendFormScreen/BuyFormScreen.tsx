@@ -22,7 +22,6 @@ export const BuyFormScreen: FC = observer(function BuyFormScreen() {
 
   // variables
   const [fabOpen, setFabOpen] = useState(false)
-  const snapPoints = useMemo(() => ["25%", "60%"], [])
 
   // callbacks
   const handlePresentModalPress = useCallback(() => {
@@ -158,8 +157,8 @@ export const BuyFormScreen: FC = observer(function BuyFormScreen() {
       {renderModal()}
       <BottomSheetModal
         ref={bottomSheetModalRef}
-        index={1}
-        snapPoints={snapPoints}
+        enablePanDownToClose
+        enableDynamicSizing
         keyboardBlurBehavior="restore"
       >
         <SearchItemBottomSheetList />

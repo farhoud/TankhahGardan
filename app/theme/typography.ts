@@ -138,7 +138,6 @@ export const fontConfig = {
     letterSpacing: 0.15,
     lineHeight: 24,
   },
-
   titleLarge: {
     fontFamily: "IRANSansXFaNum-Regular",
     fontSize: 22,
@@ -146,7 +145,6 @@ export const fontConfig = {
     letterSpacing: 0,
     lineHeight: 28,
   },
-
   labelSmall: {
     fontFamily: "IRANSansXFaNum-Regular",
     fontSize: 11,

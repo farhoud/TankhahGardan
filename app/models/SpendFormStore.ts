@@ -27,6 +27,7 @@ export const SpendFormStoreModel = types
       "paya",
       "pos",
       "satna",
+      "sts",
     ]),
     recipient: types.maybe(types.string),
     accountNum: types.maybe(types.string),

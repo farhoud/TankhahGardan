@@ -48,5 +48,5 @@ export const tomanFormatter = (value: number) => {
       return res
     })
     .replace(/^\٫/, "")
-  return `${formatedHole}${fraction ? ".".concat(fraction) : ""}${value < 0 ? "-" : ""} ت`
+  return `${formatedHole}${fraction ? ".".concat(fraction) : ""}${value < 0 ? "-" : ""} ت`.toString()
 }

@@ -10,8 +10,12 @@ import Config from "../../config"
 import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem"
 import type { ApiConfig, ApiFeedResponse } from "./api.types"
 import { SpendFormStoreSnapshotIn } from "app/models"
+import { addMonths, newDate } from "date-fns-jalali"
 
 type SpendPart = Partial<SpendFormStoreSnapshotIn>
+interface GPTSpendPart extends Omit<SpendPart,"doneAt"> {
+  doneAt?: [number,number,number,number,number,number]
+}
 
 /**
  * Configuring the apisauce instance.
@@ -57,11 +61,12 @@ export class Api {
         role: "system",
         content: `You are a knowledgeable assistant specialized in 
       analyzing and bank receipt or report texts. Extract key information in JSON 
-      format with keys 'tackingNum', 'doneAt', 'recipient', 'accountNum','paymentMethod', amount as number 'amount' . If
-      certain information is not available, return null for that key.
-      paymentMethod is how money transferred and can be if انتقال کارت به کارت :'ctc' OR انتقال پایا : 'paya' OR انتقال ساتنا : 'satna' OR (انواع خرید کالا یا خدمات) : 'pos' OR other : 'other'.
-      doneAt is a hejri shamsi date in iran time zone convert it to Georgian utc and  may not be available.
-      accountNum is card (کارت) or sheba (شبا) or account number (شماره حساب) of the recipient.
+      format with keys 'trackingNum', 'doneAt', 'recipient', 'accountNum','paymentMethod', amount as number 'amount' . If
+      certain information is not available, return null for the key.
+      values are string or number except doneAt.
+      paymentMethod is how money transferred and can be if انتقال کارت به کارت :'ctc' OR انتقال پایا : 'paya' OR انتقال ساتنا : 'satna' OR (انواع خرید کالا یا خدمات) : 'pos' OR انتقال سپرده به سپرده : 'sts' OR any other method : 'other' .
+      doneAt is a hejri shamsi time and may not be available if available convert it to array of [year,month,day,hours,minutes,seconds] .
+      accountNum is card (کارت) or sheba (شبا) or account number (شماره حساب) of the recipient (destination) .
       text:
        ${text || ""}`,
       },
@@ -71,7 +76,7 @@ export class Api {
       `completions?api-version=2024-02-15-preview`,
       {
         messages: messages,
-        temperature: 0.7,
+        temperature: 0.6,
         max_tokens: 800,
         top_p: 0.95,
         frequency_penalty: 0,
@@ -91,15 +96,17 @@ export class Api {
       const rawData = (response.data as any).choices[0].message.content
 
       // This is where we transform the data into the shape we expect for our MST model.
-      const extracted: SpendPart = JSON.parse(rawData) as SpendPart
+      const extracted = JSON.parse(rawData) as GPTSpendPart
+      console.log(extracted)
+      let doneAt
+      let amount
       if (extracted.doneAt) {
-        extracted.doneAt = new Date(extracted.doneAt)
+        doneAt = addMonths(newDate(...extracted.doneAt),-1)
       }
       if (extracted.amount) {
-        extracted.amount = Number(extracted.amount)
+        amount = Number(extracted.amount)
       }
-
-      return { kind: "ok", extracted }
+      return { kind: "ok", extracted:{...extracted, doneAt, amount} }
     } catch (e) {
       if (__DEV__ && e instanceof Error) {
         console.error(`Bad data: ${e.message}\n${response.data}`, e.stack)
