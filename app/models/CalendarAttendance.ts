@@ -1,11 +1,11 @@
 import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import Realm, { BSON, UpdateMode } from "realm"
-import { Attendance, Worker } from "app/models/realm/attendance"
 import { Alert } from "react-native"
+import { Attendance, Project, Worker } from "./realm/calendar"
 
-const defaultStartTime = (_date?:Date) => {
-  const date = !!_date?new Date(_date):new Date()
+const defaultStartTime = (_date?: Date) => {
+  const date = !!_date ? new Date(_date) : new Date()
   date.setHours(8)
   date.setMinutes(0)
   date.setSeconds(0)
@@ -13,8 +13,8 @@ const defaultStartTime = (_date?:Date) => {
   return date
 }
 
-const defaultEndTime = (_date?:Date) => {
-  const date =  !!_date?new Date(_date):new Date()
+const defaultEndTime = (_date?: Date) => {
+  const date = !!_date ? new Date(_date) : new Date()
   date.setHours(17)
   date.setMinutes(0)
   date.setSeconds(0)
@@ -25,15 +25,15 @@ const defaultEndTime = (_date?:Date) => {
 /**
  * Model description here for TypeScript hints.
  */
-export const AttendanceFormStoreModel = types
-  .model("AttendanceFormStore")
+export const CalendarAttendanceModel = types
+  .model("CalendarAttendance")
   .props({
     _id: types.maybe(types.string),
     from: types.optional(types.Date, defaultStartTime),
     to: types.maybe(types.optional(types.Date, defaultEndTime)),
     group: types.maybe(types.string),
+    projectId: types.maybe(types.string),
     description: types.maybe(types.string),
-    selecting: types.optional(types.boolean, false),
     workerId: types.maybe(types.string),
     loading: types.optional(types.boolean, false),
     touched: types.optional(types.boolean, false),
@@ -55,7 +55,7 @@ export const AttendanceFormStoreModel = types
   .views((self) => ({
     get isValid() {
       return !!Object.keys(self.errors).length
-    },
+    }
   }))
   .actions((self) => ({
     setGroup(text: string) {
@@ -67,9 +67,10 @@ export const AttendanceFormStoreModel = types
       self.to = attendance.to || undefined
       self.description = attendance.description || undefined
       self.group = attendance.group
+      self.projectId = attendance.project._id.toHexString()
       self._id = attendance._id.toHexString()
     },
-    submit(realm: Realm, worker: Worker) {
+    submit(realm: Realm, worker: Worker, project: Project) {
       self.loading = true
       try {
         const res = realm.write(() => {
@@ -79,6 +80,7 @@ export const AttendanceFormStoreModel = types
               _id: self._id ? new BSON.ObjectID(self._id) : new BSON.ObjectID(),
               worker: worker,
               group: self.group,
+              project: project,
               from: self.from,
               to: self.to,
               description: self.description,
@@ -96,29 +98,25 @@ export const AttendanceFormStoreModel = types
         return undefined
       }
     },
-    clear: (date?:Date) => {
+    clear: (date?: Date) => {
       self._id = undefined
       self.from = defaultStartTime(date)
       self.to = defaultEndTime(date)
       self.description = undefined
       self.group = undefined
+      self.projectId = undefined
       self.workerId = undefined
       self.loading = false
       self.touched = false
-      self.selecting = false
     },
     handleTouch: () => {
       self.touched = true
     },
-  })) // eslint-disable-line @typescript-eslint/no-unused-vars
+  }))
 
-export interface AttendanceFormStore extends Instance<typeof AttendanceFormStoreModel> {}
-export interface AttendanceFormStoreSnapshotOut
-  extends SnapshotOut<typeof AttendanceFormStoreModel> {}
-export interface AttendanceFormStoreSnapshotIn
-  extends SnapshotIn<typeof AttendanceFormStoreModel> {}
-export const createAttendanceFormStoreDefaultModel = () =>
-  types.optional(AttendanceFormStoreModel, {
-    description: undefined,
-    workerId: undefined,
-  })
+export interface CalendarAttendance extends Instance<typeof CalendarAttendanceModel> {}
+export interface CalendarAttendanceSnapshotOut
+  extends SnapshotOut<typeof CalendarAttendanceModel> {}
+export interface CalendarAttendanceSnapshotIn extends SnapshotIn<typeof CalendarAttendanceModel> {}
+export const createCalendarAttendanceDefaultModel = () =>
+  types.optional(CalendarAttendanceModel, {})

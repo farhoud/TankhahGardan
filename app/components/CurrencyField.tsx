@@ -6,8 +6,8 @@ import MaskInput, { createNumberMask } from "react-native-mask-input"
 import { tomanFormatter } from "app/utils/formatDate"
 
 export interface CurrencyFieldProps extends Omit<TextFieldProps, "ref" | "value"> {
-  value: number
-  onChangeValue: (value: number) => void
+  value?: number
+  onChangeValue?: (value: number|undefined) => void
 }
 
 /**
@@ -48,7 +48,7 @@ export const CurrencyField = forwardRef(function CurrencyField(
           {...props}
           mask={currencyMask}
           onChangeText={(masked, unmasked) => {
-            onChangeValue(Number(unmasked) || 0)
+            onChangeValue && onChangeValue(Number(unmasked) || "")
           }}
         />
       )}

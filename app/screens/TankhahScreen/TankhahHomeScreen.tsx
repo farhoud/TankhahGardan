@@ -7,20 +7,10 @@ import { useObject, useQuery, useRealm } from "@realm/react"
 import { BSON } from "realm"
 import { TankhahItem, OperationType } from "app/models/realm/models"
 import { PieChart } from "react-native-gifted-charts"
-import { formatDateIR, tomanFormatter } from "app/utils/formatDate"
+import { formatDateIR, formatDateIRDisplay, tomanFormatter } from "app/utils/formatDate"
 import { useNavigation } from "@react-navigation/native"
 import { AppTabScreenProps } from "app/navigators/AppTabNavigator"
-import {
-  Chip,
-  Icon,
-  Button,
-  useTheme,
-  FAB,
-  Menu,
-  Appbar,
-  List,
-  Divider,
-} from "react-native-paper"
+import { Chip, Icon, Button, useTheme, FAB, Menu, Appbar, List, Divider } from "react-native-paper"
 import { DatePicker } from "app/components/DatePicker/DatePicker"
 import { ListRenderItemInfo } from "@shopify/flash-list"
 import Reanimated, { BounceIn, FadeOut } from "react-native-reanimated"
@@ -29,7 +19,7 @@ import { usePrint } from "app/utils/usePrint"
 import { $row, spacing } from "app/theme"
 import { useStores } from "app/models"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { addYears } from "date-fns"
+import { addYears, startOfDay, endOfDay } from "date-fns-jalali"
 
 const PieCharColors = [
   { color: "#009FFF", gradientCenterColor: "#006DFF" },
@@ -148,7 +138,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
           anchor={
             <Button
               style={$controlsBtn}
-              mode="contained-tonal"
+              // mode="contained-tonal"
               onPress={handleToggleFilterMenu}
               icon="filter"
             >
@@ -252,67 +242,6 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
       )
     }
 
-    // const renderItem = (item: TankhahItem) => {
-    //   return (
-    //     <TouchableOpacity
-    //       onPress={() => {
-    //         navigation.navigate("TankhahItem", {
-    //           itemId: item._id.toHexString(),
-    //         })
-    //       }}
-    //       onLongPress={() => {
-    //         if (item?.opType === "fund") {
-    //           navigation.navigate("TankhahFundForm", { itemId })
-    //           return
-    //         }
-    //         navigation.navigate("TankhahSpendForm", { itemId })
-    //       }}
-    //     >
-    //       <Surface
-    //         style={{
-    //           paddingHorizontal: 20,
-    //           paddingVertical: 10,
-    //           marginBottom: 2,
-    //         }}
-    //         elevation={2}
-    //       >
-    //         <View style={$detail}>
-    //           <Text
-    //             style={{
-    //               color: item.opType === "fund" ? theme.colors.primary : theme.colors.tertiary,
-    //             }}
-    //             variant="labelMedium"
-    //             tx={("opType." + item.opType) as TxKeyPath}
-    //           />
-    //           <Text variant="labelMedium">{formatDateIR(item.doneAt)}</Text>
-    //         </View>
-    //         {item.opType === "transfer" && (
-    //           <View style={$detail}>
-    //             <Text variant="labelMedium">دریافت کننده</Text>
-    //             <Text>{item.recipient ?? "ثبت نشده"}</Text>
-    //           </View>
-    //         )}
-    //         {item.opType === "buy" && (
-    //           <View style={$detail}>
-    //             <Text variant="labelMedium">اجناس</Text>
-    //             <Text>{item.receiptItems?.map((i) => `${i.title}`).join("، ") || "ثبت نشده"}</Text>
-    //           </View>
-    //         )}
-    //         {item.opType === "fund" && !!item.description && (
-    //           <View style={$detail}>
-    //             <Text variant="labelMedium">توضیحات</Text>
-    //             <Text>{item.description}</Text>
-    //           </View>
-    //         )}
-    //         <View style={$detail}>
-    //           <Text variant="labelMedium">مبلغ</Text>
-    //           <Text variant="bodyLarge">{tomanFormatter(item.amount)}</Text>
-    //         </View>
-    //       </Surface>
-    //     </TouchableOpacity>
-    //   )
-    // }
-
     const renderListItem = ({ item }: ListRenderItemInfo<TankhahItem>) => renderItem(item)
 
     const renderHeadItem = () => {
@@ -327,21 +256,17 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
       )
     }
 
-    const renderTimeRangeBtn = (value: Date, type: "start" | "end" = "start", open: () => void) => {
+    const renderTimeRangeBtn = (
+      type: "start" | "end" = "start",
+      open: () => void,
+      value?: Date,
+    ) => {
       return (
         <Button
           style={$controlsBtn}
-          icon={(props) => (
-            <Icon
-              source={type === "start" ? "calendar-start" : "calendar-end"}
-              size={26}
-              color={theme.colors.inverseSurface}
-            />
-          )}
-          mode="contained-tonal"
           onPress={open}
         >
-          {formatDateIR(value)}
+          {value ? formatDateIRDisplay(value,"dd MMMM yy") : " : "}
         </Button>
       )
     }
@@ -380,12 +305,12 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
             amount: tomanFormatter(item.amount),
             fee: tomanFormatter(item.transferFee),
             description: item.description || "",
-            info: mapInfo[item.opType]
+            info: mapInfo[item.opType],
           }
         }),
         tomanFormatter(totalSpend),
         tomanFormatter(totalFund),
-        tomanFormatter(totalFundAll-totalSpendAll),
+        tomanFormatter(totalFundAll - totalSpendAll),
       )
     }
 
@@ -407,10 +332,19 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
             title={tomanFormatter(totalFund - totalSpend)}
           />
           <Appbar.Action icon={"printer"} onPress={handlePrint} />
+          <Appbar.Action icon={"basket"} onPress={()=>{
+            navigation.navigate("ReceiptItemList",{})
+          }} />
         </Appbar>
         <View>
           <View style={$row}>
             <View>
+            <Button style={$controlsBtn} compact onPress={()=>{
+              setProp("startDate", startOfDay(new Date()))
+              setProp("endDate", endOfDay(new Date()))
+            }} >{formatDateIRDisplay(new Date())}</Button>
+            <View style={$row}>
+
               <DatePicker
                 date={startDate}
                 maxDate={endDate}
@@ -418,7 +352,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
                   setProp("startDate", value)
                 }}
                 action={({ open, close, value }) => {
-                  return renderTimeRangeBtn(value, "start", open)
+                  return renderTimeRangeBtn("start", open, value)
                 }}
               />
               <DatePicker
@@ -427,8 +361,9 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
                 onDateChange={(value) => {
                   setProp("endDate", value)
                 }}
-                action={({ open, close, value }) => renderTimeRangeBtn(value, "end", open)}
+                action={({ open, close, value }) => renderTimeRangeBtn("end", open, value)}
               />
+            </View>
               {renderFilterMenu()}
             </View>
             {renderPieChart()}
@@ -495,7 +430,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
               // do something if the speed dial is open
             }
           }}
-          style={{ position: "absolute", bottom: 40, right: 20 }}
+          style={{ position: "absolute", bottom: 40, right: 20, opacity: 0.7 }}
         />
       </>
     )

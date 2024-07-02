@@ -14,19 +14,24 @@ import {
   setYear,
 } from "date-fns-jalali"
 import { formatDateIR } from "app/utils/formatDate"
-import { Button, Portal, Dialog } from "react-native-paper"
+import { Button, Portal, Dialog, Chip } from "react-native-paper"
 import { TextFieldProps, TextField } from "../TextField"
 import { createAnimatedPropAdapter } from "react-native-reanimated"
 import { Wheel } from "./Wheel"
+import { $row, spacing } from "app/theme"
 
 export interface DatePickerProps extends TextFieldProps {
   date?: Date
   onDateChange?: (date: Date) => void
   onDone?: (date: Date) => void
-  action?: (props: { open: () => void; close: () => void; value: Date }) => ReactNode
+  action?: (props: {
+    open: (defaultDate?: Date) => void
+    close: () => void
+    value?: Date
+  }) => ReactNode
   minDate?: Date
   maxDate?: Date
-  modalMode?: "datetime" | "date" | "time"
+  modalMode?: "date" | "time"
 }
 
 /**
@@ -47,7 +52,7 @@ export const DatePicker = (props: DatePickerProps) => {
   } = props
   const ref = useRef<TextInput>(null)
 
-  const [_date, _setDate] = useState(date || new Date())
+  const [_date, _setDate] = useState(date)
   const [err, setErr] = useState(false)
 
   const [modalVisibility, setModalVisibility] = useState(false)
@@ -63,21 +68,30 @@ export const DatePicker = (props: DatePickerProps) => {
 
   const handleClose = () => {
     setModalVisibility(false)
-    onDateChange && onDateChange(_date)
-    props.onDone && props.onDone(_date)
+    if (_date) {
+      onDateChange && onDateChange(_date)
+      props.onDone && props.onDone(_date)
+    }
   }
 
   const renderAction = useCallback(() => {
     if (!action) return undefined
     return action({
-      open: () => setModalVisibility(true),
+      open: (defaultDate) => {
+        if(defaultDate && _date === undefined){
+          _setDate(defaultDate)
+        }
+        setModalVisibility(true)
+      },
       close: handleClose,
-      value: _date || new Date(),
+      value: _date,
     })
   }, [action, _date])
 
   useEffect(() => {
-    _setDate(date || new Date())
+    if (date) {
+      _setDate(date)
+    }
   }, [date])
 
   return (
@@ -88,7 +102,7 @@ export const DatePicker = (props: DatePickerProps) => {
         <TextField
           ref={ref}
           style={$leftAlien}
-          value={formatDateIR(_date)}
+          value={_date ? formatDateIR(_date) : undefined}
           {...TextInputProps}
           onFocus={() => {
             setModalVisibility(true)
@@ -99,14 +113,13 @@ export const DatePicker = (props: DatePickerProps) => {
 
       <Portal>
         <Dialog visible={modalVisibility} onDismiss={handleClose}>
-          <Dialog.Title>انتخاب تاریخ</Dialog.Title>
+          <Dialog.Title>انتخاب زمان</Dialog.Title>
 
           <Dialog.Content
             style={{ borderColor: err ? "red" : undefined, borderWidth: err ? 1 : 0 }}
           >
             <DatePickerModal
-              showDate={modalMode !== "time"}
-              showTime={modalMode !== "date"}
+              defaultTab={modalMode}
               maxDate={maxDate}
               minDate={minDate}
               value={_date}
@@ -126,12 +139,11 @@ export const DatePicker = (props: DatePickerProps) => {
 const $leftAlien: ViewStyle | TextStyle = { direction: "ltr", textAlign: "left" }
 
 interface DatePickerModalProps {
-  value: Date
+  value?: Date
   onValueChange: (date: Date) => void
   minDate?: Date
   maxDate?: Date
-  showTime?: boolean
-  showDate?: boolean
+  defaultTab?: "time" | "date"
 }
 
 /**
@@ -141,17 +153,37 @@ interface DatePickerModalProps {
  * @returns {JSX.Element} The rendered `DatePicker` component.
  */
 export const DatePickerModal = memo(function DatePickerModal(props: DatePickerModalProps) {
-  const { value, onValueChange, showDate = true, showTime = false } = props
-
+  const { value, onValueChange, defaultTab = "date" } = props
+  const [tab, changeTab] = useState(defaultTab)
   return (
     <>
-      {showDate && (
+      <View style={[$row, { justifyContent: "flex-start", marginBottom: spacing.md }]}>
+        <Chip
+          showSelectedOverlay
+          showSelectedCheck={false}
+          selected={tab === "date"}
+          onPress={() => changeTab("date")}
+          style={{ marginStart: spacing.xxs }}
+        >
+          تاریخ
+        </Chip>
+        <Chip
+          showSelectedOverlay
+          showSelectedCheck={false}
+          selected={tab === "time"}
+          onPress={() => changeTab("time")}
+          style={{ marginStart: spacing.xxs }}
+        >
+          ساعت
+        </Chip>
+      </View>
+      {tab === "date" && (
         <View style={$dpkContentContainer}>
           <Wheel
             range={[1398, 1405]}
-            value={getYear(value)}
+            value={value && getYear(value)}
             onScroll={(i) => {
-              onValueChange(setYear(value, i))
+              onValueChange(setYear(value || new Date(), i))
             }}
           ></Wheel>
 
@@ -160,9 +192,9 @@ export const DatePickerModal = memo(function DatePickerModal(props: DatePickerMo
           </Text>
           <Wheel
             range={[1, 12]}
-            value={getMonth(value) + 1}
+            value={value && getMonth(value) + 1}
             onScroll={(i) => {
-              onValueChange(setMonth(value, i - 1))
+              onValueChange(setMonth(value || new Date(), i - 1))
             }}
           ></Wheel>
           <Text style={{ alignSelf: "center" }} variant="labelLarge">
@@ -170,20 +202,20 @@ export const DatePickerModal = memo(function DatePickerModal(props: DatePickerMo
           </Text>
           <Wheel
             range={[1, 31]}
-            value={getDate(value)}
+            value={value && getDate(value)}
             onScroll={(i) => {
-              onValueChange(setDate(value, i))
+              onValueChange(setDate(value || new Date(), i))
             }}
           ></Wheel>
         </View>
       )}
-      {showTime && (
+      {tab === "time" && (
         <View style={$dpkContentContainer}>
           <Wheel
             range={[0, 24]}
-            value={getHours(value)}
+            value={value && getHours(value)}
             onScroll={(i) => {
-              onValueChange(setHours(value, i))
+              onValueChange(setHours(value || new Date(), i))
             }}
           ></Wheel>
 
@@ -192,9 +224,9 @@ export const DatePickerModal = memo(function DatePickerModal(props: DatePickerMo
           </Text>
           <Wheel
             range={[0, 60]}
-            value={getMinutes(value)}
+            value={value && getMinutes(value)}
             onScroll={(i) => {
-              onValueChange(setMinutes(value, i))
+              onValueChange(setMinutes(value || new Date(), i))
             }}
           ></Wheel>
         </View>
@@ -209,16 +241,3 @@ const $dpkContentContainer: ViewStyle = {
   alignItems: "center",
   justifyContent: "center",
 }
-
-export const TextInputAdapter = createAnimatedPropAdapter(
-  (props) => {
-    "worklet"
-    const keys = Object.keys(props)
-    // convert text to value like RN does here: https://github.com/facebook/react-native/blob/f2c6279ca497b34d5a2bfbb6f2d33dc7a7bea02a/Libraries/Components/TextInput/TextInput.js#L878
-    if (keys.includes("value")) {
-      props.text = props.value as any
-      delete props.value
-    }
-  },
-  ["text"],
-)

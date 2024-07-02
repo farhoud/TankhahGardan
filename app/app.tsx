@@ -52,7 +52,6 @@ import {
   ShareIntentProvider,
 } from "expo-share-intent"
 import { getStateFromPath } from "@react-navigation/native"
-import { BottomSheetModalProvider } from "@gorhom/bottom-sheet"
 
 export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
 
@@ -216,14 +215,12 @@ function App(props: AppProps) {
           <ErrorBoundary catchErrors={Config.catchErrors}>
             <GestureHandlerRootView style={$container}>
               <PaperProvider theme={theme}>
-                <BottomSheetModalProvider>
                   <AppNavigator
                     theme={theme}
                     linking={linking}
                     initialState={initialNavigationState}
                     onStateChange={onNavigationStateChange}
                   />
-                </BottomSheetModalProvider>
               </PaperProvider>
             </GestureHandlerRootView>
           </ErrorBoundary>

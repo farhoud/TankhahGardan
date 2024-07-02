@@ -97,7 +97,6 @@ export class Api {
 
       // This is where we transform the data into the shape we expect for our MST model.
       const extracted = JSON.parse(rawData) as GPTSpendPart
-      console.log(extracted)
       let doneAt
       let amount
       if (extracted.doneAt) {

@@ -1,16 +1,9 @@
 import React, { forwardRef, Ref, useImperativeHandle, useRef } from "react"
-import {
-  TextStyle,
-  View,
-  ViewStyle,
-  StyleProp,
-  TextInput as RNTextInput,
-} from "react-native"
+import { TextStyle, View, ViewStyle, StyleProp, TextInput as RNTextInput } from "react-native"
 import { translate } from "../i18n"
 import { spacing } from "../theme"
 import { TextProps } from "./Text"
 import { HelperText, TextInput, TextInputProps } from "react-native-paper"
-
 
 export interface TextFieldProps extends Omit<TextInputProps, "ref"> {
   /**
@@ -60,7 +53,7 @@ export interface TextFieldProps extends Omit<TextInputProps, "ref"> {
    * as well as explicitly setting locale or translation fallbacks.
    */
   placeholderTxOptions?: TextProps["txOptions"]
-  
+
   textStyle?: StyleProp<TextStyle>
 
   containerStyle?: StyleProp<ViewStyle>
@@ -89,6 +82,7 @@ export const TextField = forwardRef(function TextField(
     HelperTextProps,
     LabelTextProps,
     containerStyle,
+    style,
     mode,
     ...TextInputProps
   } = props
@@ -101,6 +95,7 @@ export const TextField = forwardRef(function TextField(
   const helperContent = helperTx ? translate(helperTx, helperTxOptions) : helper
 
   const $containerStyle = [$container, containerStyle]
+  const $style = [style]
 
   useImperativeHandle(ref, () => input.current as RNTextInput)
 
@@ -111,10 +106,11 @@ export const TextField = forwardRef(function TextField(
         {...TextInputProps}
         placeholder={placeholderContent}
         label={labelContent}
-        mode={mode||'outlined'}
+        style={$style}
+        mode={mode || "outlined"}
       />
       {!!(helper || helperTx) && (
-        <HelperText type={props.error?"error":"info"} visible={!!(helper || helperTx)}>
+        <HelperText type={props.error ? "error" : "info"} visible={!!(helper || helperTx)}>
           {helperContent}
         </HelperText>
       )}
@@ -125,4 +121,3 @@ export const TextField = forwardRef(function TextField(
 const $container: ViewStyle = {
   marginBottom: spacing.xs,
 }
-

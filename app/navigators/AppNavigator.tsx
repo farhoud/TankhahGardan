@@ -20,6 +20,7 @@ import { useStores } from "../models"
 import { AppTabNavigator, AppTabParamList } from "./AppTabNavigator"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 import { Appbar } from "react-native-paper"
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -44,10 +45,13 @@ export type AppStackParamList = {
   TestScreen: undefined
   ImageView: { images: string[]; index?: number }
   Attendance: undefined
-  Worker: { itemId?: string; mode?: "select" | "manage" }
   AttendanceForm: undefined
-	WorkerDetail: { itemId?: string }
-	// IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
+  Worker: { itemId?: string; mode?: "select" | "manage" }
+  WorkerDetail: { itemId?: string }
+  ProjectList: { itemId?: string; mode?: "select" | "manage" }
+  ProjectDetail: { itemId?: string }
+  ReceiptItemList: { itemId?: string }
+  // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
 
 /**
@@ -115,6 +119,7 @@ const AppStack = observer(function AppStack() {
             ),
           }}
         />
+        <Stack.Screen name="ReceiptItemList" component={Screens.ReceiptItemListScreen} />
         <Stack.Screen name="TankhahFundForm" component={Screens.TankhahChargeFromScreen} />
       </Stack.Group>
       <Stack.Group>
@@ -124,6 +129,12 @@ const AppStack = observer(function AppStack() {
           component={Screens.WorkerScreen}
         />
         <Stack.Screen name="WorkerDetail" component={Screens.WorkerDetailScreen} />
+        <Stack.Screen
+          name="ProjectList"
+          options={{ presentation: "modal" }}
+          component={Screens.ProjectListScreen}
+        />
+        <Stack.Screen name="ProjectDetail" component={Screens.ProjectDetailScreen} />
       </Stack.Group>
 
       {/** 🔥 Your screens go here */}
@@ -139,8 +150,8 @@ const AppStack = observer(function AppStack() {
           ),
         }}
       />
-			
-			{/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
+
+      {/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
     </Stack.Navigator>
   )
 })
@@ -153,7 +164,9 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
 
   return (
     <NavigationContainer ref={navigationRef} {...props}>
+      <BottomSheetModalProvider>
         <AppStack />
+      </BottomSheetModalProvider>
     </NavigationContainer>
   )
 })

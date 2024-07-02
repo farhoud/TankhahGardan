@@ -9,11 +9,11 @@ import {
   createMaterialBottomTabNavigator,
   MaterialBottomTabScreenProps,
 } from "react-native-paper/react-navigation"
-import { BottomSheetModalProvider } from "@gorhom/bottom-sheet"
 
 export type AppTabParamList = {
   TankhahHome: { itemId?: string }
-  AttendanceHome: undefined
+  CalendarHome: undefined
+  ProjectHome: { itemId?: string }
 }
 
 /**
@@ -44,19 +44,29 @@ export function AppTabNavigator() {
         component={Screens.TankhahHomeScreen}
         options={{
           tabBarLabel: translate("tabNavigator.tankhahTab"),
-          tabBarIcon: ({ color }) => <Icon source="cash-fast" color={color} size={26} />,
+          tabBarIcon: ({ color }) => <Icon source="bank-transfer" color={color} size={28} />,
         }}
       />
       <Tab.Screen
-        name="AttendanceHome"
-        component={Screens.AttendanceHomeScreen}
+        name="CalendarHome"
+        component={Screens.CalendarHomeScreen}
         options={{
           tabBarLabel: translate("tabNavigator.attendanceTab"),
           tabBarIcon: ({ color }) => (
-            <Icon source="calendar-account-outline" color={color} size={26} />
+            <Icon source="calendar-edit" color={color} size={26} />
           ),
         }}
       />
+      {/* <Tab.Screen
+        name="ProjectHome"
+        component={Screens.ProjectHomeScreen}
+        options={{
+          tabBarLabel: translate("tabNavigator.attendanceTab"),
+          tabBarIcon: ({ color }) => (
+            <Icon source="progress-wrench" color={color} size={26} />
+          ),
+        }}
+      /> */}
     </Tab.Navigator>
   )
 }

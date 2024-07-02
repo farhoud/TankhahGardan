@@ -32,6 +32,10 @@ export const formatDateIR = (date: Date, dateFormat?: string, options?: FormatOp
   return formatFa(date, dateFormat ?? "yy٫MM٫dd", options)
 }
 
+export const formatDateIRDisplay = (date: Date, dateFormat?: string, options?: FormatOptions) => {
+  return formatFa(date, dateFormat ?? "EEE dd MMMM", options)
+}
+
 export const tomanFormatter = (value: number) => {
   const [hole, fraction] = Math.abs(value / 10)
     .toString()

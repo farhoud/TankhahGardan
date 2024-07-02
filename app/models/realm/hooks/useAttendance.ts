@@ -1,5 +1,5 @@
 import { useQuery } from "@realm/react"
-import { Attendance } from "../attendance"
+import { Attendance } from "../calendar"
 
 export const useAttendance = () => {
   const groups = useQuery(Attendance, (res) => {

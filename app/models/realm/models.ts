@@ -1,14 +1,15 @@
 import Realm, { BSON, ObjectSchema } from "realm"
-import { Attendance, Worker } from "./attendance"
+import { Attendance, Event, Project, Worker } from "./calendar"
 
 export type PaymentMethod = "satna" | "paya" | "cash" | "ctc" | "pos" | "other" | "sts"
 export type AccountNumType = "sheba" | "card" | "other" | "none"
 export type PaymentType = "buy" | "transfer"
 export type OperationType = "buy" | "transfer" | "fund"
 
-
-export const paymentMethodAccountTypeMapper = (method: PaymentMethod|undefined):AccountNumType=>{
-  switch  (method){
+export const paymentMethodAccountTypeMapper = (
+  method: PaymentMethod | undefined,
+): AccountNumType => {
+  switch (method) {
     case "satna":
       return "sheba"
     case "paya":
@@ -22,7 +23,7 @@ export const paymentMethodAccountTypeMapper = (method: PaymentMethod|undefined):
     case "other":
       return "other"
     default:
-      return "other"  
+      return "other"
   }
 }
 
@@ -181,37 +182,68 @@ export class SpendReceiptItem extends Realm.Object<SpendReceiptItem> {
 }
 
 export const realmConfig: Realm.Configuration = {
-  schema: [Fund, Spend, ReceiptItem, SpendReceiptItem, TankhahItem, TankhahReceiptItem, Worker, Attendance],
+  schema: [
+    Fund,
+    Spend,
+    ReceiptItem,
+    SpendReceiptItem,
+    TankhahItem,
+    TankhahReceiptItem,
+    Worker,
+    Attendance,
+    Event,
+    Project,
+  ],
   // Increment the 'schemaVersion', since 'fullName' has replaced
   // 'firstName' and 'lastName' in the schema.
   // The initial schemaVersion is 0.
-  schemaVersion: 13,
+  schemaVersion: 16,
 
   onMigration: (oldRealm: Realm, newRealm: Realm) => {
     // only apply this change if upgrading schemaVersion
     if (oldRealm.schemaVersion < 9) {
-      const oldFunObjects: Realm.Results<Fund> =
-        oldRealm.objects(Fund);
-      const oldSpendObjects: Realm.Results<Spend> = newRealm.objects(Spend);
+      const oldFunObjects: Realm.Results<Fund> = oldRealm.objects(Fund)
+      const oldSpendObjects: Realm.Results<Spend> = newRealm.objects(Spend)
       // loop through all objects and set the fullName property in the
       // new schema
       for (const obj of oldSpendObjects) {
         const newObj = obj.toJSON()
-        if(!!newObj.paymentType){
-          newObj.opType=newObj.paymentType
+        if (!!newObj.paymentType) {
+          newObj.opType = newObj.paymentType
           delete newObj.paymentType
         } else {
-          newObj.opType="transfer"
+          newObj.opType = "transfer"
         }
         newRealm.create(TankhahItem, newObj)
       }
       for (const obj of oldFunObjects) {
         const newObj = obj.toJSON()
-        newObj.opType="fund"
-        newObj.paymentMethod="cash"
-        newObj.transferFee=0
-        newObj.total=newObj.amount
+        newObj.opType = "fund"
+        newObj.paymentMethod = "cash"
+        newObj.transferFee = 0
+        newObj.total = newObj.amount
         newRealm.create(TankhahItem, newObj)
+      }
+    }
+    if (oldRealm.schemaVersion < 14) {
+      const oldAttendances: Realm.Results<Attendance> = oldRealm.objects(Attendance)
+      const newAttendances: Realm.Results<Attendance> = newRealm.objects(Attendance)
+      const groups = oldAttendances.filtered("group != '' DISTINCT(group)")
+
+      const mapGroupProject: Record<string, Project> = {}
+      groups.forEach((i) => {
+        const item = newRealm.create(Project, {
+          name: i.group,
+        })
+        // @ts-ignore old schema < 14 group was mandatory
+        mapGroupProject[i.group] = item
+      })
+
+      for (const objectIndex in oldAttendances) {
+        const oldObject = oldAttendances[objectIndex]
+        const newObject = newAttendances[objectIndex]
+        // @ts-ignore old schema < 14 group was mandatory
+        newObject.project = mapGroupProject[oldObject.group]
       }
     }
   },
