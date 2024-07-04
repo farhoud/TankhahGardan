@@ -1,6 +1,6 @@
 import { $row, spacing } from "app/theme"
 import { TouchableHighlight, View } from "react-native"
-import { Chip, Icon, useTheme } from "react-native-paper"
+import { Chip, Icon, IconButton, useTheme } from "react-native-paper"
 import { Text } from "app/components"
 interface SelectOption<T> {
   label: string
@@ -14,10 +14,11 @@ interface SelectProps<T> {
   onItemPress?: (item: SelectOption<T>) => void
   selected?: SelectOption<T>[] | string
   error?: string
+  onClear?: ()=>void
 }
 
 export const Select = <T,>(props: SelectProps<T>) => {
-  const { placeholder, icon, onPress, selected, onItemPress, error } = props
+  const { placeholder, icon, onPress, selected, onItemPress, error, onClear = false } = props
   const theme = useTheme()
 
   return (
@@ -30,6 +31,7 @@ export const Select = <T,>(props: SelectProps<T>) => {
             alignItems: "center",
             paddingTop: spacing.xs,
             paddingBottom: spacing.xs,
+            position: "relative",
           },
         ]}
       >
@@ -61,7 +63,19 @@ export const Select = <T,>(props: SelectProps<T>) => {
             </Chip>
           ))}
         {error && (
-          <Text variant="labelLarge" text={error} style={{ color: theme.colors.error, textAlign:"right", marginStart:20 }}></Text>
+          <Text
+            variant="labelLarge"
+            text={error}
+            style={{ color: theme.colors.error, textAlign: "right", marginStart: 20 }}
+          ></Text>
+        )}
+        {onClear && (
+          <IconButton
+            size={12}
+            style={{ position: "absolute", right: 0, alignSelf: "flex-start" }}
+            icon={"close"}
+            onPress={onClear}
+          />
         )}
       </View>
     </TouchableHighlight>

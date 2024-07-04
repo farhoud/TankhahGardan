@@ -3,6 +3,7 @@ import { withSetPropAction } from "./helpers/withSetPropAction"
 import Realm, { BSON, UpdateMode } from "realm"
 import { Alert } from "react-native"
 import { Event, Project, Worker } from "./realm/calendar"
+import { FormField, FormFieldModel, createFormFieldDefaultModel } from "./FormField"
 
 /**
  * Model description here for TypeScript hints.
@@ -11,7 +12,7 @@ export const CalendarEventModel = types
   .model("CalendarEvent")
   .props({
     _id: types.maybe(types.string),
-    title: types.maybe(types.string),
+    title: createFormFieldDefaultModel("title"),
     group: types.maybe(types.string),
     projectId: types.maybe(types.string),
     workerIds: types.array(types.string),
@@ -22,25 +23,16 @@ export const CalendarEventModel = types
     unit: types.maybe(types.string),
     quantity: types.maybe(types.number),
     loading: types.optional(types.boolean, false),
-    touched: types.optional(types.boolean, false),
   })
   .actions(withSetPropAction)
   .views((self) => ({
-    get errors(): Record<string, string> {
-      if (!self.touched) {
-        return {}
-      }
-      let errors: Record<string, string> = {}
-      const required = "این فیلد الزامیست"
-      if (!self.from) {
-        errors.from = required
-      }
-      return errors
-    },
-  }))
-  .views((self) => ({
     get isValid() {
-      return !!Object.keys(self.errors).length
+      for(const item of Object.values(self)){
+        if(item && item instanceof Object && item.error){
+          return false
+        }
+      }
+      return true
     },
     get workerObjIds(){
       return self.workerIds.map(i=>new BSON.ObjectId(i))
@@ -53,8 +45,8 @@ export const CalendarEventModel = types
     load(event: Event) {
       self._id = event._id.toHexString()
       self.group = event.group || undefined
-      self.title = event.title
-      self.projectId = event.project._id.toHexString()
+      self.title.value = event.title
+      self.projectId = event.project ? event.project._id.toHexString() : undefined
       self.workerIds = cast(event.workers.map(i=>i._id.toHexString()))
       self.from = event.from || undefined
       self.to = event.to || undefined
@@ -73,7 +65,7 @@ export const CalendarEventModel = types
               _id: self._id ? new BSON.ObjectID(self._id) : new BSON.ObjectID(),
               group: self.group,
               project: project,
-              title: self.title,
+              title: self.title.value as string,
               workers: workers,
               from: self.from,
               to: self.to,
@@ -95,24 +87,23 @@ export const CalendarEventModel = types
         return undefined
       }
     },
-    clear: (date?: Date) => {
+    clear: (defaultValues?: { date?: Date, projectId?: string }) => {
       self._id = undefined
       self.group = undefined
-      self.projectId = undefined
-      self.title = undefined
+      self.projectId = defaultValues?.projectId || undefined
+      self.title.clear()
       self.workerIds = cast([])
-      self.from = new Date()
+      self.from = defaultValues?.date||new Date()
       self.to = undefined
       self.description = undefined
       self.process = undefined
       self.unit = undefined
       self.quantity = undefined
       self.loading = false
-      self.touched = false
     },
-    handleTouch: () => {
-      self.touched = true
-    },
+    // handleTouch: () => {
+    //   self.touched = true
+    // },
   }))
 
 export interface CalendarEvent extends Instance<typeof CalendarEventModel> {}

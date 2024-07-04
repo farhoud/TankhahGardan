@@ -6,9 +6,10 @@ import { $row, spacing } from "app/theme"
 import { observer } from "mobx-react-lite"
 import { useStores } from "app/models"
 import { EventForm } from "./EventForm"
+import { Attendance,Event } from "app/models/realm/calendar"
 
-interface CalendarFormProps {
-  onDone: () => void
+export interface CalendarFormProps {
+  onDone: (value:Event|Attendance) => void
 }
 type TabKey = undefined | "task" | "event" | "attendance"
 export const CalendarForm: FC<CalendarFormProps> = observer((props) => {
@@ -50,8 +51,8 @@ export const CalendarForm: FC<CalendarFormProps> = observer((props) => {
           رخداد
         </Chip>
       </View>
-      {isSelected("attendance") && <AttendanceForm onDone={() => props.onDone()}></AttendanceForm>}
-      {isSelected("event") && <EventForm onDone={() => props.onDone()}></EventForm>}
+      {isSelected("attendance") && <AttendanceForm onDone={(value) => props.onDone(value)}></AttendanceForm>}
+      {isSelected("event") && <EventForm onDone={(value) => props.onDone(value)}></EventForm>}
     </View>
   )
 })

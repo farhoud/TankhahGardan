@@ -15,18 +15,25 @@ export const CalendarStoreModel = types
     currentForm: types.optional(types.enumeration(["event", "attendance"]), "attendance"),
     selecting: types.optional(types.boolean, false),
     currentDate: types.optional(types.Date, new Date()),
-    currentProjectId: types.maybe(types.string)
+    currentProjectId: types.maybe(types.string),
+    currentView:  types.optional(types.enumeration(["event", "attendance","all"]), "all"),
   })
   .actions(withSetPropAction)
   .actions((self) => ({
     clear() {
-      self.attendanceForm.clear(self.currentDate)
-      self.eventForm.clear()
+      self.attendanceForm.clear({date:self.currentDate, projectId: self.currentProjectId})
+      self.eventForm.clear({date:self.currentDate, projectId: self.currentProjectId})
       self.selecting = false
     },
     load(item: Attendance | Event) {
-      item instanceof Attendance && self.attendanceForm.load(item)
-      item instanceof Event && self.eventForm.load(item)
+      if(item instanceof Attendance){ 
+        self.attendanceForm.load(item) 
+        self.setProp("currentForm", "attendance")
+      }
+      if(item instanceof Event){
+       self.eventForm.load(item)
+       self.setProp("currentForm", "event")
+      }
     },
     setGroup(group: string) {
       self.attendanceForm.setGroup(group)

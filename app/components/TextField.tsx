@@ -1,5 +1,5 @@
 import React, { forwardRef, Ref, useImperativeHandle, useRef } from "react"
-import { TextStyle, View, ViewStyle, StyleProp, TextInput as RNTextInput } from "react-native"
+import { TextStyle, View, ViewStyle, StyleProp, TextInput as RNTextInput, NativeSyntheticEvent, TextInputFocusEventData } from "react-native"
 import { translate } from "../i18n"
 import { spacing } from "../theme"
 import { TextProps } from "./Text"
@@ -103,11 +103,11 @@ export const TextField = forwardRef(function TextField(
     <View style={$containerStyle}>
       <TextInput
         ref={input}
-        {...TextInputProps}
         placeholder={placeholderContent}
         label={labelContent}
         style={$style}
         mode={mode || "outlined"}
+        {...TextInputProps}
       />
       {!!(helper || helperTx) && (
         <HelperText type={props.error ? "error" : "info"} visible={!!(helper || helperTx)}>

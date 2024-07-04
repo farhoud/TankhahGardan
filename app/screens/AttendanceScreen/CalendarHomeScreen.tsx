@@ -1,8 +1,8 @@
-import { FC, useCallback, useRef, useState, useEffect } from "react"
+import { FC, useCallback, useRef, useState, useEffect, useMemo } from "react"
 import { observer } from "mobx-react-lite"
-import { TouchableWithoutFeedback, View, ViewStyle } from "react-native"
+import { View, ViewStyle } from "react-native"
 import { AppTabScreenProps, AppNavigation } from "app/navigators"
-import { Button, DatePicker, ListView, TimeIndicator, Text, BottomSheet } from "app/components"
+import { Button, DatePicker, ListView, TimeIndicator, Text } from "app/components"
 import {
   Appbar,
   Card,
@@ -12,28 +12,24 @@ import {
   Icon,
   IconButton,
   List,
-  Menu,
-  Modal,
-  Portal,
+  Surface,
   useTheme,
 } from "react-native-paper"
-import { formatDateIR, formatDateIRDisplay } from "app/utils/formatDate"
+import { formatDateIRDisplay } from "app/utils/formatDate"
 import { useNavigation } from "@react-navigation/native"
 import PagerView from "react-native-pager-view"
 import { TimeRangeIndicator } from "app/components/TimeRangeIndicator"
-import { BottomSheetModal } from "@gorhom/bottom-sheet"
 import { useStores } from "app/models"
 import { useQuery, useRealm } from "@realm/react"
-import { Attendance, Event, Project, Worker } from "app/models/realm/calendar"
-import { addMinutes, endOfDay, format } from "date-fns-jalali"
+import { Attendance, Event, Project } from "app/models/realm/calendar"
+import { addDays, addMinutes, endOfDay, format } from "date-fns-jalali"
 import { ListRenderItem } from "@shopify/flash-list"
 import startOfDay from "date-fns/startOfDay"
-import { CalendarForm } from "./CalendarForm"
+import { spacing } from "app/theme"
+import Animated, { FadeInRight, FadeOutRight } from "react-native-reanimated"
+import { ProjectModal } from "./ProjectListScreen"
 import { BSON } from "realm"
-import { $debugBorder, spacing } from "app/theme"
-import { useSafeAreaInsetsStyle } from "app/utils/useSafeAreaInsetsStyle"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
-import Animated, { FadeInRight, FadeOutRight, useSharedValue } from "react-native-reanimated"
+import { BottomSheetForm, BottomSheetFormRef } from "./BottomSheetForm"
 
 interface CalendarScreenProps extends AppTabScreenProps<"CalendarHome"> {}
 
@@ -42,17 +38,7 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Att
 ) {
   // Pull in one of our MST stores
   const {
-    calendarStore: {
-      setProp,
-      setGroup,
-      load,
-      clear,
-      currentDate,
-      selecting,
-      currentProjectId,
-      selectProjectId,
-      currentForm,
-    },
+    calendarStore: { setProp, currentDate, selectProjectId, currentView },
   } = useStores()
   // Pull in navigation via hook
   const navigation = useNavigation<AppNavigation>()
@@ -60,8 +46,9 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Att
   const realm = useRealm()
   const theme = useTheme()
   // refs
-  const bottomSheetRef = useRef<BottomSheetModal>(null)
+
   const pagerRef = useRef<PagerView>(null)
+  const formRef = useRef<BottomSheetFormRef>(null)
 
   // states
   const [currentPage, setCurrentPage] = useState(0)
@@ -70,15 +57,45 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Att
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   // Realm queries
-  const projects = useQuery(Project)
+  const projects = useQuery(Project, (col) => {
+    return col.filtered("deleted != $0", true)
+  })
+
+  const currentAttendance = useQuery(
+    Attendance,
+    (col) => {
+      return col
+        .filtered(
+          "project._id == $0",
+          projects[currentPage] ? projects[currentPage]._id : new BSON.ObjectID(),
+        )
+        .filtered("from BETWEEN {$0 , $1}", startOfDay(currentDate), endOfDay(currentDate))
+    },
+    [currentDate, currentPage, projects],
+  )
+
+  const currentEvents = useQuery(
+    Event,
+    (col) => {
+      return col
+        .filtered(
+          "project._id == $0",
+          projects[currentPage] ? projects[currentPage]._id : new BSON.ObjectID(),
+        )
+        .filtered(
+          "from BETWEEN {$0 , $1} OR to BETWEEN {$0 , $1}",
+          startOfDay(currentDate),
+          endOfDay(currentDate),
+        )
+    },
+    [currentDate, currentPage, projects],
+  )
 
   const handleFormNew = () => {
-    clear()
-    bottomSheetRef.current?.present()
+    formRef.current?.newForm()
   }
   const handleFormEdit = (item: Attendance | Event) => (e: any) => {
-    load(item)
-    bottomSheetRef.current?.present()
+    formRef.current?.editForm(item)
   }
   const handleDeleteItem = (item: Attendance | Event) => (e: any) => {
     realm.write(() => realm.delete(item))
@@ -98,8 +115,14 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Att
           }}
         />
         <Appbar.Content
-          title={projects[currentPage].name}
+          title={(projects[currentPage] && projects[currentPage].name) || "ندارد"}
         ></Appbar.Content>
+        <Appbar.Action
+          icon="arrow-right-circle"
+          onPress={() => {
+            setProp("currentDate", addDays(currentDate, 1))
+          }}
+        />
         <DatePicker
           date={currentDate}
           onDateChange={(value) => {
@@ -109,15 +132,23 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Att
             return (
               <Button
                 mode="contained-tonal"
+                labelStyle={theme.fonts.bodySmall}
                 text={value ? formatDateIRDisplay(value) : " : "}
                 onPress={() => open()}
               />
             )
           }}
         />
+        <Appbar.Action
+          mode="contained-tonal"
+          icon="arrow-left-circle"
+          onPress={() => {
+            setProp("currentDate", addDays(currentDate, -1))
+          }}
+        />
       </Appbar.Header>
     )
-  }, [currentDate,currentPage,projects])
+  }, [currentDate, currentPage, projects, drawerOpen])
 
   const renderAttendanceItem: ListRenderItem<Attendance> = ({ item, index }) => {
     if (index === selectedAttendance)
@@ -269,63 +300,50 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Att
     )
   }
 
+  const renderItem: ListRenderItem<Event | Attendance | string> = (info) => {
+    if (info.item instanceof Event) {
+      return renderEventItem(info as any)
+    }
+    if (info.item instanceof Attendance) return renderAttendanceItem(info as any)
+    return <List.Subheader>{info.item}</List.Subheader>
+  }
+
   const renderDrawer = () => (
-    <TouchableWithoutFeedback
-      onPress={() => {
-        setDrawerOpen(false)
-      }}
-    >
-      <Animated.View
-        entering={FadeInRight}
-        exiting={FadeOutRight}
-        style={[
-          {
-            zIndex: 1000,
-            position: "absolute",
-            top: 80,
-            height: "100%",
-            width: "100%",
-            // backgroundColor: theme.colors.surfaceVariant,
-            // marginTop: 20,
-          },
-        ]}
-      >
-        <View
-          style={[
-            {
-              height: "100%",
-              width: "20%",
-              backgroundColor: theme.colors.surfaceVariant,
-              // marginTop: 20,
-              paddingTop: spacing.sm,
-            },
-          ]}
-        >
+    <Animated.View entering={FadeInRight} exiting={FadeOutRight} style={{ height: "100%" }}>
+      <Surface style={{ paddingTop: spacing.md }}>
+        <Drawer.Section>
           <Drawer.CollapsedItem
-            active={currentForm === "attendance"}
+            active={currentView === "all"}
+            focusedIcon="book-clock"
+            unfocusedIcon="book-clock-outline"
+            label="همه"
+            onPress={() => {
+              setProp("currentView", "all")
+              setDrawerOpen(false)
+            }}
+          />
+          <Drawer.CollapsedItem
+            active={currentView === "attendance"}
             focusedIcon="book-clock"
             unfocusedIcon="book-clock-outline"
             label="حضور"
             onPress={() => {
-              setProp("currentForm", "attendance")
+              setProp("currentView", "attendance")
+              setDrawerOpen(false)
             }}
           />
           <Drawer.CollapsedItem
-            active={currentForm === "event"}
+            active={currentView === "event"}
             focusedIcon="calendar"
             unfocusedIcon="calendar-outline"
             label="رخداد"
             onPress={() => {
-              setProp("currentForm", "event")
+              setProp("currentView", "event")
+              setDrawerOpen(false)
             }}
           />
-          <View
-            style={{
-              borderTopWidth: 1,
-              marginBottom: spacing.sm,
-              borderColor: theme.colors.onSurfaceVariant,
-            }}
-          />
+        </Drawer.Section>
+        <Drawer.Section>
           <Drawer.CollapsedItem
             // active={currentForm === "event"}
             focusedIcon="account-group"
@@ -345,28 +363,21 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Att
             }}
           />
           {/* </Drawer.Section> */}
-        </View>
-      </Animated.View>
-    </TouchableWithoutFeedback>
+        </Drawer.Section>
+      </Surface>
+    </Animated.View>
   )
 
-  useEffect(() => {
-    const unsubscribe1 = navigation.addListener("focus", (e) => {
-      if (selecting) {
-        bottomSheetRef.current?.present()
-      }
-      setProp("selecting", false)
-    })
-
-    const unsubscribe2 = navigation.addListener("blur", (e) => {
-      bottomSheetRef.current?.close()
-    })
-
-    return () => {
-      unsubscribe1()
-      unsubscribe2()
+  const data = useMemo(() => {
+    if (currentView === "all") return ["حضور", ...currentAttendance, "رخدادها", ...currentEvents]
+    if (currentView === "attendance") {
+      return currentAttendance.slice()
     }
-  }, [navigation, selecting, setProp])
+    if (currentView === "event") {
+      return currentEvents.slice()
+    }
+    return []
+  }, [currentEvents, currentView, currentAttendance])
 
   useEffect(() => {
     if (currentPage < projects.length) pagerRef.current?.setPageWithoutAnimation(currentPage)
@@ -376,64 +387,43 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Att
     <>
       {renderHeader()}
       <TimeIndicator></TimeIndicator>
+      <ProjectModal visible={!projects[currentPage]} />
       <PagerView
         ref={pagerRef}
-        style={$root}
+        style={[$root]}
         initialPage={currentPage}
         onPageSelected={(e) => {
           setCurrentPage(e.nativeEvent.position)
-          selectProjectId(projects[e.nativeEvent.position]._id.toHexString())
+          projects[e.nativeEvent.position] &&
+            selectProjectId(projects[e.nativeEvent.position]._id.toHexString())
         }}
       >
         {projects.map((i, index) => (
-          <View key={index}>
-            {currentForm === "attendance" ? (
-              <ListView
-                data={i.attendances
-                  .filtered(
-                    "from BETWEEN {$0 , $1}",
-                    startOfDay(currentDate),
-                    endOfDay(currentDate),
-                  )
-                  .slice()}
-                // ListHeaderComponent={() => (
-                //   <List.Subheader style={{ textAlign: "center" }}>{i.group}</List.Subheader>
-                // )}
-                scrollEnabled
-                renderItem={renderAttendanceItem}
-              />
-            ) : (
-              <ListView
-                data={i.events
-                  .filtered(
-                    "from BETWEEN {$0 , $1} OR to BETWEEN {$0 , $1}",
-                    startOfDay(currentDate),
-                    endOfDay(currentDate),
-                  )
-                  .slice()}
-                // ListHeaderComponent={() => (
-                //   <List.Subheader style={{ textAlign: "center" }}>{i.group}</List.Subheader>
-                // )}
-                scrollEnabled
-                renderItem={renderEventItem}
-              />
-            )}
+          <View key={i._id.toHexString()} style={[{ flex: 1, flexDirection: "row-reverse" }]}>
+            <ListView data={data} scrollEnabled renderItem={renderItem} />
+            <View>{drawerOpen && renderDrawer()}</View>
           </View>
         ))}
       </PagerView>
-      <BottomSheet onDismiss={() => !selecting && clear()} ref={bottomSheetRef}>
-        <CalendarForm
-          onDone={() => {
-            bottomSheetRef.current?.close()
-            clear()
-          }}
-        ></CalendarForm>
-      </BottomSheet>
+
+      <BottomSheetForm
+        ref={formRef}
+        onDone={(value) => {
+          if (value instanceof Event) setProp("currentView", "event")
+          if (value instanceof Attendance) setProp("currentView", "attendance")
+
+          setProp("currentDate", startOfDay(value.from))
+          const pageNumber = projects.findIndex((i) => {
+            return i._id.toHexString() === value.project._id.toHexString()
+          })
+          if (pageNumber > 0) pagerRef.current?.setPageWithoutAnimation(pageNumber)
+        }}
+      ></BottomSheetForm>
+      <Button onPress={() => setProp("currentDate", new Date())} style={$toDay}>
+        {formatDateIRDisplay(new Date())}
+      </Button>
 
       <FAB style={$fab} onPress={handleFormNew} icon="plus" />
-      {drawerOpen && renderDrawer()}
-
-      <Button onPress={()=>setProp("currentDate",new Date())} style={$toDay}>{formatDateIRDisplay(new Date())}</Button>
     </>
   )
 })

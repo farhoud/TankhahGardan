@@ -1,7 +1,7 @@
 import React, { useCallback } from "react"
 import { TouchableHighlight, View } from "react-native"
 import { AppNavigation } from "app/navigators"
-import { AutoComplete, Button, DatePicker, TextField, Text } from "app/components"
+import { AutoComplete, Button, DatePicker, TextField, Text, DatePickerProps } from "app/components"
 import { $row, spacing } from "app/theme"
 import { Chip, Divider, Icon, TextInput, useTheme } from "react-native-paper"
 import { useNavigation } from "@react-navigation/native"
@@ -23,9 +23,9 @@ export const EventForm = observer(function EventForm(_props: EventFormProps) {
   const {
     calendarStore: {
       currentDate,
-      currentProjectId,
       deSelectWorker,
       eventForm: {
+        projectId,
         from,
         to,
         description,
@@ -36,6 +36,7 @@ export const EventForm = observer(function EventForm(_props: EventFormProps) {
         title,
         submit,
         setProp,
+        isValid,
       },
       setProp: setCalendarProps,
     },
@@ -55,7 +56,7 @@ export const EventForm = observer(function EventForm(_props: EventFormProps) {
     },
     [workerObjIds],
   )
-  const project = useObject(Project, new BSON.ObjectID(currentProjectId))
+  const project = useObject(Project, new BSON.ObjectID(projectId))
 
   const renderIcon = (src: string) => {
     return (
@@ -106,6 +107,26 @@ export const EventForm = observer(function EventForm(_props: EventFormProps) {
     },
     [workers, navigation],
   )
+
+  const renderDatePickerAction = useCallback(
+    ({ open, clear, value }: {
+      open: (defaultDate?: Date) => void
+      close: () => void
+      value?: Date
+      clear: () => void
+    }) => {
+      return (
+        <Select
+          selected={value && format(value, "HH:mm")}
+          placeholder={"تاریخ"}
+          icon={"clock"}
+          onPress={() => open(currentDate)}
+          // onClear={() => clear()}
+        />
+      )
+    },
+    [currentDate],
+  )
   return (
     <>
       <View
@@ -117,6 +138,7 @@ export const EventForm = observer(function EventForm(_props: EventFormProps) {
         <Button
           mode="contained-tonal"
           style={{ marginBottom: spacing.sm }}
+          disabled={!isValid}
           onPress={() => {
             if (workers && project) {
               const res = submit(realm, workers.slice(), project)
@@ -130,12 +152,36 @@ export const EventForm = observer(function EventForm(_props: EventFormProps) {
 
       <TextField
         dense
+        autoFocus={!title.touched}
         placeholder="عنوان"
-        value={title}
+        value={title.value?.toString()}
         onChangeText={(value) => {
-          setProp("title", value)
+          title.setProp("value", value)
+          if (!value && title.touched) {
+            title.setProp("error", true)
+            title.setProp("msg", "این فیلد الزامیست")
+          } else {
+            if (title.error) {
+              title.setProp("error", false)
+            }
+            if (title.msg) {
+              title.setProp("msg", undefined)
+            }
+          }
         }}
-        outlineColor="transparent"
+        defaultValue={title.default?.toString()}
+        error={title.error}
+        helper={title.msg}
+        onFocus={() => {
+          title.setProp("touched", true)
+        }}
+        onBlur={() => {
+          if (!title.value) {
+            title.setProp("error", true)
+            title.setProp("msg", "این فیلد الزامیست")
+          }
+        }}
+        // outlineColor="transparent"
         outlineStyle={{ display: "none" }}
       />
       <Divider />
@@ -150,21 +196,13 @@ export const EventForm = observer(function EventForm(_props: EventFormProps) {
       />
       <Divider />
       <DatePicker
+        clearButtonMode="always"
         date={from}
         onDateChange={(value) => {
           setProp("from", value)
         }}
         modalMode="time"
-        action={({ open, close, value }) => {
-          return (
-            <Select
-              selected={value && format(value, "HH:mm")}
-              placeholder={"اختیاری"}
-              icon={"clock"}
-              onPress={() => open(currentDate)}
-            />
-          )
-        }}
+        action={renderDatePickerAction}
       />
       <Divider />
       <TextField

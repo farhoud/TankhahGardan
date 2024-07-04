@@ -1,7 +1,6 @@
 import React, {
   forwardRef,
   Ref,
-  useCallback,
   useEffect,
   useImperativeHandle,
   useMemo,
@@ -9,8 +8,7 @@ import React, {
 } from "react"
 import { TextInput as RNTextInput, TextStyle, ViewStyle } from "react-native"
 import { TextField, TextFieldProps } from "./TextField"
-import { TextInput } from "react-native-paper"
-import MaskInput, { Mask, Masks } from "react-native-mask-input"
+import MaskInput, { Mask } from "react-native-mask-input"
 import { PaymentMethod, paymentMethodAccountTypeMapper } from "app/models/realm/models"
 import { translate, TxKeyPath } from "app/i18n"
 

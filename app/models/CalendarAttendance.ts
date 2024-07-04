@@ -55,7 +55,7 @@ export const CalendarAttendanceModel = types
   .views((self) => ({
     get isValid() {
       return !!Object.keys(self.errors).length
-    }
+    },
   }))
   .actions((self) => ({
     setGroup(text: string) {
@@ -66,8 +66,8 @@ export const CalendarAttendanceModel = types
       self.from = attendance.from
       self.to = attendance.to || undefined
       self.description = attendance.description || undefined
-      self.group = attendance.group
-      self.projectId = attendance.project._id.toHexString()
+      self.group = attendance.group || undefined
+      self.projectId = attendance.project ? attendance.project._id.toHexString() : undefined
       self._id = attendance._id.toHexString()
     },
     submit(realm: Realm, worker: Worker, project: Project) {
@@ -98,13 +98,13 @@ export const CalendarAttendanceModel = types
         return undefined
       }
     },
-    clear: (date?: Date) => {
+    clear: (defaultValues?: { date?: Date, projectId?: string }) => {
       self._id = undefined
-      self.from = defaultStartTime(date)
-      self.to = defaultEndTime(date)
+      self.from = defaultStartTime(defaultValues?.date)
+      self.to = defaultEndTime(defaultValues?.date)
       self.description = undefined
       self.group = undefined
-      self.projectId = undefined
+      self.projectId = defaultValues?.projectId
       self.workerId = undefined
       self.loading = false
       self.touched = false

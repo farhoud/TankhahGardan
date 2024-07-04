@@ -16,18 +16,18 @@ import {
 import { formatDateIR } from "app/utils/formatDate"
 import { Button, Portal, Dialog, Chip } from "react-native-paper"
 import { TextFieldProps, TextField } from "../TextField"
-import { createAnimatedPropAdapter } from "react-native-reanimated"
 import { Wheel } from "./Wheel"
 import { $row, spacing } from "app/theme"
 
 export interface DatePickerProps extends TextFieldProps {
   date?: Date
-  onDateChange?: (date: Date) => void
+  onDateChange?: (date: Date|undefined) => void
   onDone?: (date: Date) => void
   action?: (props: {
     open: (defaultDate?: Date) => void
     close: () => void
     value?: Date
+    clear: () => void
   }) => ReactNode
   minDate?: Date
   maxDate?: Date
@@ -66,12 +66,15 @@ export const DatePicker = (props: DatePickerProps) => {
     _setDate(value)
   }
 
-  const handleClose = () => {
+  const handleDone = () => {
     setModalVisibility(false)
     if (_date) {
       onDateChange && onDateChange(_date)
       props.onDone && props.onDone(_date)
     }
+  }
+  const handleClose = () => {
+    setModalVisibility(false)
   }
 
   const renderAction = useCallback(() => {
@@ -84,11 +87,15 @@ export const DatePicker = (props: DatePickerProps) => {
         setModalVisibility(true)
       },
       close: handleClose,
-      value: _date,
+      value: date,
+      clear:()=>{
+        onDateChange && onDateChange(undefined)
+      }
     })
-  }, [action, _date])
+  }, [action, _date, date])
 
   useEffect(() => {
+    
     if (date) {
       _setDate(date)
     }
@@ -128,6 +135,9 @@ export const DatePicker = (props: DatePickerProps) => {
           </Dialog.Content>
           <Dialog.Actions>
             <Button disabled={err} onPress={handleClose}>
+              انصراف
+            </Button>
+            <Button disabled={err} onPress={handleDone}>
               ثبت
             </Button>
           </Dialog.Actions>

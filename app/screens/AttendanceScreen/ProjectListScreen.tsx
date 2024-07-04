@@ -3,15 +3,7 @@ import { observer } from "mobx-react-lite"
 import { ViewStyle } from "react-native"
 import { AppStackScreenProps, AppNavigation } from "app/navigators"
 import { Project } from "app/models/realm/calendar"
-import {
-  Appbar,
-  Dialog,
-  DialogProps,
-  List,
-  Portal,
-  Searchbar,
-  useTheme,
-} from "react-native-paper"
+import { Appbar, Dialog, DialogProps, List, Portal, Searchbar, useTheme } from "react-native-paper"
 import { useObject, useQuery, useRealm } from "@realm/react"
 import { BSON, UpdateMode } from "realm"
 import { Button, ListView, ListViewRef, TextField } from "app/components"
@@ -39,11 +31,10 @@ export const ProjectListScreen: FC<ProjectListScreenProps> = observer(function P
   const data = useQuery(
     Project,
     (res) => {
-      return res.filtered("name Contains $0", search)
+      return res.filtered("name Contains $0 AND deleted != $1", search, true)
     },
     [search],
   )
-
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -80,7 +71,11 @@ export const ProjectListScreen: FC<ProjectListScreenProps> = observer(function P
                 break
               case "select":
                 selectProjectId(item._id.toHexString())
-                navigation.navigate("AppTabs", { screen: "CalendarHome" })
+                if (navigation.canGoBack()) {
+                  navigation.goBack()
+                } else {
+                  navigation.navigate("AppTabs", { screen: "CalendarHome" })
+                }
                 break
             }
           }}
@@ -181,7 +176,7 @@ export const ProjectModal: FC<ProjectModalProps> = (_props) => {
           {
             _id: data ? data._id : new BSON.ObjectID(),
             name,
-            description
+            description,
           },
           data ? UpdateMode.Modified : undefined,
         )
@@ -220,6 +215,7 @@ export const ProjectModal: FC<ProjectModalProps> = (_props) => {
         <Dialog.Title>نیروی کار</Dialog.Title>
         <Dialog.Content>
           <TextField
+            dense
             placeholder="*نام"
             value={name}
             onChangeText={(value) => setName(value)}
@@ -228,6 +224,7 @@ export const ProjectModal: FC<ProjectModalProps> = (_props) => {
             onFocus={() => setTouched(true)}
           />
           <TextField
+            dense
             placeholder="توضیحات (اختیاری)"
             value={description}
             multiline
@@ -237,7 +234,11 @@ export const ProjectModal: FC<ProjectModalProps> = (_props) => {
           />
         </Dialog.Content>
         <Dialog.Actions>
-          <Button tx={!itemId ? "common.add" : "common.save"} onPress={handleSubmit} />
+          <Button
+            disabled={!name}
+            tx={!itemId ? "common.add" : "common.save"}
+            onPress={handleSubmit}
+          />
         </Dialog.Actions>
       </Dialog>
     </Portal>

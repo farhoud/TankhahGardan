@@ -22,10 +22,8 @@ export const AttendanceForm = observer(function AttendanceForm(_props: Attendanc
   // Pull in one of our MST stores
   const {
     calendarStore: {
-      attendanceForm: { _id, from, to, description, workerId, group, submit, setProp },
-      setProp: setCalendarProps,
-      selectProjectId,
-      currentProjectId,
+      attendanceForm: { _id, from, to, description, workerId, submit, setProp, projectId },
+      setProp: setCalendarProps
     },
   } = useStores()
 
@@ -36,7 +34,7 @@ export const AttendanceForm = observer(function AttendanceForm(_props: Attendanc
 
   const realm = useRealm()
   const worker = useObject(Worker, new BSON.ObjectID(workerId))
-  const project = useObject(Project, new BSON.ObjectID(currentProjectId))
+  const project = useObject(Project, new BSON.ObjectID(projectId))
 
   const isAvailable = useMemo(() => {
     const condition = worker?.attendance.filtered(
