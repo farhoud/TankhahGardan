@@ -1,7 +1,7 @@
 import React, { useCallback } from "react"
 import { TouchableHighlight, View } from "react-native"
 import { AppNavigation } from "app/navigators"
-import { AutoComplete, Button, DatePicker, TextField, Text, DatePickerProps } from "app/components"
+import { Button, DatePicker, TextField, Text } from "app/components"
 import { $row, spacing } from "app/theme"
 import { Chip, Divider, Icon, TextInput, useTheme } from "react-native-paper"
 import { useNavigation } from "@react-navigation/native"

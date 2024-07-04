@@ -118,6 +118,7 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Att
           title={(projects[currentPage] && projects[currentPage].name) || "ندارد"}
         ></Appbar.Content>
         <Appbar.Action
+          mode="contained-tonal"
           icon="arrow-right-circle"
           onPress={() => {
             setProp("currentDate", addDays(currentDate, 1))
