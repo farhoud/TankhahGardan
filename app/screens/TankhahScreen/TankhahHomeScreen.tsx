@@ -138,6 +138,9 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
           anchor={
             <Button
               style={$controlsBtn}
+              // buttonColor={theme.colors.onPrimary}
+              textColor={theme.colors.primary}
+              
               // mode="contained-tonal"
               onPress={handleToggleFilterMenu}
               icon="filter"
@@ -263,7 +266,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
     ) => {
       return (
         <Button
-          style={$controlsBtn}
+          // style={$controlsBtn}
           onPress={open}
         >
           {value ? formatDateIRDisplay(value,"dd MMMM yy") : " : "}

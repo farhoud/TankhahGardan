@@ -31,7 +31,7 @@ import { useInitialRootStore } from "./models"
 import { AppNavigator, useNavigationPersistence } from "./navigators"
 import { ErrorBoundary } from "./screens/ErrorScreen/ErrorBoundary"
 import * as storage from "./utils/storage"
-import { customFontsToLoad, fontConfig } from "./theme"
+import { CustomMD3Dark, CustomMD3Light, customFontsToLoad, fontConfig } from "./theme"
 import Config from "./config"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { useColorScheme, ViewStyle } from "react-native"
@@ -61,19 +61,19 @@ const { LightTheme, DarkTheme } = adaptNavigationTheme({
 })
 
 const CombinedDefaultTheme = {
-  ...MD3LightTheme,
   ...LightTheme,
+  ...MD3LightTheme,
   colors: {
-    ...MD3LightTheme.colors,
     ...LightTheme.colors,
+    ...CustomMD3Light.colors,
   },
 }
 const CombinedDarkTheme = {
-  ...MD3DarkTheme,
   ...DarkTheme,
+  ...MD3DarkTheme,
   colors: {
-    ...MD3DarkTheme.colors,
     ...DarkTheme.colors,
+    ...CustomMD3Dark.colors,
   },
 }
 
