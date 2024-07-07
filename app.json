@@ -2,10 +2,10 @@
   "name": "TankhahGardan",
   "displayName": "TankhahGardan",
   "expo": {
-    "name": "TankhahGardan",
+    "name": "Cyber Constructor",
     "slug": "TankhahGardan",
     "scheme": "tankhahgardan",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "icon": "./assets/images/app-icon-all.png",
