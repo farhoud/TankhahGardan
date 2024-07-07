@@ -12,13 +12,15 @@
     "splash": {
       "image": "./assets/images/splash-logo-all.png",
       "resizeMode": "contain",
-      "backgroundColor": "#191015"
+      "backgroundColor": "#e6e6e6"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
     },
     "jsEngine": "hermes",
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "android": {
       "icon": "./assets/images/app-icon-android-legacy.png",
       "package": "com.tankhahgardan",
@@ -29,7 +31,7 @@
       "splash": {
         "image": "./assets/images/splash-logo-android-universal.png",
         "resizeMode": "contain",
-        "backgroundColor": "#191015"
+        "backgroundColor": "#e6e6e6"
       }
     },
     "ios": {
@@ -40,7 +42,7 @@
         "image": "./assets/images/splash-logo-ios-mobile.png",
         "tabletImage": "./assets/images/splash-logo-ios-tablet.png",
         "resizeMode": "contain",
-        "backgroundColor": "#191015"
+        "backgroundColor": "#e6e6e6"
       }
     },
     "web": {
@@ -48,7 +50,7 @@
       "splash": {
         "image": "./assets/images/splash-logo-web.png",
         "resizeMode": "contain",
-        "backgroundColor": "#191015"
+        "backgroundColor": "#e6e6e6"
       },
       "bundler": "metro"
     },
@@ -70,7 +72,10 @@
       [
         "expo-font",
         {
-          "fonts": ["./assets/fonts/IRANSansXFaNum-Bold.ttf", "./assets/fonts/IRANSansXFaNum-Regular.ttf"]
+          "fonts": [
+            "./assets/fonts/IRANSansXFaNum-Bold.ttf",
+            "./assets/fonts/IRANSansXFaNum-Regular.ttf"
+          ]
         }
       ],
       [
