@@ -20,23 +20,7 @@ import { $row, spacing } from "app/theme"
 import { useStores } from "app/models"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { addYears, startOfDay, endOfDay } from "date-fns-jalali"
-
-const PieCharColors = [
-  { color: "#009FFF", gradientCenterColor: "#006DFF" },
-  { color: "#93FCF8", gradientCenterColor: "#3BE9DE" },
-  { color: "#BDB2FA", gradientCenterColor: "#8F80F3" },
-  { color: "#FFA5BA", gradientCenterColor: "#FF7F97" },
-  { color: "#FFD700", gradientCenterColor: "#FFA500" },
-  { color: "#7FFF00", gradientCenterColor: "#32CD32" },
-  { color: "#00FF7F", gradientCenterColor: "#00FF00" },
-  { color: "#FF6347", gradientCenterColor: "#FF4500" },
-  { color: "#DA70D6", gradientCenterColor: "#BA55D3" },
-  { color: "#4682B4", gradientCenterColor: "#1E90FF" },
-  { color: "#FF8C00", gradientCenterColor: "#FF4500" },
-  { color: "#ADFF2F", gradientCenterColor: "#7FFF00" },
-  { color: "#BA55D3", gradientCenterColor: "#9370DB" },
-  { color: "#FF1493", gradientCenterColor: "#FF69B4" },
-]
+import randomColor from "randomcolor"
 
 enum FilterEnum {
   all = "all",
@@ -130,6 +114,15 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
       [groupNames, selectedGroup],
     )
 
+    const pieCharColors = useMemo(() => {
+      const colors = randomColor({
+        hue: theme.colors.primary,
+        count: spendGroupsNames.length,
+        luminosity: "bright",
+      })
+      return colors.map((i: string) => ({ color: i }))
+    }, [spendGroupsNames.length])
+
     const renderFilterMenu = useCallback(() => {
       return (
         <Menu
@@ -140,7 +133,6 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
               style={$controlsBtn}
               // buttonColor={theme.colors.onPrimary}
               textColor={theme.colors.primary}
-              
               // mode="contained-tonal"
               onPress={handleToggleFilterMenu}
               icon="filter"
@@ -173,33 +165,35 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
           .sum("total")
         if (res && total) {
           pieData.push({
-            ...PieCharColors[index],
+            ...pieCharColors[index],
             value: (res * 100) / total,
             focused: index + 1 === selectedGroup,
           })
         }
       }
       return (
-        <PieChart
-          data={pieData}
-          donut
-          showGradient
-          sectionAutoFocus
-          radius={80}
-          innerRadius={75}
-          innerCircleColor={"#232B5D"}
-          showValuesAsLabels
-          centerLabelComponent={() => {
-            return (
-              <View style={{ justifyContent: "center", alignItems: "center" }}>
-                <Text variant="bodyLarge">
-                  {tomanFormatter(tankhahItemList.filtered('opType != "fund"').sum("total"))}
-                </Text>
-                <Text variant="bodySmall" text="مخارج " />
-              </View>
-            )
-          }}
-        />
+        <View style={{ flexDirection: "column", justifyContent:"space-around" }}>
+          <PieChart
+            data={pieData}
+            // donut
+            // showGradient
+            sectionAutoFocus
+            radius={70}
+            // innerRadius={30}
+            innerCircleColor={theme.colors.primary}
+            showValuesAsLabels
+            // centerLabelComponent={() => {
+            //   return (
+
+            //   )
+            // }}
+          />
+          <View style={{ justifyContent: "center", alignItems: "center" }}>
+            <Text variant="bodyLarge">
+              {tomanFormatter(tankhahItemList.filtered('opType != "fund"').sum("total"))}
+            </Text>
+          </View>
+        </View>
       )
     }, [spendGroupsNames, startDate, endDate, selectedGroup])
 
@@ -269,7 +263,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
           // style={$controlsBtn}
           onPress={open}
         >
-          {value ? formatDateIRDisplay(value,"dd MMMM yy") : " : "}
+          {(type==="start"?" از ": "تا ")+(value ? formatDateIRDisplay(value, "dd MMM yy") : " : ")}
         </Button>
       )
     }
@@ -335,38 +329,46 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
             title={tomanFormatter(totalFund - totalSpend)}
           />
           <Appbar.Action icon={"printer"} onPress={handlePrint} />
-          <Appbar.Action icon={"basket"} onPress={()=>{
-            navigation.navigate("ReceiptItemList",{})
-          }} />
+          <Appbar.Action
+            icon={"basket"}
+            onPress={() => {
+              navigation.navigate("ReceiptItemList", {})
+            }}
+          />
         </Appbar>
         <View>
           <View style={$row}>
             <View>
-            <Button style={$controlsBtn} compact onPress={()=>{
-              setProp("startDate", startOfDay(new Date()))
-              setProp("endDate", endOfDay(new Date()))
-            }} >{formatDateIRDisplay(new Date())}</Button>
-            <View style={$row}>
-
-              <DatePicker
-                date={startDate}
-                maxDate={endDate}
-                onDateChange={(value) => {
-                  setProp("startDate", value)
+              <Button
+                style={$controlsBtn}
+                compact
+                onPress={() => {
+                  setProp("startDate", startOfDay(new Date()))
+                  setProp("endDate", endOfDay(new Date()))
                 }}
-                action={({ open, close, value }) => {
-                  return renderTimeRangeBtn("start", open, value)
-                }}
-              />
-              <DatePicker
-                date={endDate}
-                minDate={startDate}
-                onDateChange={(value) => {
-                  setProp("endDate", value)
-                }}
-                action={({ open, close, value }) => renderTimeRangeBtn("end", open, value)}
-              />
-            </View>
+              >
+                {"امروز "+formatDateIRDisplay(new Date())}
+              </Button>
+              <View style={$row}>
+                <DatePicker
+                  date={startDate}
+                  maxDate={endDate}
+                  onDateChange={(value) => {
+                    setProp("startDate", value)
+                  }}
+                  action={({ open, close, value }) => {
+                    return renderTimeRangeBtn("start", open, value)
+                  }}
+                />
+                <DatePicker
+                  date={endDate}
+                  minDate={startDate}
+                  onDateChange={(value) => {
+                    setProp("endDate", value)
+                  }}
+                  action={({ open, close, value }) => renderTimeRangeBtn("end", open, value)}
+                />
+              </View>
               {renderFilterMenu()}
             </View>
             {renderPieChart()}
@@ -394,7 +396,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
                         {...props}
                         source={index === selectedGroup ? "check-circle" : "circle"}
                         size={10}
-                        color={PieCharColors[index - 1]?.color || theme.colors.background}
+                        color={pieCharColors[index - 1]?.color || theme.colors.background}
                       />
                     )}
                   >
@@ -433,7 +435,8 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
               // do something if the speed dial is open
             }
           }}
-          style={{ position: "absolute", bottom: 40, right: 20, opacity: 0.7 }}
+          color={theme.colors.primary}
+          style={{ position: "absolute", bottom: 40, right: 20 }}
         />
       </>
     )
