@@ -7231,6 +7231,11 @@ ms@2.1.3, ms@^2.1.1:
   resolved "https://registry.npmjs.org/ms/-/ms-2.1.3.tgz"
   integrity sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==
 
+mst-form-type@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/mst-form-type/-/mst-form-type-2.1.0.tgz#94aaf11978b5ce66f4501f9cb2894723895f7163"
+  integrity sha512-VTbp5P0Kmwyyt9qptEbK3OCr0LRGNAPohvGgq8S+pcxuMWHu3TRLbVfVZuE9OT6pYspNXx/ciohTTmZkmHB6bQ==
+
 mv@~2:
   version "2.1.1"
   resolved "https://registry.npmjs.org/mv/-/mv-2.1.1.tgz"

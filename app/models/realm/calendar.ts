@@ -1,4 +1,5 @@
 import Realm, { BSON, ObjectSchema } from "realm"
+import { Note } from "./note"
 
 export class Project extends Realm.Object<Project> {
   _id!: BSON.ObjectId
@@ -6,6 +7,7 @@ export class Project extends Realm.Object<Project> {
   name!: string
   attendances!: Realm.List<Attendance>
   events!: Realm.List<Event>
+  notes!: Realm.List<Note>
   description?: string
   deleted?: boolean
   static schema: ObjectSchema = {
@@ -22,6 +24,11 @@ export class Project extends Realm.Object<Project> {
       events: {
         type: "linkingObjects",
         objectType: "Event",
+        property: "project",
+      },
+      note: {
+        type: "linkingObjects",
+        objectType: "Note",
         property: "project",
       },
       description: "string?",
