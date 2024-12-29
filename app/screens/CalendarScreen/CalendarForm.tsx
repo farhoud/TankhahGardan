@@ -6,10 +6,11 @@ import { $row, spacing } from "app/theme"
 import { observer } from "mobx-react-lite"
 import { useStores } from "app/models"
 import { EventForm } from "./EventForm"
-import { Attendance,Event } from "app/models/realm/calendar"
+import { Attendance, Event, Task } from "app/models/realm/calendar"
+import { TaskForm } from "./TaskForm"
 
 export interface CalendarFormProps {
-  onDone: (value:Event|Attendance) => void
+  onDone: (value: Event | Attendance | Task) => void
 }
 type TabKey = undefined | "task" | "event" | "attendance"
 export const CalendarForm: FC<CalendarFormProps> = observer((props) => {
@@ -38,7 +39,17 @@ export const CalendarForm: FC<CalendarFormProps> = observer((props) => {
         >
           حضور
         </Chip>
-        {/* <Chip selected={isSelected("task")} onPress={()=>{selectTab("task")}}>تسک</Chip> */}
+        <Chip
+          showSelectedOverlay
+          shouldRasterizeIOS
+          showSelectedCheck={false}
+          selected={isSelected("task")}
+          onPress={() => {
+            setProp("currentForm", "task")
+          }}
+        >
+          تسک
+        </Chip>
         <Chip
           showSelectedOverlay
           shouldRasterizeIOS
@@ -51,8 +62,9 @@ export const CalendarForm: FC<CalendarFormProps> = observer((props) => {
           رخداد
         </Chip>
       </View>
-      {isSelected("attendance") && <AttendanceForm onDone={(value) => props.onDone(value)}></AttendanceForm>}
-      {isSelected("event") && <EventForm onDone={(value) => props.onDone(value)}></EventForm>}
+      {isSelected("attendance") && <AttendanceForm onDone={(value) => props.onDone(value)} />}
+      {isSelected("event") && <EventForm onDone={(value) => props.onDone(value)} />}
+      {isSelected("task") && <TaskForm onDone={(value) => props.onDone(value)} />}
     </View>
   )
 })

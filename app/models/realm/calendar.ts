@@ -100,8 +100,8 @@ export class Event extends Realm.Object<Event> {
   to?: Date
   description?: string
   process?: string
-  unit?:string
-  quantity?:number
+  unit?: string
+  quantity?: number
   static schema: ObjectSchema = {
     name: "Event",
     properties: {
@@ -117,6 +117,31 @@ export class Event extends Realm.Object<Event> {
       process: "string?",
       unit: "string?",
       quantity: "double?"
+    },
+    primaryKey: "_id",
+  }
+}
+
+export class Task extends Realm.Object<Task> {
+  _id!: BSON.ObjectId
+  createAt!: Date
+  project!: Project
+  title!: string
+  isDone!: boolean
+  workers!: Realm.List<Worker>
+  dueDate?: Date
+  description?: string
+  static schema: ObjectSchema = {
+    name: "Task",
+    properties: {
+      _id: { type: "objectId", default: () => new Realm.BSON.ObjectID() },
+      createdAt: { type: "date", default: () => new Date() },
+      project: "Project",
+      title: "string",
+      isDone: { type: "bool", default: false },
+      workers: "Worker[]",
+      dueDate: "date?",
+      description: "string?",
     },
     primaryKey: "_id",
   }

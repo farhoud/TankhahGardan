@@ -3,7 +3,7 @@ import { withSetPropAction } from "./helpers/withSetPropAction"
 import Realm, { BSON, UpdateMode } from "realm"
 import { Alert } from "react-native"
 import { Event, Project, Worker } from "./realm/calendar"
-import { FormField, FormFieldModel, createFormFieldDefaultModel } from "./FormField"
+import { createFormFieldDefaultModel } from "./FormField"
 
 /**
  * Model description here for TypeScript hints.

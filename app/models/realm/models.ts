@@ -1,5 +1,6 @@
 import Realm, { BSON, ObjectSchema } from "realm"
-import { Attendance, Event, Project, Worker } from "./calendar"
+import { Attendance, Event, Project, Task, Worker } from "./calendar"
+import { Note } from "./note"
 
 export type PaymentMethod = "satna" | "paya" | "cash" | "ctc" | "pos" | "other" | "sts"
 export type AccountNumType = "sheba" | "card" | "other" | "none"
@@ -192,12 +193,14 @@ export const realmConfig: Realm.Configuration = {
     Worker,
     Attendance,
     Event,
+    Task,
     Project,
+    Note,
   ],
   // Increment the 'schemaVersion', since 'fullName' has replaced
   // 'firstName' and 'lastName' in the schema.
   // The initial schemaVersion is 0.
-  schemaVersion: 16,
+  schemaVersion: 17,
 
   onMigration: (oldRealm: Realm, newRealm: Realm) => {
     // only apply this change if upgrading schemaVersion

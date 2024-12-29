@@ -21,8 +21,8 @@ import PagerView from "react-native-pager-view"
 import { TimeRangeIndicator } from "app/components/TimeRangeIndicator"
 import { useStores } from "app/models"
 import { useQuery, useRealm } from "@realm/react"
-import { Attendance, Event, Project } from "app/models/realm/calendar"
-import { addDays, addMinutes, endOfDay, format } from "date-fns-jalali"
+import { Attendance, Event, Project, Task } from "app/models/realm/calendar"
+import { addDays, addMinutes, endOfDay, format, isPast } from "date-fns-jalali"
 import { ListRenderItem } from "@shopify/flash-list"
 import startOfDay from "date-fns/startOfDay"
 import { spacing } from "app/theme"
@@ -31,9 +31,9 @@ import { ProjectModal } from "./ProjectListScreen"
 import { BSON } from "realm"
 import { BottomSheetForm, BottomSheetFormRef } from "./BottomSheetForm"
 
-interface CalendarScreenProps extends AppTabScreenProps<"CalendarHome"> {}
+interface CalendarScreenProps extends AppTabScreenProps<"CalendarHome"> { }
 
-export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function AttendanceHomeScreen(
+export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function CalendarHomeScreen(
   _props,
 ) {
   // Pull in one of our MST stores
@@ -54,6 +54,7 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Att
   const [currentPage, setCurrentPage] = useState(0)
   const [selectedAttendance, setSelectedAttendance] = useState<number>()
   const [selectedEvent, setSelectedEvent] = useState<number>()
+  const [selectedTask, setSelectedTask] = useState<number>()
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   // Realm queries
@@ -91,13 +92,21 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Att
     [currentDate, currentPage, projects],
   )
 
+  const currentTasks = useQuery(
+    Task,
+    (col) => {
+      return col.filtered("isDone == $0", false)
+    }
+
+  )
+
   const handleFormNew = () => {
     formRef.current?.newForm()
   }
-  const handleFormEdit = (item: Attendance | Event) => (e: any) => {
+  const handleFormEdit = (item: Attendance | Event | Task) => (e: any) => {
     formRef.current?.editForm(item)
   }
-  const handleDeleteItem = (item: Attendance | Event) => (e: any) => {
+  const handleDeleteItem = (item: Attendance | Event | Task) => (e: any) => {
     realm.write(() => realm.delete(item))
   }
 
@@ -179,9 +188,8 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Att
                 <Text
                   style={[{ paddingHorizontal: 20, paddingTop: 7 }]}
                   variant="bodyMedium"
-                >{`${format(item.from, "HH:mm")} ${item.to ? "" : "-"} ${
-                  item.to ? format(item.to, "HH:mm") : ""
-                }`}</Text>
+                >{`${format(item.from, "HH:mm")} ${item.to ? "" : "-"} ${item.to ? format(item.to, "HH:mm") : ""
+                  }`}</Text>
                 <Icon source="book-clock-outline" size={24} />
               </View>
               {!!item.description && (
@@ -262,8 +270,7 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Att
             <Card.Title title={item.title} subtitle={item.description} />
             <Card.Content style={{ flex: 1 }}>
               {renderRow(
-                `${format(item.from, "HH:mm")} ${item.to ? "" : "-"} ${
-                  item.to ? format(item.to, "HH:mm") : ""
+                `${format(item.from, "HH:mm")} ${item.to ? "" : "-"} ${item.to ? format(item.to, "HH:mm") : ""
                 }`,
                 "book-clock-outline",
               )}
@@ -301,11 +308,85 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Att
     )
   }
 
-  const renderItem: ListRenderItem<Event | Attendance | string> = (info) => {
+  const renderTaskItem: ListRenderItem<Task> = ({ item, index }) => {
+    const itemColor = () => {
+      if (item.dueDate && isPast(item.dueDate)) {
+        return theme.colors.errorContainer
+      }
+      return undefined
+    }
+    const renderRow = (text: string, icon: string) => {
+      return (
+        <View
+          style={[
+            {
+              alignSelf: "flex-start",
+              // paddingHorizontal: 20,
+              flexDirection: "row-reverse",
+            },
+          ]}
+        >
+          <Text style={[{ paddingHorizontal: 20, paddingTop: 7 }]} variant="bodyMedium">
+            {text}
+          </Text>
+          <Icon source={icon} size={24} />
+        </View>
+      )
+    }
+    if (index === selectedTask)
+      return (
+        <>
+          <Card
+            onPress={(props) => {
+              setSelectedTask(undefined)
+            }}
+            mode="outlined"
+            style={{ margin: 2, backgroundColor: itemColor() }}
+          >
+            <Card.Title title={item.title} subtitle={item.description} />
+            <Card.Content style={{ flex: 1 }}>
+              {item.dueDate && renderRow(
+                `${format(item.dueDate, "HH:mm")}`,
+                "bell",
+              )}
+              {item.workers.length > 0 &&
+                renderRow(item.workers.map((i) => i.name).join(", "), "account")}
+            </Card.Content>
+            <View style={{ marginBottom: spacing.xs }} />
+            <Divider />
+            <Card.Actions style={{ flexDirection: "row", justifyContent: "space-around" }}>
+              <View style={{ flex: 1, flexDirection: "row", justifyContent: "space-around" }}>
+                <IconButton
+                  icon="clipboard-edit-outline"
+                  mode="outlined"
+                  onPress={handleFormEdit(item)}
+                />
+                <IconButton icon="delete" mode="outlined" onPress={handleDeleteItem(item)} />
+                <IconButton icon="check-bold" mode="outlined" onPress={handleDeleteItem(item)} />
+              </View>
+            </Card.Actions>
+          </Card>
+        </>
+      )
+
+    return (
+      <>
+        <List.Item
+          title={item.title}
+          description={item.description}
+          onPress={() => setSelectedTask(index)}
+          style={{ backgroundColor: itemColor() }}
+        ></List.Item >
+      </>
+    )
+  }
+
+  const renderItem: ListRenderItem<Task | Event | Attendance | string> = (info) => {
     if (info.item instanceof Event) {
       return renderEventItem(info as any)
     }
     if (info.item instanceof Attendance) return renderAttendanceItem(info as any)
+    if (info.item instanceof Task) return renderTaskItem(info as any)
     return <List.Subheader>{info.item}</List.Subheader>
   }
 
@@ -343,6 +424,16 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Att
               setDrawerOpen(false)
             }}
           />
+          <Drawer.CollapsedItem
+            active={currentView === "task"}
+            focusedIcon="bell"
+            unfocusedIcon="bell-outline"
+            label="کارها"
+            onPress={() => {
+              setProp("currentView", "task")
+              setDrawerOpen(false)
+            }}
+          />
         </Drawer.Section>
         <Drawer.Section>
           <Drawer.CollapsedItem
@@ -370,15 +461,18 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Att
   )
 
   const data = useMemo(() => {
-    if (currentView === "all") return ["حضور", ...currentAttendance, "رخدادها", ...currentEvents]
+    if (currentView === "all") return ["حضور", ...currentAttendance, "رخدادها", ...currentEvents, "کارها", ...currentTasks]
     if (currentView === "attendance") {
       return currentAttendance.slice()
     }
     if (currentView === "event") {
       return currentEvents.slice()
     }
+    if (currentView === "task") {
+      return currentTasks.slice()
+    }
     return []
-  }, [currentEvents, currentView, currentAttendance])
+  }, [currentEvents, currentView, currentAttendance, currentTasks])
 
   useEffect(() => {
     if (currentPage < projects.length) pagerRef.current?.setPageWithoutAnimation(currentPage)
@@ -410,14 +504,13 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Att
       <BottomSheetForm
         ref={formRef}
         onDone={(value) => {
-          if (value instanceof Event) setProp("currentView", "event")
-          if (value instanceof Attendance) setProp("currentView", "attendance")
-
-          setProp("currentDate", startOfDay(value.from))
-          const pageNumber = projects.findIndex((i) => {
-            return i._id.toHexString() === value.project._id.toHexString()
-          })
-          if (pageNumber > 0) pagerRef.current?.setPageWithoutAnimation(pageNumber)
+          if (!(value instanceof Task)) {
+            setProp("currentDate", startOfDay(value.from))
+            const pageNumber = projects.findIndex((i) => {
+              return i._id.toHexString() === value.project._id.toHexString()
+            })
+            if (pageNumber > 0) pagerRef.current?.setPageWithoutAnimation(pageNumber)
+          }
         }}
       ></BottomSheetForm>
       <Button onPress={() => setProp("currentDate", new Date())} style={$toDay}>
