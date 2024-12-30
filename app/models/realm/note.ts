@@ -20,6 +20,7 @@ export class Tag extends Realm.Object<Tag> {
 export class Note extends Realm.Object<Note> {
   _id!: BSON.ObjectId
   createAt!: Date
+  happendAt!: Date
   project!: Project
   title!: string
   isDraft!: boolean
@@ -31,6 +32,7 @@ export class Note extends Realm.Object<Note> {
     properties: {
       _id: { type: "objectId", default: () => new Realm.BSON.ObjectID() },
       createdAt: { type: "date", default: () => new Date() },
+      happendAt: { type: "date", default: () => new Date() },
       project: "Project",
       title: "string",
       isDraft: { type: "bool", default: false },

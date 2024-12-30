@@ -200,7 +200,7 @@ export const realmConfig: Realm.Configuration = {
   // Increment the 'schemaVersion', since 'fullName' has replaced
   // 'firstName' and 'lastName' in the schema.
   // The initial schemaVersion is 0.
-  schemaVersion: 17,
+  schemaVersion: 18,
 
   onMigration: (oldRealm: Realm, newRealm: Realm) => {
     // only apply this change if upgrading schemaVersion
