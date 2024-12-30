@@ -7,7 +7,7 @@ export class Tag extends Realm.Object<Tag> {
   createAt!: Date
   text!: string
   static schema: ObjectSchema = {
-    name: "Task",
+    name: "Tag",
     properties: {
       _id: { type: "objectId", default: () => new Realm.BSON.ObjectID() },
       createdAt: { type: "date", default: () => new Date() },
@@ -27,7 +27,7 @@ export class Note extends Realm.Object<Note> {
   attachment!: string[]
   tags!: string[]
   static schema: ObjectSchema = {
-    name: "Task",
+    name: "Note",
     properties: {
       _id: { type: "objectId", default: () => new Realm.BSON.ObjectID() },
       createdAt: { type: "date", default: () => new Date() },

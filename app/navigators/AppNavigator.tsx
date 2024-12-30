@@ -51,6 +51,7 @@ export type AppStackParamList = {
   ProjectList: { itemId?: string; mode?: "select" | "manage" }
   ProjectDetail: { itemId?: string }
   ReceiptItemList: { itemId?: string }
+  NoteList: undefined
   // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
 
@@ -92,7 +93,7 @@ const AppStack = observer(function AppStack() {
     <Stack.Navigator
       screenOptions={{ headerShown: false }}
       initialRouteName={isAuthenticated ? "AppTabs" : "Login"}
-      // initialRouteName="TestScreen"
+    // initialRouteName="TestScreen"
     >
       {isAuthenticated ? (
         <>
@@ -151,13 +152,14 @@ const AppStack = observer(function AppStack() {
         }}
       />
 
+      {/* <Stack.Screen name="NoteList" component={Screens.NoteListScreen} /> */}
       {/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
     </Stack.Navigator>
   )
 })
 
 export interface NavigationProps
-  extends Partial<React.ComponentProps<typeof NavigationContainer>> {}
+  extends Partial<React.ComponentProps<typeof NavigationContainer>> { }
 
 export const AppNavigator = observer(function AppNavigator(props: NavigationProps) {
   useBackButtonHandler((routeName) => exitRoutes.includes(routeName))

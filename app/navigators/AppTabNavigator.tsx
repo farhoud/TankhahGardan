@@ -13,6 +13,7 @@ import {
 export type AppTabParamList = {
   TankhahHome: { itemId?: string }
   CalendarHome: undefined
+  NoteHome: undefined
   ProjectHome: { itemId?: string }
 }
 
@@ -57,16 +58,16 @@ export function AppTabNavigator() {
           ),
         }}
       />
-      {/* <Tab.Screen
-        name="ProjectHome"
-        component={Screens.ProjectHomeScreen}
+      <Tab.Screen
+        name="NoteHome"
+        component={Screens.NoteListScreen}
         options={{
           tabBarLabel: translate("tabNavigator.attendanceTab"),
           tabBarIcon: ({ color }) => (
             <Icon source="progress-wrench" color={color} size={26} />
           ),
         }}
-      /> */}
+      />
     </Tab.Navigator>
   )
 }

@@ -1,6 +1,6 @@
 const fa = {
   opType: {
-    buy:"خرید",
+    buy: "خرید",
     transfer: "واریز",
     fund: "دریافتی",
     all: "همه"
@@ -19,7 +19,7 @@ const fa = {
     card: "کارت",
     other: "حساب",
     placeHolder: "لطفا شماره {{type}} گیرنده را وارد کنید",
-    label:"{{type}} گیرنده"
+    label: "{{type}} گیرنده"
   },
   spend: {
     recipient: "دریافت کننده",
@@ -86,6 +86,7 @@ const fa = {
   tabNavigator: {
     tankhahTab: "تنخواه",
     attendanceTab: "حضور",
+    noteTab: "نوت"
   },
   tankhahChargeScreen: {
     amountLabel: "مقدار",
