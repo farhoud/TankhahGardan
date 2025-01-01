@@ -51,7 +51,7 @@ export type AppStackParamList = {
   ProjectList: { itemId?: string; mode?: "select" | "manage" }
   ProjectDetail: { itemId?: string }
   ReceiptItemList: { itemId?: string }
-  NoteList: undefined
+  NoteForm: { itemId?: string }
   // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
 
@@ -136,6 +136,14 @@ const AppStack = observer(function AppStack() {
           component={Screens.ProjectListScreen}
         />
         <Stack.Screen name="ProjectDetail" component={Screens.ProjectDetailScreen} />
+      </Stack.Group>
+
+      <Stack.Group>
+
+        <Stack.Screen
+          name="NoteForm"
+          component={Screens.NoteFormScreen}
+        />
       </Stack.Group>
 
       {/** 🔥 Your screens go here */}

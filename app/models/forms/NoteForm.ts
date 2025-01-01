@@ -24,4 +24,3 @@ export const NoteFormSchema = {
 
 export const NoteFormModel = createForm(NoteFormSchema)
 
-export const createNoteFormDefaultModel = () => types.optional(NoteFormModel, {})

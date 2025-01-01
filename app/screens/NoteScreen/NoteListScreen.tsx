@@ -16,6 +16,7 @@ import {
   Dialog,
   Portal,
   useTheme,
+  Title,
 } from "react-native-paper"
 import { useRealm, useQuery } from "@realm/react"
 import { useNavigation } from "@react-navigation/native"
@@ -29,6 +30,7 @@ import { BSON } from "realm"
 export const NoteListScreen: FC<AppTabScreenProps<"NoteHome">> = observer(function NoteListScreen() {
   const {
     calendarStore: { setProp, currentDate, selectProjectId, currentView },
+    noteStore: { form }
   } = useStores()
   // Pull in navigation via hook
   const navigation = useNavigation<AppNavigation>()
@@ -70,7 +72,16 @@ export const NoteListScreen: FC<AppTabScreenProps<"NoteHome">> = observer(functi
   }
 
   const openNewNoteForm = () => () => {
-    console.log("open new form")
+    navigation.navigate("NoteForm", {})
+  }
+
+  const openEditNoteForm = (note: Note) => () => {
+    form.reset()
+    form.title.setValue(note.title)
+    form.text.setValue(note.text)
+    form.happenedAt.setValue(note.happendAt)
+
+    navigation.navigate("NoteForm", { itemId: note._id.toHexString() })
   }
 
   // renders 
@@ -143,6 +154,12 @@ export const NoteListScreen: FC<AppTabScreenProps<"NoteHome">> = observer(functi
     <>
       {renderHeader()}
       {renderSelectProject()}
+      <ListView
+        data={notes.slice()}
+        renderItem={(info) => (
+          <List.Item
+            title={info.item.title}
+            onPress={openEditNoteForm(info.item)} />)} />
 
       <FAB style={$fab} onPress={openNewNoteForm()} icon="plus" />
     </>

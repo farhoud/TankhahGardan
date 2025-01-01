@@ -1,4 +1,4 @@
-import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
+import { Instance, SnapshotIn, SnapshotOut, getEnv, types } from "mobx-state-tree"
 import { NoteFormModel } from "./forms/NoteForm";
 import { withSetPropAction } from "./helpers/withSetPropAction";
 
@@ -8,7 +8,7 @@ export const NoteStoreModel = types
   .props({
     currentProjectId: types.maybe(types.string),
     currentDate: types.optional(types.Date, () => new Date()),
-    form: types.optional(NoteFormModel, {}),
+    form: NoteFormModel,
   })
   .actions(withSetPropAction)
   .actions((self) => ({

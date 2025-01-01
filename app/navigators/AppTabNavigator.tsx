@@ -13,7 +13,7 @@ import {
 export type AppTabParamList = {
   TankhahHome: { itemId?: string }
   CalendarHome: undefined
-  NoteHome: undefined
+  NoteHome: { noteId?: string, op?: "create" | "update" }
   ProjectHome: { itemId?: string }
 }
 
