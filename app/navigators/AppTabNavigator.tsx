@@ -54,7 +54,7 @@ export function AppTabNavigator() {
         options={{
           tabBarLabel: translate("tabNavigator.attendanceTab"),
           tabBarIcon: ({ color }) => (
-            <Icon source="calendar-edit" color={color} size={26} />
+            <Icon source="calendar" color={color} size={26} />
           ),
         }}
       />
@@ -64,7 +64,7 @@ export function AppTabNavigator() {
         options={{
           tabBarLabel: translate("tabNavigator.attendanceTab"),
           tabBarIcon: ({ color }) => (
-            <Icon source="progress-wrench" color={color} size={26} />
+            <Icon source="note" color={color} size={26} />
           ),
         }}
       />

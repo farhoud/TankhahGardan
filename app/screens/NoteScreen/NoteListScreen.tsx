@@ -83,14 +83,15 @@ export const NoteListScreen: FC<AppTabScreenProps<"NoteHome">> = observer(functi
 
     navigation.navigate("NoteForm", { itemId: note._id.toHexString() })
   }
-
+  const openNoteView = (note: Note) => () => {
+    navigation.navigate("NoteView", { itemId: note._id.toHexString() })
+  }
   // renders 
   const renderSelectProject = useCallback(() => (
     <Portal>
       <Dialog visible={projectSelectVisible} onDismiss={changeSelectProjectVisibility(false)}>
         <Dialog.ScrollArea>
           <ListView
-            style={{ maxHeight: 100 }}
             data={projects.map(i => i)}
             renderItem={(info) => (
               <List.Item
@@ -159,8 +160,9 @@ export const NoteListScreen: FC<AppTabScreenProps<"NoteHome">> = observer(functi
         renderItem={(info) => (
           <List.Item
             title={info.item.title}
-            onPress={openEditNoteForm(info.item)} />)} />
-
+            onLongPress={openEditNoteForm(info.item)}
+            onPress={openNoteView(info.item)} />
+        )} />
       <FAB style={$fab} onPress={openNewNoteForm()} icon="plus" />
     </>
   )

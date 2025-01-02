@@ -52,6 +52,7 @@ export type AppStackParamList = {
   ProjectDetail: { itemId?: string }
   ReceiptItemList: { itemId?: string }
   NoteForm: { itemId?: string }
+  NoteView: { itemId: string }
   // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
 
@@ -143,6 +144,18 @@ const AppStack = observer(function AppStack() {
         <Stack.Screen
           name="NoteForm"
           component={Screens.NoteFormScreen}
+        />
+        <Stack.Screen
+          name="NoteView"
+          component={Screens.NoteViewScreen}
+          options={{
+            headerShown: true,
+            header: () => (
+              <Appbar.Header>
+                <Appbar.BackAction onPress={goBack} />
+              </Appbar.Header>
+            ),
+          }}
         />
       </Stack.Group>
 

@@ -13,8 +13,8 @@ import { SpendFormStoreSnapshotIn } from "app/models"
 import { addMonths, newDate } from "date-fns-jalali"
 
 type SpendPart = Partial<SpendFormStoreSnapshotIn>
-interface GPTSpendPart extends Omit<SpendPart,"doneAt"> {
-  doneAt?: [number,number,number,number,number,number]
+interface GPTSpendPart extends Omit<SpendPart, "doneAt"> {
+  doneAt?: [number, number, number, number, number, number]
 }
 
 /**
@@ -47,6 +47,68 @@ export class Api {
         Accept: "application/json",
       },
     })
+  }
+
+  async autoTitle(
+    text: string,
+  ): Promise<{ extracted: { title: string, category: string }; kind: "ok" } | GeneralApiProblem> {
+    // make the api call
+    const messages = [
+      {
+        role: "system",
+        content: `You are a knowledgeable assistant specialized in naming and categorizing text note of clients for better access. you work at construction site and recored event throw notes.
+you always format output to JSON with keys for a title for the text and category for the text. please follow these rules:
+- if text is unclear return a  empty JSON
+- title should be short and clear
+- response language should be same as text
+
+
+      text:
+       ${text || ""}`,
+      },
+    ]
+
+    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.post(
+      `completions?api-version=2024-02-15-preview`,
+      {
+        messages: messages,
+        temperature: 0.6,
+        max_tokens: 800,
+        top_p: 0.95,
+        frequency_penalty: 0,
+        presence_penalty: 0,
+        stop: null,
+      },
+    )
+
+    // the typical ways to die when calling an api
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) return problem
+    }
+
+    // transform the data into the format we are expecting
+    try {
+      const rawData = (response.data as any).choices[0].message.content
+      console.log(rawData)
+
+      // This is where we transform the data into the shape we expect for our MST model.
+      const extracted = JSON.parse(rawData) as GPTSpendPart
+      let doneAt
+      let amount
+      if (extracted.doneAt) {
+        doneAt = addMonths(newDate(...extracted.doneAt), -1)
+      }
+      if (extracted.amount) {
+        amount = Number(extracted.amount)
+      }
+      return { kind: "ok", extracted: { ...extracted, doneAt, amount } }
+    } catch (e) {
+      if (__DEV__ && e instanceof Error) {
+        console.error(`Bad data: ${e.message}\n${response.data}`, e.stack)
+      }
+      return { kind: "bad-data" }
+    }
   }
 
   /**
@@ -100,12 +162,12 @@ export class Api {
       let doneAt
       let amount
       if (extracted.doneAt) {
-        doneAt = addMonths(newDate(...extracted.doneAt),-1)
+        doneAt = addMonths(newDate(...extracted.doneAt), -1)
       }
       if (extracted.amount) {
         amount = Number(extracted.amount)
       }
-      return { kind: "ok", extracted:{...extracted, doneAt, amount} }
+      return { kind: "ok", extracted: { ...extracted, doneAt, amount } }
     } catch (e) {
       if (__DEV__ && e instanceof Error) {
         console.error(`Bad data: ${e.message}\n${response.data}`, e.stack)

@@ -3,7 +3,7 @@ import { observer } from "mobx-react-lite"
 import { ViewStyle } from "react-native"
 import { AppStackScreenProps } from "app/navigators"
 import { Button, Screen, Text, TextField, DatePicker } from "app/components"
-import { Divider, Surface, Appbar } from "react-native-paper"
+import { Divider, Surface, Appbar, TextInput } from "react-native-paper"
 import { useFocusEffect } from '@react-navigation/native';
 import { useNavigation } from "@react-navigation/native"
 import { useStores } from "app/models"
@@ -14,6 +14,8 @@ import { BSON, UpdateMode } from "realm"
 import { Project } from "app/models/realm/calendar"
 import { format } from "date-fns-jalali"
 import { Select } from "../CalendarScreen/Select"
+import { api } from "app/services/api"
+
 interface NoteFormScreenProps extends AppStackScreenProps<"NoteForm"> { }
 
 export const NoteFormScreen: FC<NoteFormScreenProps> = observer(function NoteFormScreen({ route: { params } }) {
@@ -33,8 +35,15 @@ export const NoteFormScreen: FC<NoteFormScreenProps> = observer(function NoteFor
 
   const project = useObject(Project, new BSON.ObjectID(currentProjectId))
 
+  const suggestNoteTitle = async () => {
+    let resp = await api.autoTitle(form.text.value)
+    if (resp.kind == "ok") {
+      form.title.setValue(`${resp.extracted.title} - ${resp.extracted.category}`)
+    }
+  }
 
-  const saveNote = () => {
+
+  const saveNote = async () => {
     if (form.valid().length < 1) {
       try {
         const res = realm.write(() => {
@@ -126,8 +135,8 @@ export const NoteFormScreen: FC<NoteFormScreenProps> = observer(function NoteFor
         helper={errorMap["title"]}
         outlineColor="transparent"
         contentStyle={{ paddingTop: 10 }}
-        outlineStyle={{ display: "none" }
-        }
+        outlineStyle={{ display: "none" }}
+        right={<TextInput.Icon icon={"assistant"} onPress={() => { suggestNoteTitle() }} />}
       />
       <Divider />
       <TextField
