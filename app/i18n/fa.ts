@@ -3,6 +3,7 @@ const fa = {
     buy: "خرید",
     transfer: "واریز",
     fund: "دریافتی",
+    spend: "مخارج",
     all: "همه"
   },
   paymentMethod: {

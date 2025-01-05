@@ -53,6 +53,7 @@ export type AppStackParamList = {
   ReceiptItemList: { itemId?: string }
   NoteForm: { itemId?: string }
   NoteView: { itemId: string }
+  Print: undefined
   // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
 
@@ -123,6 +124,17 @@ const AppStack = observer(function AppStack() {
         />
         <Stack.Screen name="ReceiptItemList" component={Screens.ReceiptItemListScreen} />
         <Stack.Screen name="TankhahFundForm" component={Screens.TankhahChargeFromScreen} />
+        <Stack.Screen
+          name="Print"
+          component={Screens.PrintScreen}
+          options={{
+            headerShown: true,
+            header: () => (
+              <Appbar.Header>
+                <Appbar.BackAction onPress={goBack} />
+              </Appbar.Header>
+            ),
+          }} />
       </Stack.Group>
       <Stack.Group>
         <Stack.Screen

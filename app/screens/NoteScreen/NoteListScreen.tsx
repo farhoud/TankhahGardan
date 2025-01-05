@@ -29,13 +29,12 @@ import { BSON } from "realm"
 
 export const NoteListScreen: FC<AppTabScreenProps<"NoteHome">> = observer(function NoteListScreen() {
   const {
-    calendarStore: { setProp, currentDate, selectProjectId, currentView },
+    calendarStore: { setProp, currentDate, selectProjectId },
     noteStore: { form }
   } = useStores()
   // Pull in navigation via hook
   const navigation = useNavigation<AppNavigation>()
   // Pull in real via hook
-  const realm = useRealm()
   const theme = useTheme()
 
   // states
@@ -160,6 +159,8 @@ export const NoteListScreen: FC<AppTabScreenProps<"NoteHome">> = observer(functi
         renderItem={(info) => (
           <List.Item
             title={info.item.title}
+            description={info.item.text}
+            descriptionEllipsizeMode="head"
             onLongPress={openEditNoteForm(info.item)}
             onPress={openNoteView(info.item)} />
         )} />

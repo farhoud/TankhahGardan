@@ -14,17 +14,27 @@ export interface PrintProps<T> {
  */
 export const usePrint = () => {
 
-  const [selectedPrinter, setSelectedPrinter] = useState<Print.Printer>()
+  const [selectedPrinter] = useState<Print.Printer>()
 
-  const printTankhah = async (data: TankhahPrint[],spendTotal:string,fundsTotal:string,remain:string) => {
+  const printTankhahFunds = async (data: TankhahPrint[],fundsTotal:string, start: string, end: string) => {
     // On iOS/android prints the given html. On web prints the HTML from the current page.
+    const body = renderFundBody(data, fundsTotal, start, end)
     await Print.printAsync({
-      html: tankhahTemplate(data,spendTotal,fundsTotal,remain),
+      html: htmlBase(body),
       printerUrl: selectedPrinter?.url, // iOS only
     })
   }
 
-  return {printTankhah}
+  const printTankhahSpends = async (data: TankhahPrint[],fundsTotal:string, group: string ,start: string, end: string) => {
+    // On iOS/android prints the given html. On web prints the HTML from the current page.
+    const body = renderSpendBody(data, fundsTotal, group,start, end)
+    await Print.printAsync({
+      html: htmlBase(body),
+      printerUrl: selectedPrinter?.url, // iOS only
+    })
+  }
+
+  return {printTankhahFunds, printTankhahSpends}
 }
 
 interface TankhahPrint {
@@ -35,36 +45,34 @@ interface TankhahPrint {
   fee:string,
   info:string,
 }
-const tankhahTemplate = (rows: TankhahPrint[],spendTotal:string,fundsTotal:string,remain:string ) => {
-  const spends = rows.filter(i=>i.opType!=="fund").map((i, index) => `<tr>
-  <td>${index+1}</td>
-  <td>${i.date || "ندارد"}</td>
-  <td>${i.info || "ندارد"}</td>
-  <td>${i.amount || "ندارد"}</td>
-  <td>${i.fee || "ندارد"}</td>
-  <td>${i.description || "ندارد"}</td>
-  </tr>`)
-  const funds = rows.filter(i=>i.opType==="fund").map((i, index) => `<tr>
-  <td>${index+1}</td>
-  <td>${i.date || "ندارد"}</td>
-  <td>${i.info || "ندارد"}</td>
-  <td>${i.amount || "ندارد"}</td>
-  <td>${i.fee || "ندارد"}</td>
-  <td>${i.description || "ندارد"}</td>
-  </tr>`)
-  const baseHtml = `
-  <!DOCTYPE html>
-  <html dir="rtl" lang="en">
-    <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-      <title>Bank Transfers</title>
-  
-    </head>
-    <body>
+
+
+const fundTableMapper = (rows: TankhahPrint[])=>rows.filter(i=>i.opType!=="fund").map((i, index) => `<tr>
+<td>${index+1}</td>
+<td>${i.date || "ندارد"}</td>
+<td>${i.info || "ندارد"}</td>
+<td>${i.amount || "ندارد"}</td>
+<td>${i.fee || "ندارد"}</td>
+<td>${i.description || "ندارد"}</td>
+</tr>`)
+
+const spentTableMapper = (rows: TankhahPrint[]) => rows.filter(i=>i.opType==="fund").map((i, index) => `<tr>
+<td>${index+1}</td>
+<td>${i.date || "ندارد"}</td>
+<td>${i.info || "ندارد"}</td>
+<td>${i.amount || "ندارد"}</td>
+<td>${i.fee || "ندارد"}</td>
+<td>${i.description || "ندارد"}</td>
+</tr>`)
+
+const renderSpendBody = (rows: TankhahPrint[],spendTotal:string,group: string, start:string,end:string) => {
+  const spends = spentTableMapper(rows)
+return `
+<body>
       <div class="container mt-5">
         <h2 class="mb-4">شرکت ساختمانی ماندگار</h2>
-        <h2 class="mb-4">صورت خلاصه تنخواه گردان</h2>
+        <h2 class="mb-4"> صورت هزینه های ساختمان ${group}</h2>
+        <h2 class="mb-4"> تاریخ: ${start}-${end} </h2>
         <table class="table table-bordered table-striped">
           <thead class="thead-dark">
             <tr>
@@ -79,24 +87,59 @@ const tankhahTemplate = (rows: TankhahPrint[],spendTotal:string,fundsTotal:strin
           <tbody>
             ${spends}
             <tr>
-              <td colspan="3">جمع کل هزینه های دلخواه</td>
+              <td colspan="3">جمع کل هزینه ها</td>
               <td colspan="3">${spendTotal}</td>
-            </tr>
-            ${funds}
-            <tr>
-              <td colspan="3">جمع کل دریافتی</td>
-              <td colspan="3">${fundsTotal}</td>
-            </tr>
-            <tr>
-              <td colspan="3">انتقال به تنخواه بعد</td>
-              <td colspan="3">${remain}</td>
             </tr>
           </tbody>
         </table>
       </div>
+    </body>`
+}
+
+const renderFundBody = (rows: TankhahPrint[], fundsTotal:string, start:string,end:string) => {
+  const funds = fundTableMapper(rows)
+return `<body>
+  <div class="container mt-5">
+    <h2 class="mb-4">شرکت ساختمانی ماندگار</h2>
+    <h2 class="mb-4">صورت خلاصه تنخواه گردان دریافتی</h2>
+    <h4 class="mb-4"> تاریخ: ${start}-${end} </h2>
+    <table class="table table-bordered table-striped">
+      <thead class="thead-dark">
+        <tr>
+          <th style="width: 5%" scope="col">ردیف</th>
+          <th style="width: 15%" scope="col">تاریخ</th>
+          <th style="width: 40%" scope="col">شرح</th>
+          <th scope="col">مبلغ</th>
+          <th scope="col">کارمزد</th>
+          <th scope="col">توضیحات</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${funds}
+        <tr>
+          <td colspan="3">جمع کل دریافتی</td>
+          <td colspan="3">${fundsTotal}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>`
+}
+
+const htmlBase = (body: string) => {
+
+  const baseHtml = `
+  <!DOCTYPE html>
+  <html dir="rtl" lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+      <title>Bank Transfers</title>
   
-  
-    </body>
+    </head>
+
+    ${body}
+
     <style>
       /*!
       * Bootstrap  v5.3.3 (https://getbootstrap.com/)

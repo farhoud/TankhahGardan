@@ -48,7 +48,6 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
     const navigation = useNavigation<AppNavigation>()
     const theme = useTheme()
     const realm = useRealm()
-    const printer = usePrint()
 
     const [openFilterMenu, setOpenFilterMenu] = useState(false)
     const [fabOpen, setFabOpen] = useState(false)
@@ -269,46 +268,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
     }
 
     const handlePrint = () => {
-      const totalFund = realm
-        .objects(TankhahItem)
-        .filtered(...getQueryString(startDate, endDate, "fund"))
-        .sum("total")
-      const totalSpend = realm
-        .objects(TankhahItem)
-        .filtered(...getQueryString(startDate, endDate, "spend"))
-        .sum("total")
-
-      const totalFundAll = realm
-        .objects(TankhahItem)
-        .filtered(...getQueryString(addYears(startDate, -50), endDate, "fund"))
-        .sum("total")
-      const totalSpendAll = realm
-        .objects(TankhahItem)
-        .filtered(...getQueryString(addYears(startDate, -50), endDate, "spend"))
-        .sum("total")
-
-      printer.printTankhah(
-        tankhahItemList.map((item) => {
-          const mapInfo = {
-            fund: `دریافت`,
-            buy: `خرید  ${item.receiptItems?.map((i) => `${i.title}`).join("، ")}`,
-            transfer: `انتقال وجه ${translate(
-              ("paymentMethod." + item.paymentMethod) as TxKeyPath,
-            )} به ${item.recipient || item.accountNum || "نامشخص"}`,
-          }
-          return {
-            date: formatDateIR(item.doneAt),
-            opType: item.opType,
-            amount: tomanFormatter(item.amount),
-            fee: tomanFormatter(item.transferFee),
-            description: item.description || "",
-            info: mapInfo[item.opType],
-          }
-        }),
-        tomanFormatter(totalSpend),
-        tomanFormatter(totalFund),
-        tomanFormatter(totalFundAll - totalSpendAll),
-      )
+      navigation.navigate("Print")
     }
 
     useEffect(() => {
