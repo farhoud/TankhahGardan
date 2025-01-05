@@ -47,7 +47,7 @@ interface TankhahPrint {
 }
 
 
-const fundTableMapper = (rows: TankhahPrint[])=>rows.filter(i=>i.opType!=="fund").map((i, index) => `<tr>
+const fundTableMapper = (rows: TankhahPrint[])=>rows.filter(i=>i.opType==="fund").map((i, index) => `<tr>
 <td>${index+1}</td>
 <td>${i.date || "ندارد"}</td>
 <td>${i.info || "ندارد"}</td>
@@ -56,7 +56,7 @@ const fundTableMapper = (rows: TankhahPrint[])=>rows.filter(i=>i.opType!=="fund"
 <td>${i.description || "ندارد"}</td>
 </tr>`)
 
-const spentTableMapper = (rows: TankhahPrint[]) => rows.filter(i=>i.opType==="fund").map((i, index) => `<tr>
+const spentTableMapper = (rows: TankhahPrint[]) => rows.filter(i=>i.opType!=="fund").map((i, index) => `<tr>
 <td>${index+1}</td>
 <td>${i.date || "ندارد"}</td>
 <td>${i.info || "ندارد"}</td>
@@ -71,8 +71,8 @@ return `
 <body>
       <div class="container mt-5">
         <h2 class="mb-4">شرکت ساختمانی ماندگار</h2>
-        <h2 class="mb-4"> صورت هزینه های ساختمان ${group}</h2>
-        <h2 class="mb-4"> تاریخ: ${start}-${end} </h2>
+        <h2 class="mb-4"> صورت هزینه های پروژه ${group}</h2>
+        <h4 class="mb-2"> تاریخ: ${start}-${end} </h2>
         <table class="table table-bordered table-striped">
           <thead class="thead-dark">
             <tr>

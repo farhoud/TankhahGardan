@@ -71,14 +71,7 @@ export const PrintScreen: FC<PrintScreenProps> = observer(function PrintScreen()
     }
     return [query, ...args]
   }
-  const tankhahItemList = useQuery(
-    TankhahItem,
-    (items) => {
-      const groupName = groupNames && groupNames[selectedGroup]
-      return items.filtered(...getQueryString(startDate, endDate, selectedFilter, groupName))
-    },
-    [groupNames, selectedGroup],
-  )
+
 
   // Actions
   const handleToggleFilterMenu = () => {
@@ -166,7 +159,9 @@ export const PrintScreen: FC<PrintScreenProps> = observer(function PrintScreen()
   }
 
   const handlePrint = () => {
-    const items = tankhahItemList.map((item) => {
+    const items = realm
+    .objects(TankhahItem)
+    .filtered(...getQueryString(startDate, endDate, selectedFilter)).map((item) => {
       const mapInfo = {
         fund: `دریافت`,
         buy: `خرید  ${item.receiptItems?.map((i) => `${i.title}`).join("، ")}`,
@@ -187,14 +182,13 @@ export const PrintScreen: FC<PrintScreenProps> = observer(function PrintScreen()
       case "spend":
         const totalSpend = realm
         .objects(TankhahItem)
-        .filtered(...getQueryString(startDate, endDate, "spend"))
+        .filtered(...getQueryString(startDate, endDate, "spend",groupNames[selectedGroup]))
         .sum("total")
         printer.printTankhahSpends(items, tomanFormatter(totalSpend), groupNames[selectedGroup], formatDateIR(startDate), formatDateIR(endDate))
-        return
       case "fund":
         const totalFund = realm
         .objects(TankhahItem)
-        .filtered(...getQueryString(startDate, endDate, "fund"))
+        .filtered(...getQueryString(startDate, endDate, "fund",groupNames[selectedGroup]))
         .sum("total")
         printer.printTankhahFunds(items, tomanFormatter(totalFund), formatDateIR(startDate), formatDateIR(endDate))
     }
