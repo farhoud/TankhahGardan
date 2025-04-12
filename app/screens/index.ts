@@ -20,3 +20,4 @@ export * from "./NoteScreen/NoteListScreen"
 export * from "./NoteScreen/NoteFormScreen"
 export * from "./NoteScreen/NoteViewScreen"
 
+export * from "./BackupScreen"

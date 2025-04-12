@@ -54,7 +54,8 @@ export type AppStackParamList = {
   NoteForm: { itemId?: string }
   NoteView: { itemId: string }
   Print: undefined
-  // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
+  Backup: undefined
+	// IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
 
 /**
@@ -186,7 +187,8 @@ const AppStack = observer(function AppStack() {
       />
 
       {/* <Stack.Screen name="NoteList" component={Screens.NoteListScreen} /> */}
-      {/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
+      <Stack.Screen name="Backup" component={Screens.BackupScreen} />
+			{/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
     </Stack.Navigator>
   )
 })

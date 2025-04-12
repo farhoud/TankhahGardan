@@ -55,7 +55,7 @@ export const PrintScreen: FC<PrintScreenProps> = observer(function PrintScreen()
     filter?: ItemFilterPreset,
     group?: string,
   ): [string, ...Array<Date | string>] => {
-    const baseQuery = "doneAt BETWEEN { $0 , $1 } SORT(doneAt DESC)"
+    const baseQuery = "doneAt BETWEEN { $0 , $1 } SORT(doneAt ASC)"
     let query = baseQuery
     const args: Array<Date | string> = [startDate, endDate]
     switch (filter) {
@@ -160,36 +160,36 @@ export const PrintScreen: FC<PrintScreenProps> = observer(function PrintScreen()
 
   const handlePrint = () => {
     const items = realm
-    .objects(TankhahItem)
-    .filtered(...getQueryString(startDate, endDate, selectedFilter)).map((item) => {
-      const mapInfo = {
-        fund: `دریافت`,
-        buy: `خرید  ${item.receiptItems?.map((i) => `${i.title}`).join("، ")}`,
-        transfer: `انتقال وجه ${translate(
-          ("paymentMethod." + item.paymentMethod) as TxKeyPath,
-        )} به ${item.recipient || item.accountNum || "نامشخص"}`,
-      }
-      return {
-        date: formatDateIR(item.doneAt),
-        opType: item.opType,
-        amount: tomanFormatter(item.amount),
-        fee: tomanFormatter(item.transferFee),
-        description: item.description || "",
-        info: mapInfo[item.opType],
-      }
-    })
+      .objects(TankhahItem)
+      .filtered(...getQueryString(startDate, endDate, selectedFilter, groupNames[selectedGroup])).map((item) => {
+        const mapInfo = {
+          fund: `دریافت`,
+          buy: `${item.receiptItems?.map((i) => `${i.title}`).join("، ")}`,
+          transfer: `${translate(
+            ("paymentMethod." + item.paymentMethod) as TxKeyPath,
+          )} به ${item.recipient || item.accountNum || "نامشخص"}`,
+        }
+        return {
+          date: formatDateIR(item.doneAt),
+          opType: item.opType,
+          amount: item.amount,
+          fee: item.transferFee,
+          description: item.description || "",
+          info: mapInfo[item.opType],
+        }
+      })
     switch (selectedFilter) {
       case "spend":
         const totalSpend = realm
-        .objects(TankhahItem)
-        .filtered(...getQueryString(startDate, endDate, "spend",groupNames[selectedGroup]))
-        .sum("total")
-        printer.printTankhahSpends(items, tomanFormatter(totalSpend), groupNames[selectedGroup], formatDateIR(startDate), formatDateIR(endDate))
+          .objects(TankhahItem)
+          .filtered(...getQueryString(startDate, endDate, "spend", groupNames[selectedGroup]))
+          .sum("total")
+        printer.printTankhahSpends(items, totalSpend, groupNames[selectedGroup], formatDateIR(startDate), formatDateIR(endDate))
       case "fund":
         const totalFund = realm
-        .objects(TankhahItem)
-        .filtered(...getQueryString(startDate, endDate, "fund",groupNames[selectedGroup]))
-        .sum("total")
+          .objects(TankhahItem)
+          .filtered(...getQueryString(startDate, endDate, "fund"))
+          .sum("total")
         printer.printTankhahFunds(items, tomanFormatter(totalFund), formatDateIR(startDate), formatDateIR(endDate))
     }
   }
@@ -197,56 +197,56 @@ export const PrintScreen: FC<PrintScreenProps> = observer(function PrintScreen()
   return (
     <Screen style={$root} preset="fixed">
       {renderSelectGroup()}
-      <Surface style={{alignItems:"center"}}>
+      <Surface style={{ alignItems: "center" }}>
 
-<View style={{minHeight:"100%",maxWidth:"70%",justifyContent:"space-around", alignItems:"center"}}>
+        <View style={{ minHeight: "100%", maxWidth: "70%", justifyContent: "space-around", alignItems: "center" }}>
 
 
-        <Button
-          // style={$controlsBtn}
-          // buttonColor={theme.colors.onPrimary}
-          textColor={theme.colors.primary}
-          mode="contained-tonal"
-          onPress={changeSelectGroupVisibility(true)}
-          icon="filter"
-          text={groupNames[selectedGroup]=="all" ? "همه" : groupNames[selectedGroup]}
-        />
-        
-        <View style={$row}>
-          <DatePicker
-            date={startDate}
-            maxDate={endDate}
-            onDateChange={(value) => {
-              setProp("startDate", value)
-            }}
-            action={({ open, close, value }) => {
-              return renderTimeRangeBtn("start", open, value)
-            }}
+          <Button
+            // style={$controlsBtn}
+            // buttonColor={theme.colors.onPrimary}
+            textColor={theme.colors.primary}
+            mode="contained-tonal"
+            onPress={changeSelectGroupVisibility(true)}
+            icon="filter"
+            text={groupNames[selectedGroup] == "all" ? "همه" : groupNames[selectedGroup]}
           />
-          <DatePicker
-            date={endDate}
-            minDate={startDate}
-            onDateChange={(value) => {
-              setProp("endDate", value)
-            }}
-            action={({ open, close, value }) => renderTimeRangeBtn("end", open, value)}
-          />
-        </View>
 
-        {renderFilterMenu()}
-        <Button
-          // style={$controlsBtn}
-          // buttonColor={theme.colors.onPrimary}
-          textColor={theme.colors.primary}
-          // mode="contained-tonal"
-          onPress={handlePrint}
-          icon="printer"
-          mode="contained-tonal"
-          text="چاپ"
-        />
+          <View style={$row}>
+            <DatePicker
+              date={startDate}
+              maxDate={endDate}
+              onDateChange={(value) => {
+                setProp("startDate", value)
+              }}
+              action={({ open, close, value }) => {
+                return renderTimeRangeBtn("start", open, value)
+              }}
+            />
+            <DatePicker
+              date={endDate}
+              minDate={startDate}
+              onDateChange={(value) => {
+                setProp("endDate", value)
+              }}
+              action={({ open, close, value }) => renderTimeRangeBtn("end", open, value)}
+            />
+          </View>
+
+          {renderFilterMenu()}
+          <Button
+            // style={$controlsBtn}
+            // buttonColor={theme.colors.onPrimary}
+            textColor={theme.colors.primary}
+            // mode="contained-tonal"
+            onPress={handlePrint}
+            icon="printer"
+            mode="contained-tonal"
+            text="چاپ"
+          />
         </View>
       </Surface>
-      
+
     </Screen>
   )
 })

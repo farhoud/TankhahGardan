@@ -171,7 +171,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
         }
       }
       return (
-        <View style={{ flexDirection: "column", justifyContent:"space-around" }}>
+        <View style={{ flexDirection: "column", justifyContent: "space-around" }}>
           <PieChart
             data={pieData}
             // donut
@@ -181,11 +181,11 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
             // innerRadius={30}
             innerCircleColor={theme.colors.primary}
             showValuesAsLabels
-            // centerLabelComponent={() => {
-            //   return (
+          // centerLabelComponent={() => {
+          //   return (
 
-            //   )
-            // }}
+          //   )
+          // }}
           />
           <View style={{ justifyContent: "center", alignItems: "center" }}>
             <Text variant="bodyLarge">
@@ -262,7 +262,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
           // style={$controlsBtn}
           onPress={open}
         >
-          {(type==="start"?" از ": "تا ")+(value ? formatDateIRDisplay(value, "dd MMM yy") : " : ")}
+          {(type === "start" ? " از " : "تا ") + (value ? formatDateIRDisplay(value, "dd MMM yy") : " : ")}
         </Button>
       )
     }
@@ -295,6 +295,9 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
               navigation.navigate("ReceiptItemList", {})
             }}
           />
+          <Appbar.Action icon={"content-save-move"} onPress={() => {
+            navigation.navigate("Backup")
+          }} />
         </Appbar>
         <View>
           <View style={$row}>
@@ -307,7 +310,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
                   setProp("endDate", endOfDay(new Date()))
                 }}
               >
-                {"امروز "+formatDateIRDisplay(new Date())}
+                {"امروز " + formatDateIRDisplay(new Date())}
               </Button>
               <View style={$row}>
                 <DatePicker
