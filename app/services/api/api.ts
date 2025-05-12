@@ -11,10 +11,13 @@ import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem"
 import type { ApiConfig, ApiFeedResponse } from "./api.types"
 import { SpendFormStoreSnapshotIn } from "app/models"
 import { addMonths, newDate } from "date-fns-jalali"
+import { PaymentMethod } from "app/models/realm/models"
 
 type SpendPart = Partial<SpendFormStoreSnapshotIn>
 interface GPTSpendPart extends Omit<SpendPart, "doneAt"> {
   doneAt?: [number, number, number, number, number, number]
+  title?: string
+  category?: string
 }
 
 /**
@@ -51,7 +54,7 @@ export class Api {
 
   async autoTitle(
     text: string,
-  ): Promise<{ extracted: { title: string, category: string }; kind: "ok" } | GeneralApiProblem> {
+  ): Promise<{ extracted: { title: string| undefined, category: string|undefined, doneAt: Date | undefined, amount: number | undefined, paymentMethod: PaymentMethod | undefined }; kind: "ok" } | GeneralApiProblem> {
     // make the api call
     const messages = [
       {
@@ -102,7 +105,7 @@ you always format output to JSON with keys for a title for the text and category
       if (extracted.amount) {
         amount = Number(extracted.amount)
       }
-      return { kind: "ok", extracted: { ...extracted, doneAt, amount } }
+      return { kind: "ok", extracted: { title: extracted.title, category: extracted.category, doneAt, amount, paymentMethod: extracted.paymentMethod } }
     } catch (e) {
       if (__DEV__ && e instanceof Error) {
         console.error(`Bad data: ${e.message}\n${response.data}`, e.stack)
@@ -126,7 +129,7 @@ you always format output to JSON with keys for a title for the text and category
       format with keys 'trackingNum', 'doneAt', 'recipient', 'accountNum','paymentMethod', amount as number 'amount' . If
       certain information is not available, return null for the key.
       values are string or number except doneAt.
-      paymentMethod is how money transferred and can be if انتقال کارت به کارت :'ctc' OR انتقال پایا : 'paya' OR انتقال ساتنا : 'satna' OR (انواع خرید کالا یا خدمات) : 'pos' OR انتقال سپرده به سپرده : 'sts' OR any other method : 'other' .
+      paymentMethod is how money transferred and can be if انتقال کارت به کارت :'ctc' OR انتقال پایا : 'paya' OR انتقال ساتنا : 'satna' OR (انواع خرید کالا یا خدمات) : 'pos' OR انتقال وجه سپرده به سپرده : 'sts' OR انتقال وجه پل : 'pol-r' OR any other method : 'other' .
       doneAt is a hejri shamsi time and may not be available if available convert it to array of [year,month,day,hours,minutes,seconds] .
       accountNum is card (کارت) or sheba (شبا) or account number (شماره حساب) of the recipient (destination) .
       text:

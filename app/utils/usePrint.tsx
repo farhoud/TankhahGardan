@@ -52,8 +52,7 @@ const fundTableMapper = (rows: TankhahPrint[]) => rows.filter(i => i.opType === 
 <td>${index + 1}</td>
 <td>${i.date || "ندارد"}</td>
 <td>${i.info || "ندارد"}</td>
-<td>${i.amount || "ندارد"}</td>
-<td>${i.fee || "ندارد"}</td>
+<td style="direction: rtl;">${formatted(i.amount)}</td>
 <td>${i.description || "ندارد"}</td>
 </tr>`)
 
@@ -98,13 +97,13 @@ const renderSpendBody = (rows: TankhahPrint[], spendTotal: number, group: string
     </body>`
 }
 
-const renderFundBody = (rows: TankhahPrint[], fundsTotal: string, start: string, end: string) => {
+const renderFundBody = (rows: TankhahPrint[], fundsTotal: number, start: string, end: string) => {
   const funds = fundTableMapper(rows)
   return `<body style="font-family: Vazirmatn FD, sans-serif;">
   <div class="container mt-5">
-    <h2 class="mb-4">شرکت ساختمانی ماندگار</h2>
-    <h2 class="mb-4">صورت خلاصه تنخواه گردان دریافتی</h2>
-    <h4 class="mb-4"> تاریخ: ${start}-${end} </h2>
+    <h4 class="mb-4">شرکت ساختمانی ماندگار</h4>
+    <h4 class="mb-4">صورت خلاصه تنخواه گردان دریافتی</h4>
+    <p class="mb-4"> تاریخ: ${start}-${end} </p>
     <table class="table table-bordered table-striped">
       <thead class="thead-dark">
         <tr>
@@ -112,7 +111,6 @@ const renderFundBody = (rows: TankhahPrint[], fundsTotal: string, start: string,
           <th style="width: 15%" scope="col">تاریخ</th>
           <th style="width: 40%" scope="col">شرح</th>
           <th scope="col">مبلغ</th>
-          <th scope="col">کارمزد</th>
           <th scope="col">توضیحات</th>
         </tr>
       </thead>
@@ -120,7 +118,7 @@ const renderFundBody = (rows: TankhahPrint[], fundsTotal: string, start: string,
         ${funds}
         <tr>
           <td colspan="3">جمع کل دریافتی</td>
-          <td colspan="3">${fundsTotal}</td>
+          <td colspan="3">${formatted(fundsTotal)}</td>
         </tr>
       </tbody>
     </table>
@@ -151,7 +149,8 @@ const htmlBase = (body: string) => {
 }
 
 const formatted = (amount: number | string) => {
-  amount = Number(amount)
+  if (typeof amount === 'string')
+    amount = Number(amount)
   if (amount === 0)
     return "-"
   return new Intl.NumberFormat('fa-IR', {

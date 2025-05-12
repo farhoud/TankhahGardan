@@ -1,6 +1,6 @@
 import React, { FC, memo, useEffect } from "react"
 import { observer } from "mobx-react-lite"
-import { ViewStyle, StyleSheet } from "react-native"
+import { ViewStyle } from "react-native"
 import { AutoComplete, DatePicker, Select, TextField } from "app/components"
 import { Surface } from "react-native-paper"
 import { useStores } from "app/models"
@@ -75,7 +75,9 @@ export const BasicFormScreen: FC = memo(
         <DatePicker
           date={doneAt}
           onDateChange={(date) => {
-            setProp("doneAt", date)
+            if (date) {
+              setProp("doneAt", date)
+            }
           }}
           error={!!errors?.doneAt}
           label="Name"
@@ -116,6 +118,10 @@ export const BasicFormScreen: FC = memo(
             { value: "ctc", label: "کارت به کارت" },
             { value: "cash", label: "نقد" },
             { value: "pos", label: "پوز" },
+            { value: "sts", label: "سپرده به سپرده" },
+            { value: "pol-r", label: "پل آنی" },
+            { value: "pol-c", label: "پل چرخه" },
+            { value: "pol-d", label: "پل روزانه" },
             { value: "other", label: "دیگر" },
           ]}
           label="روش پرداخت"
@@ -184,16 +190,3 @@ const $root: ViewStyle = {
   width: "100%",
   height: "100%",
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    justifyContent: "center",
-    // backgroundColor: 'grey',
-  },
-  contentContainer: {
-    flex: 1,
-    alignItems: "center",
-  },
-})

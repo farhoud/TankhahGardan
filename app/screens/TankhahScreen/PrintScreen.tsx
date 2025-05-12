@@ -190,7 +190,7 @@ export const PrintScreen: FC<PrintScreenProps> = observer(function PrintScreen()
           .objects(TankhahItem)
           .filtered(...getQueryString(startDate, endDate, "fund"))
           .sum("total")
-        printer.printTankhahFunds(items, tomanFormatter(totalFund), formatDateIR(startDate), formatDateIR(endDate))
+        printer.printTankhahFunds(items, totalFund, formatDateIR(startDate), formatDateIR(endDate))
     }
   }
 

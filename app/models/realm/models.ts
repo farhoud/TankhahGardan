@@ -2,8 +2,8 @@ import Realm, { BSON, ObjectSchema } from "realm"
 import { Attendance, Event, Project, Task, Worker } from "./calendar"
 import { Note } from "./note"
 
-export type PaymentMethod = "satna" | "paya" | "cash" | "ctc" | "pos" | "other" | "sts"
-export type AccountNumType = "sheba" | "card" | "other" | "none"
+export type PaymentMethod = "satna" | "paya" | "cash" | "ctc" | "pos" | "other" | "sts" | "pol-r" | "pol-c" | "pol-d"
+export type AccountNumType = "sheba" | "card" | "other" | "none" | "sepordeh"
 export type PaymentType = "buy" | "transfer"
 export type OperationType = "buy" | "transfer" | "fund"
 
@@ -23,6 +23,14 @@ export const paymentMethodAccountTypeMapper = (
       return "none"
     case "other":
       return "other"
+    case "pol-r":
+      return "sheba"
+    case "pol-c":
+      return "sheba"
+    case "pol-d":
+      return "sheba"
+    case "sts":
+      return "sepordeh"
     default:
       return "other"
   }

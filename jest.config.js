@@ -14,6 +14,8 @@ const thirdPartyIgnorePatterns = [
   "react-native-svg",
   "react-clone-referenced-element",
   "react-native-code-push",
+  "@realm/.*",
+  "realm",
 ]
 
 /** @type {import('@jest/types').Config.ProjectConfig} */

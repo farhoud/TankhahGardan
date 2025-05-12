@@ -13,6 +13,9 @@ const fa = {
     ctc: "کارت به کارت",
     pos: "پوز",
     sts: "سپرده به سپرده",
+    pol_r: "پل آنی",
+    pol_c: "پل چرخه",
+    pol_d: "پل روزانه",
     other: "دیگر",
   },
   accountNumType: {
