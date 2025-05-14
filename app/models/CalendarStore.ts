@@ -1,9 +1,8 @@
 import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 import { CalendarAttendanceModel } from "./CalendarAttendance"
 import { withSetPropAction } from "./helpers/withSetPropAction"
-import { CalendarEventModel } from "./CalendarEvent"
-import { Attendance, Event, Task } from "./realm/calendar"
-import { CalendarTaskModel } from "./CalendarTask"
+import { Attendance, CalenderNote } from "./realm/calendar"
+import { CalendarNoteModel } from "./CalendarNote"
 
 /**
  * Model description here for TypeScript hints.
@@ -12,14 +11,13 @@ export const CalendarStoreModel = types
   .model("CalendarStore")
   .props({
     attendanceForm: types.optional(CalendarAttendanceModel, {}),
-    eventForm: types.optional(CalendarEventModel, {}),
-    taskForm: types.optional(CalendarTaskModel, {}),
-    currentForm: types.optional(types.enumeration(["event", "attendance", "task"]), "attendance"),
+    noteForm: types.optional(CalendarNoteModel, {}),
+    currentForm: types.optional(types.enumeration(["note", "attendance"]), "attendance"),
     selecting: types.optional(types.boolean, false),
     currentDate: types.optional(types.Date, () => new Date()),
     currentProjectId: types.maybe(types.string),
     currentView: types.optional(
-      types.enumeration(["event", "attendance", "attendance", "task", "all"]),
+      types.enumeration(["note", "attendance", "all"]),
       "all",
     ),
   })
@@ -27,43 +25,33 @@ export const CalendarStoreModel = types
   .actions((self) => ({
     clear() {
       self.attendanceForm.clear({ date: self.currentDate, projectId: self.currentProjectId })
-      self.eventForm.clear({ date: self.currentDate, projectId: self.currentProjectId })
-      self.taskForm.clear()
+      self.noteForm.clear({ date: self.currentDate, projectId: self.currentProjectId })
       self.selecting = false
     },
-    load(item: Attendance | Event | Task) {
+    load(item: Attendance | CalenderNote) {
       if (item instanceof Attendance) {
         self.attendanceForm.load(item)
         self.setProp("currentForm", "attendance")
       }
-      if (item instanceof Event) {
-        self.eventForm.load(item)
-        self.setProp("currentForm", "event")
+      if (item instanceof CalenderNote) {
+        self.noteForm.load(item)
+        self.setProp("currentForm", "note")
       }
-      if (item instanceof Task) {
-        self.taskForm.load(item)
-        self.setProp("currentForm", "event")
-      }
+
     },
     setGroup(group: string) {
       self.attendanceForm.setGroup(group)
-      self.eventForm.setGroup(group)
+      self.noteForm.setGroup(group)
     },
     selectProjectId(projectId: string) {
       self.currentProjectId = projectId
       self.attendanceForm.setProp("projectId", projectId)
-      self.eventForm.setProp("projectId", projectId)
+      self.noteForm.setProp("projectId", projectId)
     },
     selectWorker(workerId: string) {
       switch (self.currentForm) {
         case "attendance":
           self.attendanceForm.setProp("workerId", workerId)
-          return
-        case "event":
-          self.eventForm.setProp("workerIds", [...self.eventForm.workerIds, workerId])
-          return
-        case "task":
-          self.taskForm.setProp("workerIds", [...self.taskForm.workerIds, workerId])
           return
       }
     },
@@ -72,32 +60,10 @@ export const CalendarStoreModel = types
         case "attendance":
           self.attendanceForm.setProp("workerId", undefined)
           return
-        case "event":
-          self.eventForm.setProp(
-            "workerIds",
-            self.eventForm.workerIds.filter((i) => i !== workerId),
-          )
-          return
-        case "task":
-          self.eventForm.setProp(
-            "workerIds",
-            self.taskForm.workerIds.filter((i) => i !== workerId),
-          )
-          return
       }
     },
   }))
-  .views((self) => ({
-    get selectedWorkerObjIds() {
-      if (self.currentForm === "event") {
-        return self.eventForm.workerObjIds
-      }
-      if (self.currentForm === "task") {
-        return self.taskForm.workerObjIds
-      }
-      return []
-    },
-  }))
+  .views((self) => ({}))
 
 export interface CalendarStore extends Instance<typeof CalendarStoreModel> { }
 export interface CalendarStoreSnapshotOut extends SnapshotOut<typeof CalendarStoreModel> { }

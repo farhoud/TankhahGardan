@@ -8,7 +8,7 @@ import { useObject, useQuery, useRealm } from "@realm/react"
 import { BSON, UpdateMode } from "realm"
 import { Button, CurrencyField, ListView, ListViewRef, TextField } from "app/components"
 import { useNavigation } from "@react-navigation/native"
-import { ReceiptItem } from "app/models/realm/models"
+import { ReceiptItem } from "app/models/realm/tankhah"
 
 interface ReceiptItemListScreenProps extends AppStackScreenProps<"ReceiptItemList"> {}
 

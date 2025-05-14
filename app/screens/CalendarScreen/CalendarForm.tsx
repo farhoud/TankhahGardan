@@ -5,14 +5,13 @@ import { Chip } from "react-native-paper"
 import { $row, spacing } from "app/theme"
 import { observer } from "mobx-react-lite"
 import { useStores } from "app/models"
-import { EventForm } from "./EventForm"
-import { Attendance, Event, Task } from "app/models/realm/calendar"
-import { TaskForm } from "./TaskForm"
+import { CalenderNoteForm } from "./CalenderNoteForm"
+import { Attendance, CalenderNote} from "app/models/realm/calendar"
 
 export interface CalendarFormProps {
-  onDone: (value: Event | Attendance | Task) => void
+  onDone: (value: CalenderNote | Attendance) => void
 }
-type TabKey = undefined | "task" | "event" | "attendance"
+type TabKey = undefined | "note" | "attendance"
 export const CalendarForm: FC<CalendarFormProps> = observer((props) => {
   const {
     calendarStore: { currentForm, setProp },
@@ -43,28 +42,16 @@ export const CalendarForm: FC<CalendarFormProps> = observer((props) => {
           showSelectedOverlay
           shouldRasterizeIOS
           showSelectedCheck={false}
-          selected={isSelected("task")}
+          selected={isSelected("note")}
           onPress={() => {
-            setProp("currentForm", "task")
+            setProp("currentForm", "note")
           }}
         >
-          تسک
-        </Chip>
-        <Chip
-          showSelectedOverlay
-          shouldRasterizeIOS
-          showSelectedCheck={false}
-          selected={isSelected("event")}
-          onPress={() => {
-            setProp("currentForm", "event")
-          }}
-        >
-          رخداد
+          یاداشت
         </Chip>
       </View>
       {isSelected("attendance") && <AttendanceForm onDone={(value) => props.onDone(value)} />}
-      {isSelected("event") && <EventForm onDone={(value) => props.onDone(value)} />}
-      {isSelected("task") && <TaskForm onDone={(value) => props.onDone(value)} />}
+      {isSelected("note") && <CalenderNoteForm onDone={(value) => props.onDone(value)} />}
     </View>
   )
 })

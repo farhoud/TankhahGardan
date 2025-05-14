@@ -11,7 +11,7 @@ import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem"
 import type { ApiConfig, ApiFeedResponse } from "./api.types"
 import { SpendFormStoreSnapshotIn } from "app/models"
 import { addMonths, newDate } from "date-fns-jalali"
-import { PaymentMethod } from "app/models/realm/models"
+import { PaymentMethod } from "app/models/realm/tankhah"
 
 type SpendPart = Partial<SpendFormStoreSnapshotIn>
 interface GPTSpendPart extends Omit<SpendPart, "doneAt"> {

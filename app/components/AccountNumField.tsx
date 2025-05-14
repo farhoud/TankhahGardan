@@ -9,7 +9,7 @@ import React, {
 import { TextInput as RNTextInput, TextStyle, ViewStyle } from "react-native"
 import { TextField, TextFieldProps } from "./TextField"
 import MaskInput, { Mask } from "react-native-mask-input"
-import { PaymentMethod, paymentMethodAccountTypeMapper } from "app/models/realm/models"
+import { PaymentMethod, paymentMethodAccountTypeMapper } from "app/models/realm/tankhah"
 import { translate, TxKeyPath } from "app/i18n"
 
 export interface AccountNumFieldProps extends Omit<TextFieldProps, "ref"> {

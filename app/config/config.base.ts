@@ -2,6 +2,8 @@ export interface ConfigBaseProps {
   persistNavigation: "always" | "dev" | "prod" | "never"
   catchErrors: "always" | "dev" | "prod" | "never"
   exitRoutes: string[]
+  apiKey: string,
+  apiUrl: string,
 }
 
 export type PersistNavigationConfig = ConfigBaseProps["persistNavigation"]
@@ -21,6 +23,16 @@ const BaseConfig: ConfigBaseProps = {
    * is pressed while in that screen. Only affects Android.
    */
   exitRoutes: ["ChargeList","TankhahHome"],
+
+  /**
+   * This is the API key for the API
+   */
+  apiKey: process.env.EXPO_PUBLIC_API_KEY || "",
+
+  /**
+   * This is the URL of the API
+   */
+  apiUrl: process.env.EXPO_PUBLIC_API_URL || "",
 }
 
 export default BaseConfig

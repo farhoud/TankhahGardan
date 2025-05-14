@@ -2,7 +2,7 @@ import React, { forwardRef, Ref, useImperativeHandle, useMemo, useRef, useState 
 import { StyleProp, TextInput as RNTextInput, TextStyle } from "react-native"
 import { TextFieldProps, TextField, AccountNumField } from "."
 import { Dialog, Divider, List, Portal } from "react-native-paper"
-import { PaymentMethod } from "app/models/realm/models"
+import { PaymentMethod } from "app/models/realm/tankhah"
 
 export interface AutoCompleteProps extends Omit<TextFieldProps, "ref"> {
   suggestions?: Array<{ title: string }>

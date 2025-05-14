@@ -6,8 +6,7 @@ export class Project extends Realm.Object<Project> {
   createAt!: Date
   name!: string
   attendances!: Realm.List<Attendance>
-  events!: Realm.List<Event>
-  notes!: Realm.List<Note>
+  notes!: Realm.List<CalenderNote>
   description?: string
   deleted?: boolean
   static schema: ObjectSchema = {
@@ -21,14 +20,9 @@ export class Project extends Realm.Object<Project> {
         objectType: "Attendance",
         property: "project",
       },
-      events: {
+      notes: {
         type: "linkingObjects",
-        objectType: "Event",
-        property: "project",
-      },
-      note: {
-        type: "linkingObjects",
-        objectType: "Note",
+        objectType: "CalenderNote",
         property: "project",
       },
       description: "string?",
@@ -60,12 +54,7 @@ export class Worker extends Realm.Object<Worker> {
         type: "linkingObjects",
         objectType: "Attendance",
         property: "worker",
-      },
-      events: {
-        type: "linkingObjects",
-        objectType: "Event",
-        property: "workers",
-      },
+      }
     },
     primaryKey: "_id",
   }
@@ -96,60 +85,31 @@ export class Attendance extends Realm.Object<Attendance> {
   }
 }
 
-export class Event extends Realm.Object<Event> {
+export class CalenderNote extends Realm.Object<CalenderNote> {
   _id!: BSON.ObjectId
-  createAt!: Date
-  group?: string
-  project!: Project
-  title!: string
-  workers!: Realm.List<Worker>
-  from!: Date
-  to?: Date
-  description?: string
-  process?: string
-  unit?: string
-  quantity?: number
-  static schema: ObjectSchema = {
-    name: "Event",
-    properties: {
-      _id: { type: "objectId", default: () => new Realm.BSON.ObjectID() },
-      createdAt: { type: "date", default: () => new Date() },
-      group: "string?",
-      project: "Project",
-      title: "string",
-      workers: "Worker[]",
-      from: "date",
-      to: "date?",
-      description: "string?",
-      process: "string?",
-      unit: "string?",
-      quantity: "double?"
-    },
-    primaryKey: "_id",
-  }
-}
-
-export class Task extends Realm.Object<Task> {
-  _id!: BSON.ObjectId
-  createAt!: Date
+  createdAt!: Date
   project!: Project
   title!: string
   isDone!: boolean
-  workers!: Realm.List<Worker>
   dueDate?: Date
-  description?: string
+  isPinned!: boolean
+  text!: string
+  at!: Date
   static schema: ObjectSchema = {
-    name: "Task",
+    name: "CalenderNote",
     properties: {
       _id: { type: "objectId", default: () => new Realm.BSON.ObjectID() },
       createdAt: { type: "date", default: () => new Date() },
       project: "Project",
       title: "string",
       isDone: { type: "bool", default: false },
-      workers: "Worker[]",
       dueDate: "date?",
-      description: "string?",
+      isPinned: { type: "bool", default: false },
+      text: "string",
+      at: "date",
     },
     primaryKey: "_id",
   }
 }
+
+

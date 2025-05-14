@@ -4,7 +4,7 @@ import { ViewStyle } from "react-native"
 import { AutoComplete, DatePicker, Select, TextField } from "app/components"
 import { Surface } from "react-native-paper"
 import { useStores } from "app/models"
-import { PaymentMethod, OperationType, TankhahItem } from "app/models/realm/models"
+import { PaymentMethod, OperationType, TankhahItem } from "app/models/realm/tankhah"
 import { useQuery } from "@realm/react"
 
 export const BasicFormScreen: FC = memo(
@@ -27,39 +27,39 @@ export const BasicFormScreen: FC = memo(
       },
     } = useStores()
 
-    const groupSuggestions = useQuery(
-      TankhahItem,
-      (spends) => {
-        return spends.filtered(
+    const groupSuggestions = useQuery({
+      type:TankhahItem,
+      query: (spends) => 
+        spends.filtered(
           "group CONTAINS $0 AND group != '' AND group != 'no_group' SORT(doneAt DESC) DISTINCT(group) LIMIT(5)",
           group,
         )
       },
-      [group],
+      [group]
     )
 
-    const recipientSuggestions = useQuery(
-      TankhahItem,
-      (spends) => {
+    const recipientSuggestions = useQuery({
+      type:TankhahItem,
+      query: (spends) => {
         return spends.filtered(
           "recipient CONTAINS $0 AND recipient != '' AND opType == $1 SORT(doneAt DESC) DISTINCT(recipient) LIMIT(5)",
           recipient,
           opType,
         )
-      },
+      }},
       [recipient, opType],
     )
-    const accountNumSuggestions = useQuery(
-      TankhahItem,
-      (spends) => {
+    const accountNumSuggestions = useQuery({
+      type:TankhahItem,
+      query: (spends) => {
         return spends.filtered(
           "accountNum CONTAINS $0 AND accountNum != '' AND recipient CONTAINS $1 AND paymentMethod == $2 SORT(doneAt DESC) DISTINCT(accountNum) LIMIT(5)",
           accountNum,
           recipient,
           paymentMethod,
         )
-      },
-      [accountNum, recipient],
+      }},
+      [accountNum, recipient, paymentMethod],
     )
 
     useEffect(() => {

@@ -1,8 +1,8 @@
-import { FC, useCallback, useRef, useState, useEffect, useMemo } from "react"
+import React, { FC, useCallback, useRef, useState, useEffect, useMemo } from "react"
 import { observer } from "mobx-react-lite"
 import { View, ViewStyle } from "react-native"
 import { AppTabScreenProps, AppNavigation } from "app/navigators"
-import { Button, DatePicker, ListView, TimeIndicator, Text } from "app/components"
+import { Button, DatePicker, ListView, Text } from "app/components"
 import {
   Appbar,
   Card,
@@ -18,11 +18,10 @@ import {
 import { formatDateIRDisplay } from "app/utils/formatDate"
 import { useNavigation } from "@react-navigation/native"
 import PagerView from "react-native-pager-view"
-import { TimeRangeIndicator } from "app/components/TimeRangeIndicator"
 import { useStores } from "app/models"
 import { useQuery, useRealm } from "@realm/react"
-import { Attendance, Event, Project, Task } from "app/models/realm/calendar"
-import { addDays, addMinutes, endOfDay, format, isPast } from "date-fns-jalali"
+import { Attendance, CalenderNote, Project } from "app/models/realm/calendar"
+import { addDays, endOfDay, format } from "date-fns-jalali"
 import { ListRenderItem } from "@shopify/flash-list"
 import startOfDay from "date-fns/startOfDay"
 import { spacing } from "app/theme"
@@ -52,61 +51,50 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
 
   // states
   const [currentPage, setCurrentPage] = useState(0)
-  const [selectedAttendance, setSelectedAttendance] = useState<number>()
-  const [selectedEvent, setSelectedEvent] = useState<number>()
-  const [selectedTask, setSelectedTask] = useState<number>()
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   // Realm queries
-  const projects = useQuery(Project, (col) => {
+  const projects = useQuery({type:Project, query: (col) => {
     return col.filtered("deleted != $0", true)
-  })
+  }})
 
-  const currentAttendance = useQuery(
-    Attendance,
-    (col) => {
+  const currentAttendance = useQuery({
+    type:Attendance,
+    query: (col) => {
       return col
         .filtered(
           "project._id == $0",
           projects[currentPage] ? projects[currentPage]._id : new BSON.ObjectID(),
         )
         .filtered("from BETWEEN {$0 , $1}", startOfDay(currentDate), endOfDay(currentDate))
-    },
+    }},
     [currentDate, currentPage, projects],
   )
 
-  const currentEvents = useQuery(
-    Event,
-    (col) => {
+  const currentNotes = useQuery(
+    {type:CalenderNote,
+    query: (col) => {
       return col
         .filtered(
           "project._id == $0",
           projects[currentPage] ? projects[currentPage]._id : new BSON.ObjectID(),
         )
         .filtered(
-          "from BETWEEN {$0 , $1} OR to BETWEEN {$0 , $1}",
+          "createdAt BETWEEN {$0 , $1}",
           startOfDay(currentDate),
           endOfDay(currentDate),
         )
-    },
+    }},
     [currentDate, currentPage, projects],
-  )
-
-  const currentTasks = useQuery(
-    Task,
-    (col) => {
-      return col.filtered("isDone == $0", false)
-    }
-
   )
 
   const handleFormNew = () => {
     formRef.current?.newForm()
   }
-  const handleFormEdit = (item: Attendance | Event | Task) => (e: any) => {
+  const handleFormEdit = (item: Attendance | CalenderNote) => (e: any) => {
     formRef.current?.editForm(item)
   }
-  const handleDeleteItem = (item: Attendance | Event | Task) => (e: any) => {
+  const handleDeleteItem = (item: Attendance | CalenderNote) => (e: any) => {
     realm.write(() => realm.delete(item))
   }
 
@@ -161,13 +149,9 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
   }, [currentDate, currentPage, projects, drawerOpen])
 
   const renderAttendanceItem: ListRenderItem<Attendance> = ({ item, index }) => {
-    if (index === selectedAttendance)
       return (
         <>
           <Card
-            onPress={(props) => {
-              setSelectedAttendance(undefined)
-            }}
             mode="outlined"
             style={{ margin: 2 }}
           >
@@ -182,6 +166,7 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
                     alignSelf: "flex-start",
                     paddingHorizontal: 20,
                     flexDirection: "row-reverse",
+                    marginBottom: 20,
                   },
                 ]}
               >
@@ -224,60 +209,19 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
           </Card>
         </>
       )
-    return (
-      <>
-        <List.Item
-          title={item.worker?.name || "حذف شده"}
-          description={attendanceSubtitle(item)}
-          onPress={() => setSelectedAttendance(index)}
-        ></List.Item>
-        <TimeRangeIndicator
-          range={[item.from, item.to || addMinutes(item.from, 1)]}
-        ></TimeRangeIndicator>
-      </>
-    )
+
   }
 
-  const renderEventItem: ListRenderItem<Event> = ({ item, index }) => {
-    const renderRow = (text: string, icon: string) => {
-      return (
-        <View
-          style={[
-            {
-              alignSelf: "flex-start",
-              // paddingHorizontal: 20,
-              flexDirection: "row-reverse",
-            },
-          ]}
-        >
-          <Text style={[{ paddingHorizontal: 20, paddingTop: 7 }]} variant="bodyMedium">
-            {text}
-          </Text>
-          <Icon source={icon} size={24} />
-        </View>
-      )
-    }
-    if (index === selectedEvent)
+  const renderNoteItem: ListRenderItem<CalenderNote> = ({ item, index }) => {
       return (
         <>
           <Card
-            onPress={(props) => {
-              setSelectedEvent(undefined)
-            }}
             mode="outlined"
             style={{ margin: 2 }}
           >
-            <Card.Title title={item.title} subtitle={item.description} />
+            <Card.Title title={item.title} />
             <Card.Content style={{ flex: 1 }}>
-              {renderRow(
-                `${format(item.from, "HH:mm")} ${item.to ? "" : "-"} ${item.to ? format(item.to, "HH:mm") : ""
-                }`,
-                "book-clock-outline",
-              )}
-              {item.workers.length > 0 &&
-                renderRow(item.workers.map((i) => i.name).join(", "), "account")}
-              {!!item.process &&
-                renderRow(`${item.process} ${item.quantity} ${item.unit}`, "progress-wrench")}
+              <Text>{item.text}</Text>
             </Card.Content>
             <View style={{ marginBottom: spacing.xs }} />
             <Divider />
@@ -294,99 +238,14 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
           </Card>
         </>
       )
-    return (
-      <>
-        <List.Item
-          title={item.title}
-          description={item.description}
-          onPress={() => setSelectedEvent(index)}
-        ></List.Item>
-        <TimeRangeIndicator
-          range={[item.from, item.to || addMinutes(item.from, 1)]}
-        ></TimeRangeIndicator>
-      </>
-    )
+
   }
 
-  const renderTaskItem: ListRenderItem<Task> = ({ item, index }) => {
-    const itemColor = () => {
-      if (item.dueDate && isPast(item.dueDate)) {
-        return theme.colors.errorContainer
-      }
-      return undefined
-    }
-    const renderRow = (text: string, icon: string) => {
-      return (
-        <View
-          style={[
-            {
-              alignSelf: "flex-start",
-              // paddingHorizontal: 20,
-              flexDirection: "row-reverse",
-            },
-          ]}
-        >
-          <Text style={[{ paddingHorizontal: 20, paddingTop: 7 }]} variant="bodyMedium">
-            {text}
-          </Text>
-          <Icon source={icon} size={24} />
-        </View>
-      )
-    }
-    if (index === selectedTask)
-      return (
-        <>
-          <Card
-            onPress={(props) => {
-              setSelectedTask(undefined)
-            }}
-            mode="outlined"
-            style={{ margin: 2, backgroundColor: itemColor() }}
-          >
-            <Card.Title title={item.title} subtitle={item.description} />
-            <Card.Content style={{ flex: 1 }}>
-              {item.dueDate && renderRow(
-                `${format(item.dueDate, "HH:mm")}`,
-                "bell",
-              )}
-              {item.workers.length > 0 &&
-                renderRow(item.workers.map((i) => i.name).join(", "), "account")}
-            </Card.Content>
-            <View style={{ marginBottom: spacing.xs }} />
-            <Divider />
-            <Card.Actions style={{ flexDirection: "row", justifyContent: "space-around" }}>
-              <View style={{ flex: 1, flexDirection: "row", justifyContent: "space-around" }}>
-                <IconButton
-                  icon="clipboard-edit-outline"
-                  mode="outlined"
-                  onPress={handleFormEdit(item)}
-                />
-                <IconButton icon="delete" mode="outlined" onPress={handleDeleteItem(item)} />
-                <IconButton icon="check-bold" mode="outlined" onPress={handleDeleteItem(item)} />
-              </View>
-            </Card.Actions>
-          </Card>
-        </>
-      )
-
-    return (
-      <>
-        <List.Item
-          title={item.title}
-          description={item.description}
-          onPress={() => setSelectedTask(index)}
-          style={{ backgroundColor: itemColor() }}
-        ></List.Item >
-      </>
-    )
-  }
-
-  const renderItem: ListRenderItem<Task | Event | Attendance | string> = (info) => {
-    if (info.item instanceof Event) {
-      return renderEventItem(info as any)
+  const renderItem: ListRenderItem<CalenderNote | Attendance | string> = (info) => {
+    if (info.item instanceof CalenderNote) {
+      return renderNoteItem(info as any)
     }
     if (info.item instanceof Attendance) return renderAttendanceItem(info as any)
-    if (info.item instanceof Task) return renderTaskItem(info as any)
     return <List.Subheader>{info.item}</List.Subheader>
   }
 
@@ -461,18 +320,15 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
   )
 
   const data = useMemo(() => {
-    if (currentView === "all") return ["حضور", ...currentAttendance, "رخدادها", ...currentEvents, "کارها", ...currentTasks]
+    if (currentView === "all") return ["حضور", ...currentAttendance, "یاداشتها", ...currentNotes]
     if (currentView === "attendance") {
       return currentAttendance.slice()
     }
-    if (currentView === "event") {
-      return currentEvents.slice()
-    }
-    if (currentView === "task") {
-      return currentTasks.slice()
+    if (currentView === "note") {
+      return currentNotes.slice()
     }
     return []
-  }, [currentEvents, currentView, currentAttendance, currentTasks])
+  }, [currentView, currentAttendance, currentNotes])
 
   useEffect(() => {
     if (currentPage < projects.length) pagerRef.current?.setPageWithoutAnimation(currentPage)
@@ -481,7 +337,6 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
   return (
     <>
       {renderHeader()}
-      <TimeIndicator></TimeIndicator>
       <ProjectModal visible={!projects[currentPage]} />
       <PagerView
         ref={pagerRef}
@@ -504,7 +359,7 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
       <BottomSheetForm
         ref={formRef}
         onDone={(value) => {
-          if (!(value instanceof Task)) {
+          if (!(value instanceof CalenderNote)) {
             setProp("currentDate", startOfDay(value.from))
             const pageNumber = projects.findIndex((i) => {
               return i._id.toHexString() === value.project._id.toHexString()

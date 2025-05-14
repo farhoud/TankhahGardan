@@ -10,7 +10,7 @@ import { formatDateIR, formatDateIRDisplay, tomanFormatter } from "app/utils/for
 // import { useNavigation } from "@react-navigation/native"
 import { useStores } from "app/models"
 import { useQuery, useRealm } from "@realm/react"
-import { TankhahItem } from "app/models/realm/models"
+import { TankhahItem } from "app/models/realm/tankhah"
 import { addYears } from "date-fns-jalali"
 import { usePrint } from "app/utils/usePrint"
 

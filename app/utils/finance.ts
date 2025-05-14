@@ -1,4 +1,4 @@
-import { PaymentMethod } from "app/models/realm/models"
+import { PaymentMethod } from "app/models/realm/tankhah"
 
 export function calcTransferFee(amount: number, method: PaymentMethod) {
   switch (method) {

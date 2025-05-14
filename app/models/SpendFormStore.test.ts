@@ -1,5 +1,5 @@
 import { SpendFormStoreModel } from "./SpendFormStore"
-import { PaymentMethod, OperationType } from "app/models/realm/models"
+import { PaymentMethod, OperationType } from "app/models/realm/tankhah"
 
 test("can be created", () => {
   const instance = SpendFormStoreModel.create({

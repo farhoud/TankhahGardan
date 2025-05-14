@@ -1,5 +1,5 @@
 import { calcTransferFee } from "../app/utils/finance"
-import { PaymentMethod } from "../app/models/realm/models"
+import { PaymentMethod } from "../app/models/realm/tankhah"
 
 describe("calcTransferFee", () => {
   it("calculates fee for ctc", () => {

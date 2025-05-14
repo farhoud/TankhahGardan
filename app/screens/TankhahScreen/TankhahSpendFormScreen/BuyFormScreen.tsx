@@ -7,7 +7,7 @@ import { BottomSheetModal } from "@gorhom/bottom-sheet"
 import { SearchItemBottomSheetList } from "./SearchItemBottomSheetList"
 import { useObject, useRealm } from "@realm/react"
 import { TextField, CurrencyField, Button, Text } from "app/components"
-import { ReceiptItem } from "app/models/realm/models"
+import { ReceiptItem } from "app/models/realm/tankhah"
 import { BSON, UpdateMode } from "realm"
 import { useStores } from "app/models"
 
