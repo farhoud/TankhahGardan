@@ -31,7 +31,7 @@ export const BasicFormScreen: FC = memo(
       type:TankhahItem,
       query: (spends) => 
         spends.filtered(
-          "group CONTAINS $0 AND group != '' AND group != 'no_group' SORT(doneAt DESC) DISTINCT(group) LIMIT(5)",
+          "group.name CONTAINS $0 SORT(doneAt DESC) DISTINCT(group.name)",
           group,
         )
       },
@@ -42,7 +42,7 @@ export const BasicFormScreen: FC = memo(
       type:TankhahItem,
       query: (spends) => {
         return spends.filtered(
-          "recipient CONTAINS $0 AND recipient != '' AND opType == $1 SORT(doneAt DESC) DISTINCT(recipient) LIMIT(5)",
+          "recipient CONTAINS $0 AND recipient != '' AND opType == $1 SORT(doneAt DESC) DISTINCT(recipient)",
           recipient,
           opType,
         )
@@ -53,7 +53,7 @@ export const BasicFormScreen: FC = memo(
       type:TankhahItem,
       query: (spends) => {
         return spends.filtered(
-          "accountNum CONTAINS $0 AND accountNum != '' AND recipient CONTAINS $1 AND paymentMethod == $2 SORT(doneAt DESC) DISTINCT(accountNum) LIMIT(5)",
+          "accountNum CONTAINS $0 AND accountNum != '' AND recipient CONTAINS $1 AND paymentMethod == $2 SORT(doneAt DESC) DISTINCT(accountNum)",
           accountNum,
           recipient,
           paymentMethod,
@@ -89,10 +89,10 @@ export const BasicFormScreen: FC = memo(
           onChangeText={(value) => setProp("group", value)}
           error={!!errors?.group}
           suggestions={groupSuggestions.map((i) => {
-            return { title: i.group || "" }
+            return { title: i.group?.name || "" }
           })}
           onSelect={(value) => {
-            setProp("group", value as PaymentMethod)
+            setProp("group", value)
           }}
           label="Name"
           labelTx="tankhahSpendFormScreen.groupLabel"

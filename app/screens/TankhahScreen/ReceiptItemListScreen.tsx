@@ -1,14 +1,14 @@
-import { FC, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { FC, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { observer } from "mobx-react-lite"
 import { ViewStyle } from "react-native"
 import { AppStackScreenProps, AppNavigation } from "app/navigators"
-import { Project } from "app/models/realm/calendar"
 import { Appbar, Dialog, DialogProps, List, Portal, Searchbar, useTheme } from "react-native-paper"
 import { useObject, useQuery, useRealm } from "@realm/react"
 import { BSON, UpdateMode } from "realm"
 import { Button, CurrencyField, ListView, ListViewRef, TextField } from "app/components"
 import { useNavigation } from "@react-navigation/native"
 import { ReceiptItem } from "app/models/realm/tankhah"
+import React from "react"
 
 interface ReceiptItemListScreenProps extends AppStackScreenProps<"ReceiptItemList"> {}
 
@@ -57,7 +57,6 @@ export const ReceiptItemListScreen: FC<ReceiptItemListScreenProps> = observer(
         return (
           <List.Item
             onPress={() => {
-              // navigation.navigate("ReceiptItemDetail", { itemId: item._id.toHexString() })
               setSelected(item)
               setVisible(true)
               
@@ -130,7 +129,7 @@ export const ReceiptItemModal: FC<ReceiptItemModalProps> = (_props) => {
   const { itemId, onDone, ...dialogProps } = _props
   const realm = useRealm()
   const data = useObject(ReceiptItem, new BSON.ObjectID(itemId))
-  const theme = useTheme()
+
 
   const [title, setTitle] = useState<string>()
   const [description, setDescription] = useState<string>()

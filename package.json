@@ -83,7 +83,7 @@
     "react-native-svg": "14.1.0",
     "react-native-tab-view": "^3.5.2",
     "react-native-web": "~0.19.6",
-    "realm": "^12.7.1"
+    "realm": "^20.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

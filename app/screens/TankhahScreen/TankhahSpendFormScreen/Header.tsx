@@ -4,9 +4,10 @@ import { Button, Text } from "app/components"
 import { useStores } from "app/models"
 import { AppNavigation } from "app/navigators"
 import { observer } from "mobx-react-lite"
+import React from "react"
 import { FC, useEffect, useState } from "react"
 import { BackHandler } from "react-native"
-import { Appbar, Dialog, IconButton, Portal } from "react-native-paper"
+import { Appbar, Dialog, Portal } from "react-native-paper"
 import { BSON } from "realm"
 
 interface Props {
@@ -15,7 +16,7 @@ interface Props {
 }
 
 export const Header: FC<Props> = observer(function Header(_props) {
-  const { route, jumpTo } = _props
+  const { jumpTo } = _props
   const {
     spendFormStore: { isValid, reset, submit },
   } = useStores()

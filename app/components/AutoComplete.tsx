@@ -1,5 +1,5 @@
 import React, { forwardRef, Ref, useImperativeHandle, useMemo, useRef, useState } from "react"
-import { StyleProp, TextInput as RNTextInput, TextStyle } from "react-native"
+import { StyleProp, TextInput as RNTextInput, TextStyle, ScrollView, KeyboardAvoidingView } from "react-native"
 import { TextFieldProps, TextField, AccountNumField } from "."
 import { Dialog, Divider, List, Portal } from "react-native-paper"
 import { PaymentMethod } from "app/models/realm/tankhah"
@@ -90,26 +90,30 @@ export const AutoComplete = forwardRef(function AutoComplete(
               onFocus={onFocus}
               {...TextInputProps}
             />
-            {value && !names?.includes(value) && (
-              <>
-                <List.Item
-                  onPress={() => selectSuggestion(value)}
-                  left={() => <List.Icon icon="account-plus" />}
-                  description="جدید"
-                  title={value}
-                />
-                <Divider />
-              </>
-            )}
-            {suggestions?.map((item, index) => {
-              return (
-                <List.Item
-                  key={index}
-                  onPress={() => selectSuggestion(item.title)}
-                  title={item.title}
-                />
-              )
-            })}
+            <KeyboardAvoidingView style={{ flexDirection: 'column', justifyContent: 'center', }} behavior="padding" enabled keyboardVerticalOffset={100}>
+              <ScrollView>
+                {value && !names?.includes(value) && (
+                  <>
+                    <List.Item
+                      onPress={() => selectSuggestion(value)}
+                      left={() => <List.Icon icon="account-plus" />}
+                      description="جدید"
+                      title={value}
+                    />
+                    <Divider />
+                  </>
+                )}
+                {suggestions?.map((item, index) => {
+                  return (
+                    <List.Item
+                      key={index}
+                      onPress={() => selectSuggestion(item.title)}
+                      title={item.title}
+                    />
+                  )
+                })}
+              </ScrollView>
+            </KeyboardAvoidingView>
           </Dialog.Content>
         </Dialog>
       </Portal>

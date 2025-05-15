@@ -7269,10 +7269,10 @@ nanoid@^3.1.23, nanoid@^3.3.1, nanoid@^3.3.7:
   resolved "https://registry.npmjs.org/nanoid/-/nanoid-3.3.7.tgz"
   integrity sha512-eSRppjcPIatRIMC1U6UngP8XFcz8MQWGQdt1MTBQ7NaAmvXDfvNxbvWV3x2y6CdEUciCSsDHDQZbhYaB8QEo2g==
 
-napi-build-utils@^1.0.1:
-  version "1.0.2"
-  resolved "https://registry.npmjs.org/napi-build-utils/-/napi-build-utils-1.0.2.tgz"
-  integrity sha512-ONmRUqK7zj7DWX0D9ADe03wbwOBZxNAfF20PlGfCWQcD3+/MakShIHrMqx9YwPTfxDdF1zLeL+RGZiR9kGMLdg==
+napi-build-utils@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/napi-build-utils/-/napi-build-utils-2.0.0.tgz#13c22c0187fcfccce1461844136372a47ddc027e"
+  integrity sha512-GEbrYkbfF7MoNaoh2iGG84Mnf/WZfB0GdGEsM8wz7Expx/LlWf5U8t9nvJKXSp3qr5IsEbK04cBGhol/KwOsWA==
 
 natural-compare-lite@^1.4.0:
   version "1.4.0"
@@ -7839,17 +7839,17 @@ postinstall-prepare@1.0.1:
   resolved "https://registry.npmjs.org/postinstall-prepare/-/postinstall-prepare-1.0.1.tgz"
   integrity sha512-4zxO4DjrV0XfD+ABUFEP0MiQmhKOGBnov5LfLsra/XVOUcQ5gMLLMcV3b8K8wJUfNDv1ozleGblYb06gPbjVUQ==
 
-prebuild-install@^7.1.1:
-  version "7.1.2"
-  resolved "https://registry.npmjs.org/prebuild-install/-/prebuild-install-7.1.2.tgz"
-  integrity sha512-UnNke3IQb6sgarcZIDU3gbMeTp/9SSU1DAIkil7PrqG1vZlBtY5msYccSKSHDqa3hNg436IXK+SNImReuA1wEQ==
+prebuild-install@^7.1.2:
+  version "7.1.3"
+  resolved "https://registry.yarnpkg.com/prebuild-install/-/prebuild-install-7.1.3.tgz#d630abad2b147443f20a212917beae68b8092eec"
+  integrity sha512-8Mf2cbV7x1cXPUILADGI3wuhfqWvtiLA1iclTDbFRZkgRQS0NqsPZphna9V+HyTEadheuPmjaJMsbzKQFOzLug==
   dependencies:
     detect-libc "^2.0.0"
     expand-template "^2.0.3"
     github-from-package "0.0.0"
     minimist "^1.2.3"
     mkdirp-classic "^0.5.3"
-    napi-build-utils "^1.0.1"
+    napi-build-utils "^2.0.0"
     node-abi "^3.3.0"
     pump "^3.0.0"
     rc "^1.2.7"
@@ -8301,17 +8301,17 @@ readline@^1.3.0:
   resolved "https://registry.npmjs.org/readline/-/readline-1.3.0.tgz"
   integrity sha512-k2d6ACCkiNYz222Fs/iNze30rRJ1iIicW7JuX/7/cozvih6YCkFZH+J6mAFDVgv0dRBaAyr4jDqC95R2y4IADg==
 
-realm@^12.7.1:
-  version "12.7.1"
-  resolved "https://registry.npmjs.org/realm/-/realm-12.7.1.tgz"
-  integrity sha512-k3PERhZCWkf+wqDnrGeF8ipAzKuDUnnT5CiPMsBtjWP9Aps29VsCpmm6puNUJVuDGtT7wi0qa2BZg3BgJ5ct4Q==
+realm@^20.1.0:
+  version "20.1.0"
+  resolved "https://registry.yarnpkg.com/realm/-/realm-20.1.0.tgz#52794a16724d364de3974d68c45c5bdec91ac90d"
+  integrity sha512-m/8y4Yad8x++ZL6BCRvsr+AGqxKJg2jErcXW2ZO48CwNYjw9YRERv4V0JWsLw9sFkzVZIw1e4u9I/Dd+hmMhzw==
   dependencies:
     "@realm/fetch" "^0.1.1"
     bson "^4.7.2"
     debug "^4.3.4"
     node-machine-id "^1.1.12"
     path-browserify "^1.0.1"
-    prebuild-install "^7.1.1"
+    prebuild-install "^7.1.2"
 
 recast@^0.21.0:
   version "0.21.5"

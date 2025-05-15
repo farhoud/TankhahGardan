@@ -21,7 +21,8 @@ const fa = {
   accountNumType: {
     sheba: "شبا",
     card: "کارت",
-    other: "حساب",
+    sepordeh: "سپرده",
+    other: "دیگر",
     placeHolder: "لطفا شماره {{type}} گیرنده را وارد کنید",
     label: "{{type}} گیرنده"
   },

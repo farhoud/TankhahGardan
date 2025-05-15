@@ -102,7 +102,7 @@ export const TankhahItemScreen: FC<AppStackScreenProps<"TankhahItem">> = observe
           </View>
           <View style={$row}>
             <Text tx="spend.group" />
-            <Text text={tankhahItem?.group || "ندارد"} />
+            <Text text={tankhahItem?.group?.name || "ندارد"} />
           </View>
           <View style={$row}>
             <Text tx="spend.opType" />

@@ -1,5 +1,4 @@
 import Realm, { BSON, ObjectSchema } from "realm"
-import { Note } from "./note"
 
 export class Project extends Realm.Object<Project> {
   _id!: BSON.ObjectId

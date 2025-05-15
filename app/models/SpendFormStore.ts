@@ -1,6 +1,6 @@
 import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
-import { OperationType, PaymentMethod, TankhahItem } from "./realm/models"
+import { OperationType, PaymentMethod, TankhahGroup, TankhahItem } from "./realm/tankhah"
 import { ReceiptItemModel } from "./ReceiptItem"
 import { isNumber } from "app/utils/validation"
 import Realm, { BSON, UpdateMode } from "realm"
@@ -176,7 +176,7 @@ export const SpendFormStoreModel = types
       self.transferFee = item.transferFee
       self.recipient = item.recipient
       self.accountNum = item.accountNum || undefined
-      self.group = item.group
+      self.group = item.group?.name || ""
       self.description = item.description || undefined
       self.attachments.replace(item.attachments?.slice() || [])
       self.trackingNum = item.trackingNum || undefined
@@ -189,6 +189,7 @@ export const SpendFormStoreModel = types
     },
     submit(realm: Realm) {
       self.loading = true
+      let groupObject: TankhahGroup | undefined
       const {
         doneAt,
         paymentMethod,
@@ -209,6 +210,17 @@ export const SpendFormStoreModel = types
         title: i.title,
       }))
 
+      const groups = realm.objects(TankhahGroup).filtered('name = $0', group)
+      if (groups.length === 0) {
+        groupObject = realm.create(TankhahGroup, {
+          _id: new BSON.ObjectID(),
+          name: group,
+        })
+      } else {
+        groupObject = groups[0]
+      }
+
+
       try {
         const res = realm.write(() => {
           return realm.create(
@@ -222,7 +234,7 @@ export const SpendFormStoreModel = types
               total: amount + transferFee,
               recipient,
               accountNum,
-              group,
+              group: groupObject,
               description,
               attachments,
               trackingNum,
@@ -241,7 +253,7 @@ export const SpendFormStoreModel = types
         return undefined
       }
     },
-  })) // eslint-disable-line @typescript-eslint/no-unused-vars
+  }))
 
 export interface SpendFormStore extends Instance<typeof SpendFormStoreModel> {}
 export interface SpendFormStoreSnapshotOut extends SnapshotOut<typeof SpendFormStoreModel> {}

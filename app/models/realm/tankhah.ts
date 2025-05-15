@@ -34,63 +34,33 @@ export const paymentMethodAccountTypeMapper = (
   }
 }
 
-export class Fund extends Realm.Object<Fund> {
+export class TankhahGroup extends Realm.Object<TankhahGroup> {
   _id!: BSON.ObjectId
   createAt!: Date
-  doneAt!: Date
-  amount!: number
+  name!: string
+  tankhahItems!: Realm.List<TankhahItem>
+  active!: boolean
   description?: string
+  deleted?: boolean
   static schema: ObjectSchema = {
-    name: "Fund",
+    name: "TankhahGroup",
     properties: {
       _id: { type: "objectId", default: () => new Realm.BSON.ObjectID() },
       createdAt: { type: "date", default: () => new Date() },
-      doneAt: "date",
-      amount: "int",
-      description: { type: "string", indexed: true, optional: true },
+      name: { type: "string", indexed: true },
+      tankhahItems: {
+        type: "linkingObjects",
+        objectType: "TankhahItem",
+        property: "group",
+      },
+      active: { type: "bool", default: true },
+      description: "string?",
+      deleted: "bool?"
     },
     primaryKey: "_id",
   }
 }
 
-export class Spend extends Realm.Object<Spend> {
-  _id!: BSON.ObjectId
-  createAt!: Date
-  doneAt!: Date
-  paymentMethod!: PaymentMethod
-  paymentType!: PaymentType
-  amount!: number
-  transferFee!: number
-  total!: number
-  group!: string
-  recipient?: string
-  accountNum?: string
-  description?: string
-  attachments?: string[]
-  trackingNum?: string
-  receiptItems?: Realm.List<SpendReceiptItem>
-  static schema: ObjectSchema = {
-    name: "Spend",
-    properties: {
-      _id: { type: "objectId", default: () => new BSON.ObjectID() },
-      createdAt: { type: "date", default: () => new Date() },
-      doneAt: "date",
-      paymentMethod: { type: "string", indexed: true },
-      paymentType: { type: "string", indexed: true },
-      amount: "int",
-      transferFee: { type: "int", default: 0 },
-      total: "int",
-      recipient: { type: "string", indexed: true, optional: true },
-      accountNum: { type: "string", indexed: true, optional: true },
-      group: { type: "string", indexed: true, default: "no_group" },
-      description: { type: "string", indexed: true, optional: true },
-      attachments: { type: "list", optional: true, objectType: "string" },
-      trackingNum: { type: "string", indexed: true, optional: true },
-      receiptItems: "SpendReceiptItem[]",
-    },
-    primaryKey: "_id",
-  }
-}
 
 export class TankhahItem extends Realm.Object<TankhahItem> {
   _id!: BSON.ObjectId
@@ -101,13 +71,13 @@ export class TankhahItem extends Realm.Object<TankhahItem> {
   amount!: number
   transferFee!: number
   total!: number
-  group!: string
+  group?: TankhahGroup
   recipient?: string
   accountNum?: string
   description?: string
   attachments?: string[]
   trackingNum?: string
-  receiptItems?: Realm.List<TankhahReceiptItem>
+  receiptItems?: Realm.List<EmbeddedReceiptItem>
   static schema: ObjectSchema = {
     name: "TankhahItem",
     properties: {
@@ -121,30 +91,13 @@ export class TankhahItem extends Realm.Object<TankhahItem> {
       total: "int",
       recipient: { type: "string", indexed: true, optional: true },
       accountNum: { type: "string", indexed: true, optional: true },
-      group: { type: "string", indexed: true, default: "no_group" },
+      group: "TankhahGroup?",
       description: { type: "string", indexed: true, optional: true },
       attachments: { type: "list", optional: true, objectType: "string" },
       trackingNum: { type: "string", indexed: true, optional: true },
-      receiptItems: "SpendReceiptItem[]",
+      receiptItems: "EmbeddedReceiptItem[]",
     },
     primaryKey: "_id",
-  }
-}
-
-export class TankhahReceiptItem extends Realm.Object<TankhahReceiptItem> {
-  createAt!: Date
-  title!: string
-  price?: number
-  amount?: number
-  static schema: ObjectSchema = {
-    name: "TankhahReceiptItem",
-    embedded: true,
-    properties: {
-      createdAt: { type: "date", default: () => new Date() },
-      title: { type: "string" },
-      amount: { type: "int", optional: true },
-      price: { type: "float", optional: true },
-    },
   }
 }
 
@@ -171,13 +124,13 @@ export class ReceiptItem extends Realm.Object<ReceiptItem> {
   }
 }
 
-export class SpendReceiptItem extends Realm.Object<SpendReceiptItem> {
+export class EmbeddedReceiptItem extends Realm.Object<EmbeddedReceiptItem> {
   createAt!: Date
   title!: string
   price?: number
   amount?: number
   static schema: ObjectSchema = {
-    name: "SpendReceiptItem",
+    name: "EmbeddedReceiptItem",
     embedded: true,
     properties: {
       createdAt: { type: "date", default: () => new Date() },

@@ -1,17 +1,15 @@
 import Realm from "realm"
 import { Attendance, CalenderNote, Project, Worker } from "./calendar"
 import { Note } from "./note"
-import { Spend, ReceiptItem, SpendReceiptItem, TankhahItem, TankhahReceiptItem, Fund } from "./tankhah"
+import { ReceiptItem, TankhahItem, EmbeddedReceiptItem, TankhahGroup } from "./tankhah"
 
 
 export const realmConfig: Realm.Configuration = {
   schema: [
-    Fund,
-    Spend,
     ReceiptItem,
-    SpendReceiptItem,
+    EmbeddedReceiptItem,
     TankhahItem,
-    TankhahReceiptItem,
+    TankhahGroup,
     Worker,
     Attendance,
     CalenderNote,
@@ -21,34 +19,10 @@ export const realmConfig: Realm.Configuration = {
   // Increment the 'schemaVersion', since 'fullName' has replaced
   // 'firstName' and 'lastName' in the schema.
   // The initial schemaVersion is 0.
-  schemaVersion: 19,
+  schemaVersion: 21,
 
   onMigration: (oldRealm: Realm, newRealm: Realm) => {
-    // only apply this change if upgrading schemaVersion
-    if (oldRealm.schemaVersion < 9) {
-      const oldFunObjects: Realm.Results<Fund> = oldRealm.objects(Fund)
-      const oldSpendObjects: Realm.Results<Spend> = newRealm.objects(Spend)
-      // loop through all objects and set the fullName property in the
-      // new schema
-      for (const obj of oldSpendObjects) {
-        const newObj = obj.toJSON()
-        if (!!newObj.paymentType) {
-          newObj.opType = newObj.paymentType
-          delete newObj.paymentType
-        } else {
-          newObj.opType = "transfer"
-        }
-        newRealm.create(TankhahItem, newObj)
-      }
-      for (const obj of oldFunObjects) {
-        const newObj = obj.toJSON()
-        newObj.opType = "fund"
-        newObj.paymentMethod = "cash"
-        newObj.transferFee = 0
-        newObj.total = newObj.amount
-        newRealm.create(TankhahItem, newObj)
-      }
-    }
+
     if (oldRealm.schemaVersion < 14) {
       const oldAttendances: Realm.Results<Attendance> = oldRealm.objects(Attendance)
       const newAttendances: Realm.Results<Attendance> = newRealm.objects(Attendance)
@@ -68,6 +42,37 @@ export const realmConfig: Realm.Configuration = {
         const newObject = newAttendances[objectIndex]
         // @ts-ignore old schema < 14 group was mandatory
         newObject.project = mapGroupProject[oldObject.group]
+      }
+    }
+    if (oldRealm.schemaVersion < 21) {
+      const oldTankhahItems: Realm.Results<TankhahItem> = oldRealm.objects(TankhahItem)
+      const newTankhahItems: Realm.Results<TankhahItem> = newRealm.objects(TankhahItem)
+      const groups = oldTankhahItems.filtered("group != '' DISTINCT(group)") 
+
+      const mapGroupProject: Record<string, TankhahGroup> = {}
+      groups.forEach((i) => {
+        // @ts-ignore migration script, old schema had string type
+        if (i.group == "no_group") {
+          return
+        }
+        // @ts-ignore migration script, old schema had string type
+        const item = newRealm.create(TankhahGroup, {
+          name: i.group,
+        })
+        // @ts-ignore migration script, old schema had string type
+        mapGroupProject[i.group] = item
+      })
+
+      for (const objectIndex in oldTankhahItems) {
+        const oldObject = oldTankhahItems[objectIndex]
+        const newObject = newTankhahItems[objectIndex]
+        // @ts-ignore migration script, old schema had string type
+        if (oldObject.group == "no_group") {
+          newObject.group = undefined
+        } else {
+          // @ts-ignore migration script, old schema had string type
+          newObject.group = mapGroupProject[oldObject.group]
+        }
       }
     }
   },

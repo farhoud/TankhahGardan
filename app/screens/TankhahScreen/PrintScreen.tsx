@@ -3,16 +3,16 @@ import { observer } from "mobx-react-lite"
 import { ViewStyle, View } from "react-native"
 import { Dialog, List, Menu, Portal, Surface, useTheme } from "react-native-paper"
 import { AppStackScreenProps } from "app/navigators"
-import { Screen, Text, Button, DatePicker, ListView } from "app/components"
+import { Screen, Button, DatePicker, ListView } from "app/components"
 import { translate, TxKeyPath } from "app/i18n"
 import { $row } from "app/theme"
-import { formatDateIR, formatDateIRDisplay, tomanFormatter } from "app/utils/formatDate"
-// import { useNavigation } from "@react-navigation/native"
+import { formatDateIR, formatDateIRDisplay } from "app/utils/formatDate"
 import { useStores } from "app/models"
 import { useQuery, useRealm } from "@realm/react"
 import { TankhahItem } from "app/models/realm/tankhah"
-import { addYears } from "date-fns-jalali"
 import { usePrint } from "app/utils/usePrint"
+// import { useNavigation } from "@react-navigation/native"
+
 
 enum FilterEnum {
   spend = "spend",
@@ -41,9 +41,10 @@ export const PrintScreen: FC<PrintScreenProps> = observer(function PrintScreen()
   const [groupSelectVisible, setGroupSelectVisible] = useState(false)
 
   // Queries
-  const spendGroupsNames = useQuery(TankhahItem, (spends) =>
-    spends.filtered('group CONTAINS "" AND opType != "fund" DISTINCT(group)'),
-  ).map((i) => i.group || "no_group")
+  const spendGroupsNames = useQuery({
+    type:TankhahItem, query:(spends) =>
+    spends.filtered('group CONTAINS "" AND opType != "fund" DISTINCT(group)')})
+    .map((i) => i.group?.name || "no_group")
 
   const groupNames: string[] = useMemo<string[]>(
     () => ["all", ...spendGroupsNames],
@@ -172,8 +173,8 @@ export const PrintScreen: FC<PrintScreenProps> = observer(function PrintScreen()
         return {
           date: formatDateIR(item.doneAt),
           opType: item.opType,
-          amount: item.amount,
-          fee: item.transferFee,
+          amount: String(item.amount),
+          fee: String(item.transferFee),
           description: item.description || "",
           info: mapInfo[item.opType],
         }
@@ -190,7 +191,7 @@ export const PrintScreen: FC<PrintScreenProps> = observer(function PrintScreen()
           .objects(TankhahItem)
           .filtered(...getQueryString(startDate, endDate, "fund"))
           .sum("total")
-        printer.printTankhahFunds(items, totalFund, formatDateIR(startDate), formatDateIR(endDate))
+        printer.printTankhahFunds(items, String(totalFund), formatDateIR(startDate), formatDateIR(endDate))
     }
   }
 

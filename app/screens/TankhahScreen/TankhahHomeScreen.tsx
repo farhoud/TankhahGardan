@@ -5,7 +5,7 @@ import { AppNavigation } from "app/navigators"
 import { ListView, Text } from "app/components"
 import { useObject, useQuery, useRealm } from "@realm/react"
 import { BSON } from "realm"
-import { TankhahItem, OperationType } from "app/models/realm/tankhah"
+import { TankhahItem, OperationType, TankhahGroup } from "app/models/realm/tankhah"
 import { PieChart } from "react-native-gifted-charts"
 import { formatDateIR, formatDateIRDisplay, tomanFormatter } from "app/utils/formatDate"
 import { useNavigation } from "@react-navigation/native"
@@ -15,11 +15,10 @@ import { DatePicker } from "app/components/DatePicker/DatePicker"
 import { ListRenderItemInfo } from "@shopify/flash-list"
 import Reanimated, { BounceIn, FadeOut } from "react-native-reanimated"
 import { TxKeyPath, translate } from "app/i18n"
-import { usePrint } from "app/utils/usePrint"
 import { $row, spacing } from "app/theme"
 import { useStores } from "app/models"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { addYears, startOfDay, endOfDay } from "date-fns-jalali"
+import { startOfDay, endOfDay } from "date-fns-jalali"
 import randomColor from "randomcolor"
 
 enum FilterEnum {
@@ -73,7 +72,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
           query = 'opType != "fund" AND ' + query
       }
       if (group && group !== "all") {
-        query = "group == $2 AND " + query
+        query = "group.name == $2 AND " + query
         args.push(group)
       }
       return [query, ...args]
@@ -89,27 +88,29 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
     }
 
     const headItem = useObject(TankhahItem, new BSON.ObjectID(itemId))
-    const totalFund = useQuery(TankhahItem, (items) => {
+    const totalFund = useQuery({type:TankhahItem, query:(items) => {
       return items.filtered('opType == "fund"')
-    }).sum("total")
-    const totalSpend = useQuery(TankhahItem, (items) => {
+    }}).sum("total")
+    const totalSpend = useQuery({type:TankhahItem, query:(items) => {
       return items.filtered('opType != "fund"')
-    }).sum("total")
-    const spendGroupsNames = useQuery(TankhahItem, (spends) =>
-      spends.filtered('group CONTAINS "" AND opType != "fund" DISTINCT(group)'),
-    ).map((i) => i.group || "no_group")
+    }}).sum("total")
+    const spendGroupsNames = useQuery({
+      type:TankhahGroup,
+       query:(item) => item
+    }).map((i) => i.name || "no_group")
 
     const groupNames: string[] = useMemo<string[]>(
       () => ["all", ...spendGroupsNames],
       [spendGroupsNames],
     )
 
-    const tankhahItemList = useQuery(
-      TankhahItem,
-      (items) => {
+    const tankhahItemList = useQuery({
+      type:TankhahItem,
+      query:(items) => {
         const groupName = groupNames && groupNames[selectedGroup]
-        return items.filtered(...getQueryString(startDate, endDate, selectedOp, groupName))
-      },
+        const list = items.filtered(...getQueryString(startDate, endDate, selectedOp, groupName))
+        return list.sorted('doneAt', true)
+    }},
       [groupNames, selectedGroup],
     )
 
@@ -130,9 +131,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
           anchor={
             <Button
               style={$controlsBtn}
-              // buttonColor={theme.colors.onPrimary}
               textColor={theme.colors.primary}
-              // mode="contained-tonal"
               onPress={handleToggleFilterMenu}
               icon="filter"
             >
@@ -174,18 +173,10 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
         <View style={{ flexDirection: "column", justifyContent: "space-around" }}>
           <PieChart
             data={pieData}
-            // donut
-            // showGradient
             sectionAutoFocus
             radius={70}
-            // innerRadius={30}
             innerCircleColor={theme.colors.primary}
             showValuesAsLabels
-          // centerLabelComponent={() => {
-          //   return (
-
-          //   )
-          // }}
           />
           <View style={{ justifyContent: "center", alignItems: "center" }}>
             <Text variant="bodyLarge">
@@ -259,7 +250,6 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
     ) => {
       return (
         <Button
-          // style={$controlsBtn}
           onPress={open}
         >
           {(type === "start" ? " از " : "تا ") + (value ? formatDateIRDisplay(value, "dd MMM yy") : " : ")}
@@ -405,15 +395,5 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
     )
   },
 )
-
-const $detail: ViewStyle = {
-  display: "flex",
-  flexDirection: "row",
-  alignItems: "center",
-  alignContent: "center",
-  justifyContent: "space-between",
-  margin: 5,
-  // padding: 20
-}
 
 const $controlsBtn: ViewStyle = { margin: spacing.xxs }
