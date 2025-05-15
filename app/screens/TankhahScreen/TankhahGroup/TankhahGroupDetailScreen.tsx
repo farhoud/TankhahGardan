@@ -6,18 +6,15 @@ import { ListView, Screen, Text } from "app/components"
 import { useNavigation } from "@react-navigation/native"
 import { useObject, useRealm } from "@realm/react"
 import { BSON, UpdateMode } from "realm"
-import { Attendance, Project, CalenderNote } from "app/models/realm/calendar"
+import { TankhahGroup, TankhahItem } from "app/models/realm/tankhah"
 import { Appbar, IconButton, List, useTheme } from "react-native-paper"
 import { ListRenderItem } from "@shopify/flash-list"
-import { format } from "date-fns-jalali"
-import { formatDateIR } from "app/utils/formatDate"
-import { ProjectModal } from "./ProjectListScreen"
-import { BottomSheetFormRef, BottomSheetForm } from "./BottomSheetForm"
+import { TankhahGroupFormModal } from "./TankhahGroupFromModal"
 
-interface ProjectDetailScreenProps extends AppStackScreenProps<"ProjectDetail"> {}
+interface TankhahGroupDetailScreenProps extends AppStackScreenProps<"TankhahGroupDetail"> {}
 
-export const ProjectDetailScreen: FC<ProjectDetailScreenProps> = observer(
-  function ProjectDetailScreen(_props) {
+export const TankhahGroupDetailScreen: FC<TankhahGroupDetailScreenProps> = observer(
+  function TankhahGroupDetailScreen(_props) {
     const itemId = _props.route.params.itemId
     // Pull in one of our MST stores
     const theme = useTheme()
@@ -26,9 +23,8 @@ export const ProjectDetailScreen: FC<ProjectDetailScreenProps> = observer(
     // Pull in navigation via hook
     const navigation = useNavigation<AppNavigation>()
 
-    const formRef = useRef<BottomSheetFormRef>(null)
 
-    const item = useObject(Project, new BSON.ObjectID(itemId))
+    const item = useObject(TankhahGroup, new BSON.ObjectID(itemId))
 
     const [visible, setVisible] = useState(false)
 
@@ -39,7 +35,7 @@ export const ProjectDetailScreen: FC<ProjectDetailScreenProps> = observer(
     const handleDeleteItem = () => {
       if (item) {
         realm.write(() => {
-          return realm.create(Project, { ...item, deleted: true }, UpdateMode.Modified)
+          return realm.create(TankhahGroup, { ...item, deleted: true }, UpdateMode.Modified)
         })
         navigation.goBack()
       }
@@ -72,49 +68,30 @@ export const ProjectDetailScreen: FC<ProjectDetailScreenProps> = observer(
       </>
     )
 
-    const renderItem: ListRenderItem<Attendance | CalenderNote | string> = ({ item }) => {
-      if (typeof item === "string") {
-        return <List.Subheader>{item}</List.Subheader>
-      }
-      if (item instanceof Attendance) {
+    const renderItem: ListRenderItem<TankhahItem> = ({ item }) => {
+   
         return (
           <List.Item
-            title={`${formatDateIR(item.from)} ${format(item.from, "HH:mm")} - ${format(
-              item.to || item.from,
-              "HH:mm",
-            )}`}
+            title={item.description || ""}
             titleStyle={theme.fonts.bodyMedium}
-            right={() => <Text>{item.worker.name}</Text>}
-            description={item.description}
-            onPress={() => {
-              formRef.current?.editForm(item)
-            }}
+            right={() => <Text>{item.amount}</Text>}
+            description={item.paymentMethod}
           />
         )
-      }
-      return (
-        <List.Item
-          title={item.title}
-          titleStyle={theme.fonts.bodyMedium}
-          right={() => <Text>{item.title}</Text>}
-          description={item.text}
-          onPress={() => {
-            formRef.current?.editForm(item)
-          }}
-        />
-      )
+      
+
     }
 
     const listData = useMemo(() => {
-      return ["حضور", ...item.attendances, "یادداشت", ...item.notes]
-    }, [item.attendances, item.notes])
+      return [...item.tankhahItems]
+    }, [item.tankhahItems])
 
     return (
       <Screen style={$root} preset="fixed" safeAreaEdges={["top"]}>
         {renderHeader()}
         <List.Subheader>رخدادها</List.Subheader>
         <ListView data={listData} renderItem={renderItem} />
-        <ProjectModal
+        <TankhahGroupFormModal
           onDone={() => {
             setVisible(false)
           }}
@@ -123,8 +100,7 @@ export const ProjectDetailScreen: FC<ProjectDetailScreenProps> = observer(
           }}
           visible={visible}
           itemId={itemId}
-        ></ProjectModal>
-        <BottomSheetForm ref={formRef} />
+        ></TankhahGroupFormModal>
       </Screen>
     )
   },

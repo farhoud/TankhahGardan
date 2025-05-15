@@ -1,16 +1,17 @@
 import { FC, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { observer } from "mobx-react-lite"
-import { ViewStyle } from "react-native"
+import { View, ViewStyle } from "react-native"
 import { AppStackScreenProps, AppNavigation } from "app/navigators"
 import { Project } from "app/models/realm/calendar"
-import { Appbar, Dialog, DialogProps, List, Portal, Searchbar, useTheme } from "react-native-paper"
+import { Appbar, Dialog, DialogProps, List, Portal, Searchbar, Switch, Text } from "react-native-paper"
 import { useObject, useQuery, useRealm } from "@realm/react"
 import { BSON, UpdateMode } from "realm"
 import { Button, ListView, ListViewRef, TextField } from "app/components"
 import { useNavigation } from "@react-navigation/native"
 import { useStores } from "app/models"
+import React from "react"
 
-interface ProjectListScreenProps extends AppStackScreenProps<"ProjectList"> {}
+interface ProjectListScreenProps extends AppStackScreenProps<"ProjectList"> { }
 
 export const ProjectListScreen: FC<ProjectListScreenProps> = observer(function ProjectListScreen(
   _props,
@@ -28,11 +29,12 @@ export const ProjectListScreen: FC<ProjectListScreenProps> = observer(function P
   const [search, setSearch] = useState("")
   const [res, setRes] = useState<Project>()
 
-  const data = useQuery(
-    Project,
-    (res) => {
+  const data = useQuery({
+    type: Project,
+    query: (res) => {
       return res.filtered("name Contains $0 AND deleted != $1", search, true)
-    },
+    }
+  },
     [search],
   )
 
@@ -66,7 +68,6 @@ export const ProjectListScreen: FC<ProjectListScreenProps> = observer(function P
             switch (mode) {
               case "manage":
                 setSelected(item)
-                // setVisible(true)
                 navigation.navigate("ProjectDetail", { itemId: item._id.toHexString() })
                 break
               case "select":
@@ -119,7 +120,6 @@ export const ProjectListScreen: FC<ProjectListScreenProps> = observer(function P
         renderItem={renderItem}
         style={$root}
       ></ListView>
-      {/* </List.Section> */}
       <ProjectModal
         onDone={(item) => {
           setRes(item)
@@ -150,12 +150,13 @@ export const ProjectModal: FC<ProjectModalProps> = (_props) => {
   const { itemId, onDone, ...dialogProps } = _props
   const realm = useRealm()
   const data = useObject(Project, new BSON.ObjectID(itemId))
-  const theme = useTheme()
 
   const [name, setName] = useState<string>()
   const [description, setDescription] = useState<string>()
+  const [active, setActive] = useState(true)
   const [touched, setTouched] = useState(false)
-  const [isValid, setIsValid] = useState(false)
+  const [loading, setLoading] = useState(false)
+
   const [errors, setErrors] = useState<Record<string, string>>()
 
   const validateForm = () => {
@@ -164,12 +165,13 @@ export const ProjectModal: FC<ProjectModalProps> = (_props) => {
       errors.name = "فیلد نام الزامیست"
     }
     setErrors(errors)
-    setIsValid(Object.keys(errors).length === 0)
+    let iv = Object.keys(errors).length === 0 || errors === undefined
+    return iv
   }
 
   const handleSubmit = () => {
-    validateForm()
-    if (isValid) {
+    setLoading(true)
+    if (validateForm()) {
       const res = realm.write(() => {
         return realm.create(
           Project,
@@ -177,31 +179,38 @@ export const ProjectModal: FC<ProjectModalProps> = (_props) => {
             _id: data ? data._id : new BSON.ObjectID(),
             name,
             description,
+            active,
           },
           data ? UpdateMode.Modified : undefined,
         )
       })
+      console.log("res:", res)
       onDone && onDone(res)
       clear()
     }
+    setLoading(false)
   }
 
   const clear = () => {
     setErrors(undefined)
     setName(undefined)
     setDescription(undefined)
+    setActive(false)
     setTouched(false)
-    setIsValid(false)
   }
 
   useEffect(() => {
-    if (data) {
-      setName(data.name)
-      setDescription(data.description)
-    } else {
-      clear()
+    if (!loading) {
+      if (data) {
+        setName(data.name)
+        setDescription(data.description)
+        console.log("data.actice:", data.active)
+        setActive(data.active)
+      } else {
+        clear()
+      }
     }
-  }, [data])
+  }, [data, loading])
 
   useEffect(() => {
     if (touched) {
@@ -232,6 +241,14 @@ export const ProjectModal: FC<ProjectModalProps> = (_props) => {
             onChangeText={(value) => setDescription(value)}
             onFocus={() => setTouched(true)}
           />
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <Text variant="labelMedium">فعال</Text>
+            <Switch
+              value={active}
+              onValueChange={(value) => setActive(value)}
+            />
+          </View>
+
         </Dialog.Content>
         <Dialog.Actions>
           <Button

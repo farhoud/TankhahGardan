@@ -96,7 +96,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
     }}).sum("total")
     const spendGroupsNames = useQuery({
       type:TankhahGroup,
-       query:(item) => item
+       query:(item) => item.filtered("active == $0", true)
     }).map((i) => i.name || "no_group")
 
     const groupNames: string[] = useMemo<string[]>(
@@ -283,6 +283,12 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
             icon={"basket"}
             onPress={() => {
               navigation.navigate("ReceiptItemList", {})
+            }}
+          />
+          <Appbar.Action
+            icon={"file-tree"}
+            onPress={() => {
+              navigation.navigate("TankhahGroupList", {})
             }}
           />
           <Appbar.Action icon={"content-save-move"} onPress={() => {

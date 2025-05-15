@@ -19,7 +19,7 @@ export const realmConfig: Realm.Configuration = {
   // Increment the 'schemaVersion', since 'fullName' has replaced
   // 'firstName' and 'lastName' in the schema.
   // The initial schemaVersion is 0.
-  schemaVersion: 21,
+  schemaVersion: 22,
 
   onMigration: (oldRealm: Realm, newRealm: Realm) => {
 
@@ -73,6 +73,14 @@ export const realmConfig: Realm.Configuration = {
           // @ts-ignore migration script, old schema had string type
           newObject.group = mapGroupProject[oldObject.group]
         }
+      }
+    }
+    if (oldRealm.schemaVersion < 22) {
+      const project: Realm.Results<Project> = newRealm.objects(Project)
+      for (const objectIndex in project) {
+        const newObject = project[objectIndex]
+        // @ts-ignore old schema < 14 group was mandatory
+        newObject.active = true
       }
     }
   },

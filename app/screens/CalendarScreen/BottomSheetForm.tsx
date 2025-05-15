@@ -1,7 +1,7 @@
 import { BottomSheetModal } from "@gorhom/bottom-sheet"
 import { BottomSheet } from "app/components"
 import { useStores } from "app/models"
-import { Attendance, Event, Task } from "app/models/realm/calendar"
+import { Attendance, CalenderNote } from "app/models/realm/calendar"
 import { observer } from "mobx-react-lite"
 import {Ref, forwardRef, useEffect, useImperativeHandle, useRef } from "react"
 import { CalendarForm, CalendarFormProps } from "./CalendarForm"
@@ -10,7 +10,7 @@ import { AppNavigation } from "app/navigators"
 
 export interface BottomSheetFormRef {
   newForm: () => void
-  editForm: (item: Attendance | Event | Task) => void
+  editForm: (item: Attendance | CalenderNote) => void
 }
 
 export interface BottomSheetFormProps {
@@ -41,7 +41,7 @@ export const BottomSheetForm = observer(
       clear()
       bottomSheetRef.current?.present()
     }
-    const editForm = (item: Attendance | Event | Task) => {
+    const editForm = (item: Attendance | CalenderNote) => {
       load(item)
       bottomSheetRef.current?.present()
     }

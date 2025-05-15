@@ -2,7 +2,7 @@ import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { subMonths } from "date-fns"
 import { endOfDay, startOfDay } from "date-fns-jalali"
-import { OperationType } from "./realm/models"
+import { OperationType } from "./realm/tankhah"
 
 type ItemFilterPreset = OperationType | "all" | "spend"
 
@@ -15,6 +15,7 @@ export const TankhahHomeStoreModel = types
     startDate: types.optional(types.Date, startOfDay(subMonths(new Date(), 1))),
     endDate: types.optional(types.Date, endOfDay(new Date())),
     selectedGroup: types.optional(types.integer, 0),
+    selectedTankhahGroupId: types.maybe(types.string),
     selectedOp: types.optional(
       types.enumeration<ItemFilterPreset | "all" | "spend">("ItemFilterPreset", [
         "all",

@@ -50,12 +50,14 @@ export type AppStackParamList = {
   WorkerDetail: { itemId?: string }
   ProjectList: { itemId?: string; mode?: "select" | "manage" }
   ProjectDetail: { itemId?: string }
+  TankhahGroupList: { itemId?: string; mode?: "select" | "manage" }
+  TankhahGroupDetail: { itemId?: string }
   ReceiptItemList: { itemId?: string }
   NoteForm: { itemId?: string }
   NoteView: { itemId: string }
   Print: undefined
   Backup: undefined
-	// IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
+  // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
 
 /**
@@ -123,6 +125,12 @@ const AppStack = observer(function AppStack() {
             ),
           }}
         />
+        <Stack.Screen
+          name="TankhahGroupList"
+          options={{ presentation: "modal" }}
+          component={Screens.TankhahGroupListScreen}
+        />
+        <Stack.Screen name="TankhahGroupDetail" component={Screens.TankhahGroupDetailScreen} />
         <Stack.Screen name="ReceiptItemList" component={Screens.ReceiptItemListScreen} />
         <Stack.Screen name="TankhahFundForm" component={Screens.TankhahChargeFromScreen} />
         <Stack.Screen
@@ -188,7 +196,7 @@ const AppStack = observer(function AppStack() {
 
       {/* <Stack.Screen name="NoteList" component={Screens.NoteListScreen} /> */}
       <Stack.Screen name="Backup" component={Screens.BackupScreen} />
-			{/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
+      {/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
     </Stack.Navigator>
   )
 })

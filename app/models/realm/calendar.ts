@@ -8,6 +8,7 @@ export class Project extends Realm.Object<Project> {
   notes!: Realm.List<CalenderNote>
   description?: string
   deleted?: boolean
+  active!: boolean
   static schema: ObjectSchema = {
     name: "Project",
     properties: {
@@ -25,7 +26,8 @@ export class Project extends Realm.Object<Project> {
         property: "project",
       },
       description: "string?",
-      deleted: "bool?"
+      deleted: "bool?",
+      active: {type: "bool", default: true}
     },
     primaryKey: "_id",
   }
