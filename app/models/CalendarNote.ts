@@ -1,9 +1,9 @@
-import { Instance, SnapshotIn, SnapshotOut, cast, types } from "mobx-state-tree"
+import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { createFormFieldDefaultModel } from "./FormField"
 import { BSON,Realm, UpdateMode } from "realm"
-import { Project, CalenderNote, Worker } from "./realm/calendar"
-import { Alert, Task } from "react-native"
+import { Project, CalenderNote } from "./realm/calendar"
+import { Alert } from "react-native"
 
 /**
  * Model description here for TypeScript hints.
