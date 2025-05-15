@@ -1,4 +1,4 @@
-import React, { FC, useMemo, useRef, useState } from "react"
+import React, { FC, useMemo, useState } from "react"
 import { observer } from "mobx-react-lite"
 import { ViewStyle, View } from "react-native"
 import { AppNavigation, AppStackScreenProps } from "app/navigators"
