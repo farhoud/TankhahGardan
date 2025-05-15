@@ -89,6 +89,26 @@ export const CalenderNoteForm = observer(function CalenderNoteForm(_props: Calen
         </Button>
       </View>
 
+      <Select
+        onPress={() => {
+          setCalendarProps("selecting", true)
+          navigation.navigate("ProjectList", { mode: "select" })
+        }}
+        selected={project ? project.name : undefined}
+        placeholder={"انتخاب پروژه"}
+        icon={"domain"}
+      />
+      <Divider />
+      <DatePicker
+        clearButtonMode="always"
+        date={at}
+        onDateChange={(value) => {
+          setProp("at", value)
+        }}
+        modalMode="time"
+        action={renderDatePickerAction}
+      />
+      <Divider />
       <TextField
         dense
         autoFocus={!title.touched}
@@ -124,36 +144,15 @@ export const CalenderNoteForm = observer(function CalenderNoteForm(_props: Calen
         outlineStyle={{ display: "none" }}
       />
       <Divider />
-      <Select
-        onPress={() => {
-          setCalendarProps("selecting", true)
-          navigation.navigate("ProjectList", { mode: "select" })
-        }}
-        selected={project ? project.name : undefined}
-        placeholder={"انتخاب پروژه"}
-        icon={"domain"}
-      />
-      <Divider />
-      <DatePicker
-        clearButtonMode="always"
-        date={at}
-        onDateChange={(value) => {
-          setProp("at", value)
-        }}
-        modalMode="time"
-        action={renderDatePickerAction}
-      />
-      <Divider />
       <TextField
         // dense
-        left={<TextInput.Icon icon="text-long" />}
-        placeholder="توضیحات"
+        placeholder="متن"
         value={text}
         onChangeText={(value) => {
           setProp("text", value)
         }}
         multiline
-        numberOfLines={1}
+        numberOfLines={5}
         textContentType="none"
         outlineColor="transparent"
         outlineStyle={{ display: "none" }}

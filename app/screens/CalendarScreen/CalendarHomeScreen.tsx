@@ -52,6 +52,7 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
   // states
   const [currentPage, setCurrentPage] = useState(0)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [selectedItem, setSelectedItem] = useState<CalenderNote | Attendance | undefined>(undefined)
 
   // Realm queries
   const projects = useQuery({type:Project, query: (col) => {
@@ -154,6 +155,13 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
           <Card
             mode="outlined"
             style={{ margin: 2 }}
+            onPress={() => {
+              if (selectedItem === item) {
+                setSelectedItem(undefined)
+              } else {
+                setSelectedItem(item)
+              }
+            }}
           >
             <Card.Title
               title={item.worker?.name || "حذف شده"}
@@ -175,7 +183,9 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
                   variant="bodyMedium"
                 >{`${format(item.from, "HH:mm")} ${item.to ? "" : "-"} ${item.to ? format(item.to, "HH:mm") : ""
                   }`}</Text>
-                <Icon source="book-clock-outline" size={24} />
+                  <View style={{alignItems:"center", justifyContent:"center"}}>
+                    <Icon source="book-clock-outline" size={18} />
+                  </View>
               </View>
               {!!item.description && (
                 <View
@@ -196,16 +206,18 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
               )}
             </Card.Content>
             <Divider />
-            <Card.Actions style={{ flexDirection: "row", justifyContent: "space-around" }}>
-              <View style={{ flex: 1, flexDirection: "row", justifyContent: "space-around" }}>
-                <IconButton
+            {selectedItem === item && (
+              <Card.Actions style={{ flexDirection: "row", justifyContent: "space-around" }}>
+                <View style={{ flex: 1, flexDirection: "row", justifyContent: "space-around" }}>
+                  <IconButton
                   icon="clipboard-edit-outline"
                   mode="outlined"
                   onPress={handleFormEdit(item)}
                 />
                 <IconButton icon="delete" mode="outlined" onPress={handleDeleteItem(item)} />
-              </View>
-            </Card.Actions>
+                </View>
+              </Card.Actions>
+            )}
           </Card>
         </>
       )
@@ -218,6 +230,13 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
           <Card
             mode="outlined"
             style={{ margin: 2 }}
+            onPress={() => {
+              if (selectedItem === item) {
+                setSelectedItem(undefined)
+              } else {
+                setSelectedItem(item)
+              }
+            }}
           >
             <Card.Title title={item.title} />
             <Card.Content style={{ flex: 1 }}>
@@ -225,16 +244,18 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
             </Card.Content>
             <View style={{ marginBottom: spacing.xs }} />
             <Divider />
-            <Card.Actions style={{ flexDirection: "row", justifyContent: "space-around" }}>
-              <View style={{ flex: 1, flexDirection: "row", justifyContent: "space-around" }}>
-                <IconButton
+            {selectedItem === item && (
+              <Card.Actions style={{ flexDirection: "row", justifyContent: "space-around" }}>
+                <View style={{ flex: 1, flexDirection: "row", justifyContent: "space-around" }}>
+                  <IconButton
                   icon="clipboard-edit-outline"
                   mode="outlined"
                   onPress={handleFormEdit(item)}
                 />
                 <IconButton icon="delete" mode="outlined" onPress={handleDeleteItem(item)} />
-              </View>
-            </Card.Actions>
+                </View>
+              </Card.Actions>
+            )}
           </Card>
         </>
       )

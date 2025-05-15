@@ -68,7 +68,6 @@ export const CalendarNoteModel = types
           )
         })
         self.loading = false
-
         return res
       } catch (e: any) {
         // self.error = e.toString()
@@ -80,6 +79,7 @@ export const CalendarNoteModel = types
     clear: (defaultValues?: { date?: Date, projectId?: string }) => {
       self._id = undefined
       self.projectId = defaultValues?.projectId || undefined
+      self.at = defaultValues?.date || new Date()
       self.title.clear()
       self.isDone = false
       self.dueDate = undefined
