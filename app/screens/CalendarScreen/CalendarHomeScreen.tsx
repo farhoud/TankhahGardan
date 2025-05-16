@@ -56,7 +56,7 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
 
   // Realm queries
   const projects = useQuery({type:Project, query: (col) => {
-    return col.filtered("deleted != $0 && active == $0", true)
+    return col.filtered("deleted != $0 && active == $0", true).sorted("order")
   }})
 
   const currentAttendance = useQuery({

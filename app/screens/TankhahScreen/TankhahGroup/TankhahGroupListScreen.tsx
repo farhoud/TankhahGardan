@@ -10,6 +10,8 @@ import { useStores } from "app/models"
 import React from "react"
 import { TankhahGroupFormModal } from "./TankhahGroupFromModal"
 import { TankhahGroup } from "app/models/realm/tankhah"
+import DraggableFlatList from "react-native-draggable-flatlist"
+import { useRealm } from "@realm/react"
 
 interface TankhahGroupListScreenProps extends AppStackScreenProps<"TankhahGroupList"> { }
 
@@ -22,6 +24,7 @@ export const TankhahGroupListScreen: FC<TankhahGroupListScreenProps> = observer(
     tankhahHomeStore: { setProp },
   } = useStores()
   const navigation = useNavigation<AppNavigation>()
+  const realm = useRealm()
 
   const refList = useRef<ListViewRef<TankhahGroup | string>>(null)
   const [visible, setVisible] = useState(false)
@@ -32,7 +35,7 @@ export const TankhahGroupListScreen: FC<TankhahGroupListScreenProps> = observer(
   const data = useQuery({
     type: TankhahGroup,
     query: (res) => {
-      return res.filtered("name Contains $0 AND deleted != $1", search, true)
+      return res.filtered("name Contains $0 AND deleted != $1", search, true).sorted("order")
     }
   },
     [search],
@@ -60,7 +63,7 @@ export const TankhahGroupListScreen: FC<TankhahGroupListScreenProps> = observer(
     })
   })
 
-  const renderItem = ({ item }: { item: TankhahGroup | string }) => {
+  const renderItem = ({ item, drag, isActive }: { item: TankhahGroup | string, drag: () => void, isActive: boolean }) => {
     if (item instanceof TankhahGroup) {
       return (
         <List.Item
@@ -80,6 +83,8 @@ export const TankhahGroupListScreen: FC<TankhahGroupListScreenProps> = observer(
                 break
             }
           }}
+          onLongPress={drag}
+          style={{ opacity: isActive ? 0.5 : 1 }}
           title={item.name}
           description={item.description}
         />
@@ -113,13 +118,20 @@ export const TankhahGroupListScreen: FC<TankhahGroupListScreenProps> = observer(
         }}
         clearButtonMode="while-editing"
       ></Searchbar>
-      <ListView
-        ref={refList}
+      <DraggableFlatList
         keyExtractor={(i) => (i instanceof TankhahGroup ? i._objectKey() : i)}
         data={listData}
         renderItem={renderItem}
-        style={$root}
-      ></ListView>
+        onDragEnd={({ data, from, to }) => {
+          realm.write(() => {
+            data.forEach((item, index) => {
+              if (item instanceof TankhahGroup) {
+                item.order = index
+              }
+            })
+          })
+        }}
+      ></DraggableFlatList>
       <TankhahGroupFormModal
         onDone={(item) => {
           setRes(item)

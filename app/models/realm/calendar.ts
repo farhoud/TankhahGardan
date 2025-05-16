@@ -9,6 +9,7 @@ export class Project extends Realm.Object<Project> {
   description?: string
   deleted?: boolean
   active!: boolean
+  order!: number
   static schema: ObjectSchema = {
     name: "Project",
     properties: {
@@ -27,7 +28,8 @@ export class Project extends Realm.Object<Project> {
       },
       description: "string?",
       deleted: "bool?",
-      active: {type: "bool", default: true}
+      active: {type: "bool", default: true},
+      order: { type: "int", default: 0 }
     },
     primaryKey: "_id",
   }

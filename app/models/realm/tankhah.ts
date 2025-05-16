@@ -42,6 +42,7 @@ export class TankhahGroup extends Realm.Object<TankhahGroup> {
   active!: boolean
   description?: string
   deleted?: boolean
+  order!: number
   static schema: ObjectSchema = {
     name: "TankhahGroup",
     properties: {
@@ -55,7 +56,8 @@ export class TankhahGroup extends Realm.Object<TankhahGroup> {
       },
       active: { type: "bool", default: true },
       description: "string?",
-      deleted: "bool?"
+      deleted: "bool?",
+      order: { type: "int", default: 0 }
     },
     primaryKey: "_id",
   }

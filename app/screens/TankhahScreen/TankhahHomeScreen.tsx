@@ -96,7 +96,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
     }}).sum("total")
     const spendGroupsNames = useQuery({
       type:TankhahGroup,
-       query:(item) => item.filtered("active == $0", true)
+       query:(item) => item.filtered("active == $0", true).sorted("order")
     }).map((i) => i.name || "no_group")
 
     const groupNames: string[] = useMemo<string[]>(

@@ -10,6 +10,7 @@ import { Button, ListView, ListViewRef, TextField } from "app/components"
 import { useNavigation } from "@react-navigation/native"
 import { useStores } from "app/models"
 import React from "react"
+import DraggableFlatList from "react-native-draggable-flatlist"
 
 interface ProjectListScreenProps extends AppStackScreenProps<"ProjectList"> { }
 
@@ -22,6 +23,7 @@ export const ProjectListScreen: FC<ProjectListScreenProps> = observer(function P
     calendarStore: { selectProjectId },
   } = useStores()
   const navigation = useNavigation<AppNavigation>()
+  const realm = useRealm()
 
   const refList = useRef<ListViewRef<Project | string>>(null)
   const [visible, setVisible] = useState(false)
@@ -32,7 +34,7 @@ export const ProjectListScreen: FC<ProjectListScreenProps> = observer(function P
   const data = useQuery({
     type: Project,
     query: (res) => {
-      return res.filtered("name Contains $0 AND deleted != $1", search, true)
+      return res.filtered("name Contains $0 AND deleted != $1", search, true).sorted("order")
     }
   },
     [search],
@@ -60,7 +62,7 @@ export const ProjectListScreen: FC<ProjectListScreenProps> = observer(function P
     })
   })
 
-  const renderItem = ({ item }: { item: Project | string }) => {
+  const renderItem = ({ item, drag, isActive }: { item: Project | string, drag: () => void, isActive: boolean }) => {
     if (item instanceof Project) {
       return (
         <List.Item
@@ -80,8 +82,10 @@ export const ProjectListScreen: FC<ProjectListScreenProps> = observer(function P
                 break
             }
           }}
+          onLongPress={drag}
           title={item.name}
           description={item.description}
+          style={{ opacity: isActive ? 0.5 : 1 }}
         />
       )
     }
@@ -113,13 +117,20 @@ export const ProjectListScreen: FC<ProjectListScreenProps> = observer(function P
         }}
         clearButtonMode="while-editing"
       ></Searchbar>
-      <ListView
-        ref={refList}
+      <DraggableFlatList
         keyExtractor={(i) => (i instanceof Project ? i._objectKey() : i)}
         data={listData}
         renderItem={renderItem}
-        style={$root}
-      ></ListView>
+        onDragEnd={({ data }) => {
+          realm.write(() => {
+            data.forEach((item, index) => {
+              if (item instanceof Project) {
+                item.order = index
+              }
+            })
+          })
+        }}
+      ></DraggableFlatList>
       <ProjectModal
         onDone={(item) => {
           setRes(item)
