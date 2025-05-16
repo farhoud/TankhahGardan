@@ -41,6 +41,12 @@ export class Api {
    * Set up our API instance. Keep this lightweight!
    */
   constructor(config: ApiConfig = DEFAULT_API_CONFIG) {
+    if (!config.apiKey) {
+      throw new Error("API key is required")
+    }
+    if (!config.url) {
+      throw new Error("API url is required")
+    }
     this.config = config
     this.apisauce = create({
       baseURL: this.config.url,
