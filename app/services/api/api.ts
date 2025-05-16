@@ -24,9 +24,9 @@ interface GPTSpendPart extends Omit<SpendPart, "doneAt"> {
  * Configuring the apisauce instance.
  */
 export const DEFAULT_API_CONFIG: ApiConfig = {
-  url: Config.API_URL,
+  url: Config.apiUrl,
   timeout: 10000,
-  apiKey: Config.API_KEY,
+  apiKey: Config.apiKey,
 }
 
 /**

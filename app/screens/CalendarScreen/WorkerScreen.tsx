@@ -24,6 +24,7 @@ import { useStores } from "app/models"
 import { endOfDay } from "date-fns"
 import { startOfDay } from "date-fns-jalali"
 import { $row, spacing } from "app/theme"
+import React from "react"
 
 interface WorkerScreenProps extends AppStackScreenProps<"Worker"> {}
 

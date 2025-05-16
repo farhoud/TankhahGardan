@@ -81,7 +81,7 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
           projects[currentPage] ? projects[currentPage]._id : new BSON.ObjectID(),
         )
         .filtered(
-          "createdAt BETWEEN {$0 , $1}",
+          "at BETWEEN {$0 , $1}",
           startOfDay(currentDate),
           endOfDay(currentDate),
         )

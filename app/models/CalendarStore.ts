@@ -16,6 +16,7 @@ export const CalendarStoreModel = types
     selecting: types.optional(types.boolean, false),
     currentDate: types.optional(types.Date, () => new Date()),
     currentProjectId: types.maybe(types.string),
+    selectedWorkerObjIds: types.optional(types.array(types.string), []),
     currentView: types.optional(
       types.enumeration(["note", "attendance", "all"]),
       "all",
