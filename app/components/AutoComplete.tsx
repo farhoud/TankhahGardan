@@ -74,7 +74,6 @@ export const AutoComplete = forwardRef(function AutoComplete(
         ref={inputRef}
         onFocus={(e) => {
           onFocus && onFocus(e)
-          modalInputRef.current?.focus()
         }}
         {...TextInputProps}
       />
@@ -84,7 +83,6 @@ export const AutoComplete = forwardRef(function AutoComplete(
             <Input
               paymentMethod={type}
               ref={modalInputRef}
-              autoFocus
               value={value}
               onChangeText={onChangeText}
               onFocus={onFocus}

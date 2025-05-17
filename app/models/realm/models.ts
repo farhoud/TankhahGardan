@@ -1,13 +1,13 @@
 import Realm from "realm"
 import { Attendance, CalenderNote, Project, Worker } from "./calendar"
 import { Note } from "./note"
-import { ReceiptItem, TankhahItem, EmbeddedReceiptItem, TankhahGroup } from "./tankhah"
+import { ReceiptItem, TankhahItem, SpendReceiptItem, TankhahGroup } from "./tankhah"
 
 
 export const realmConfig: Realm.Configuration = {
   schema: [
     ReceiptItem,
-    EmbeddedReceiptItem,
+    SpendReceiptItem,
     TankhahItem,
     TankhahGroup,
     Worker,
@@ -19,7 +19,7 @@ export const realmConfig: Realm.Configuration = {
   // Increment the 'schemaVersion', since 'fullName' has replaced
   // 'firstName' and 'lastName' in the schema.
   // The initial schemaVersion is 0.
-  schemaVersion: 24,
+  schemaVersion: 25,
 
   onMigration: (oldRealm: Realm, newRealm: Realm) => {
 

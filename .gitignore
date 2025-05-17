@@ -89,3 +89,4 @@ web-build/
 
 .env
 build-*.aab
+build-*.apk

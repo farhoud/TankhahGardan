@@ -79,7 +79,7 @@ export class TankhahItem extends Realm.Object<TankhahItem> {
   description?: string
   attachments?: string[]
   trackingNum?: string
-  receiptItems?: Realm.List<EmbeddedReceiptItem>
+  receiptItems?: Realm.List<SpendReceiptItem>
   static schema: ObjectSchema = {
     name: "TankhahItem",
     properties: {
@@ -97,7 +97,7 @@ export class TankhahItem extends Realm.Object<TankhahItem> {
       description: { type: "string", indexed: true, optional: true },
       attachments: { type: "list", optional: true, objectType: "string" },
       trackingNum: { type: "string", indexed: true, optional: true },
-      receiptItems: "EmbeddedReceiptItem[]",
+      receiptItems: "SpendReceiptItem[]",
     },
     primaryKey: "_id",
   }
@@ -126,13 +126,13 @@ export class ReceiptItem extends Realm.Object<ReceiptItem> {
   }
 }
 
-export class EmbeddedReceiptItem extends Realm.Object<EmbeddedReceiptItem> {
+export class SpendReceiptItem extends Realm.Object<SpendReceiptItem> {
   createAt!: Date
   title!: string
   price?: number
   amount?: number
   static schema: ObjectSchema = {
-    name: "EmbeddedReceiptItem",
+    name: "SpendReceiptItem",
     embedded: true,
     properties: {
       createdAt: { type: "date", default: () => new Date() },

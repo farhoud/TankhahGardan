@@ -21,6 +21,7 @@
     "build:android:sim": "eas build --profile development --platform android --local",
     "build:android:dev": "eas build --profile development:device --platform android --local",
     "build:android:prod": "eas build --profile production --platform android --local",
+    "build:android:prev": "eas build --profile preview --platform android --local",
     "start": "npx expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
