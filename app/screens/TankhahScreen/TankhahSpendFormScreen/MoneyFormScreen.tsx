@@ -85,16 +85,16 @@ export const MoneyFormScreen: FC = memo(
       <Surface style={$root}>
         <CurrencyField
           value={amount}
-          onChangeValue={(value) => setProp("amount", value)}
+          onChangeValue={(value) => value && setProp("amount", value)}
           error={!!errors?.amount}
           label="Amount"
           labelTx="tankhahChargeScreen.amountLabel"
           placeholder="John Doe"
           placeholderTx="tankhahChargeScreen.amountPlaceholder"
         />
-        {["ctc","paya","satna","other"].includes(paymentMethod)&&<CurrencyField
+        {["ctc", "paya", "satna", "other", "pol-d", "pol-r", "pol-c"].includes(paymentMethod) && <CurrencyField
           value={transferFee}
-          onChangeValue={(value) => setProp("transferFee", value)}
+          onChangeValue={(value) => value && setProp("transferFee", value)}
           error={!!errors?.transferFee}
           label="Name"
           labelTx="tankhahSpendFormScreen.feesLabel"
@@ -113,10 +113,10 @@ export const MoneyFormScreen: FC = memo(
           <Text variant="labelMedium">پیوست ها</Text>
           <View style={{ display: "flex", flexDirection: "row", flexWrap: "wrap" }}>
             {!attachments && <Text>ندارد</Text>}
-            {attachments.map((i,index) => {
+            {attachments.map((i, index) => {
               return (
-                <TouchableOpacity key={i} onPress={()=>{
-                  attachments && navigation.navigate("ImageView",{images:attachments,index})
+                <TouchableOpacity key={i} onPress={() => {
+                  attachments && navigation.navigate("ImageView", { images: attachments, index })
                 }} onLongPress={() => handleRemoveAttachment(i)}>
                   <AutoImage
                     style={{ margin: 5 }}
