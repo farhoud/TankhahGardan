@@ -42,8 +42,9 @@ export const PrintScreen: FC<PrintScreenProps> = observer(function PrintScreen()
 
   // Queries
   const spendGroupsNames = useQuery({
-    type:TankhahItem, query:(spends) =>
-    spends.filtered('group CONTAINS "" AND opType != "fund" DISTINCT(group)')})
+    type: TankhahItem, query: (spends) =>
+      spends.filtered('group.name CONTAINS "" AND opType != "fund" DISTINCT(group)')
+  })
     .map((i) => i.group?.name || "no_group")
 
   const groupNames: string[] = useMemo<string[]>(
@@ -67,7 +68,7 @@ export const PrintScreen: FC<PrintScreenProps> = observer(function PrintScreen()
         query = 'opType != "fund" AND ' + query
     }
     if (group && group !== "all") {
-      query = "group == $2 AND " + query
+      query = "group.name == $2 AND " + query
       args.push(group)
     }
     return [query, ...args]
