@@ -6,7 +6,7 @@ import { Project } from "app/models/realm/calendar"
 import { Appbar, Dialog, DialogProps, List, Portal, Searchbar, Switch, Text } from "react-native-paper"
 import { useObject, useQuery, useRealm } from "@realm/react"
 import { BSON, UpdateMode } from "realm"
-import { Button, ListView, ListViewRef, TextField } from "app/components"
+import { Button, ListViewRef, TextField } from "app/components"
 import { useNavigation } from "@react-navigation/native"
 import { useStores } from "app/models"
 import React from "react"
@@ -206,7 +206,7 @@ export const ProjectModal: FC<ProjectModalProps> = (_props) => {
     setErrors(undefined)
     setName(undefined)
     setDescription(undefined)
-    setActive(false)
+    setActive(true)
     setTouched(false)
   }
 
@@ -232,7 +232,7 @@ export const ProjectModal: FC<ProjectModalProps> = (_props) => {
   return (
     <Portal>
       <Dialog {...dialogProps}>
-        <Dialog.Title>نیروی کار</Dialog.Title>
+        <Dialog.Title>پروژه</Dialog.Title>
         <Dialog.Content>
           <TextField
             dense

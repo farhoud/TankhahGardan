@@ -6,7 +6,6 @@ import { Button, DatePicker, ListView, Text } from "app/components"
 import {
   Appbar,
   Card,
-  Divider,
   Drawer,
   FAB,
   Icon,
@@ -37,7 +36,7 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
 ) {
   // Pull in one of our MST stores
   const {
-    calendarStore: { setProp, currentDate, selectProjectId, currentView },
+    calendarStore: { setProp, currentDate, selectProjectId, currentView, noteForm: { load, submit, clear, setProp: noteFormSetProp } },
   } = useStores()
   // Pull in navigation via hook
   const navigation = useNavigation<AppNavigation>()
@@ -55,12 +54,14 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
   const [selectedItem, setSelectedItem] = useState<CalenderNote | Attendance | undefined>(undefined)
 
   // Realm queries
-  const projects = useQuery({type:Project, query: (col) => {
-    return col.filtered("deleted != $0 && active == $0", true).sorted("order")
-  }})
+  const projects = useQuery({
+    type: Project, query: (col) => {
+      return col.filtered("deleted != $0 && active == $0", true).sorted("order")
+    }
+  })
 
   const currentAttendance = useQuery({
-    type:Attendance,
+    type: Attendance,
     query: (col) => {
       return col
         .filtered(
@@ -68,24 +69,44 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
           projects[currentPage] ? projects[currentPage]._id : new BSON.ObjectID(),
         )
         .filtered("from BETWEEN {$0 , $1}", startOfDay(currentDate), endOfDay(currentDate))
-    }},
+    }
+  },
     [currentDate, currentPage, projects],
   )
-
+  const pinnedNotes = useQuery(
+    {
+      type: CalenderNote,
+      query: (col) => {
+        return col
+          .filtered(
+            "project._id == $0",
+            projects[currentPage] ? projects[currentPage]._id : new BSON.ObjectID(),
+          )
+          .filtered(
+            "isPinned == {$0}",
+            true
+          ).sorted("at", false)
+      }
+    },
+    [currentDate, currentPage, projects],
+  )
   const currentNotes = useQuery(
-    {type:CalenderNote,
-    query: (col) => {
-      return col
-        .filtered(
-          "project._id == $0",
-          projects[currentPage] ? projects[currentPage]._id : new BSON.ObjectID(),
-        )
-        .filtered(
-          "at BETWEEN {$0 , $1}",
-          startOfDay(currentDate),
-          endOfDay(currentDate),
-        )
-    }},
+    {
+      type: CalenderNote,
+      query: (col) => {
+        return col
+          .filtered(
+            "project._id == $0",
+            projects[currentPage] ? projects[currentPage]._id : new BSON.ObjectID(),
+          )
+          .filtered(
+            "at BETWEEN {$0 , $1} AND isPinned == {$2}",
+            startOfDay(currentDate),
+            endOfDay(currentDate),
+            false
+          ).sorted("at", false)
+      }
+    },
     [currentDate, currentPage, projects],
   )
 
@@ -99,9 +120,16 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
     realm.write(() => realm.delete(item))
   }
 
+  const handlePinItem = (item: CalenderNote) => (e: any) => {
+    load(item)
+    noteFormSetProp("isPinned", !item.isPinned)
+    submit(realm, undefined)
+    clear()
+  }
+
   // Helpers
   const attendanceSubtitle = (item: Attendance) =>
-    (item.worker?.proficiency || "") + " " + (item.worker?.skill || "")
+    (item.worker?.proficiency?.concat(" ") || "") + (item.worker?.skill || "")
 
   const renderHeader = useCallback(() => {
     return (
@@ -150,115 +178,111 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
   }, [currentDate, currentPage, projects, drawerOpen])
 
   const renderAttendanceItem: ListRenderItem<Attendance> = ({ item, index }) => {
-      return (
-        <>
-          <Card
-            mode="outlined"
-            style={{ margin: 2 }}
-            onPress={() => {
-              if (selectedItem === item) {
-                setSelectedItem(undefined)
-              } else {
-                setSelectedItem(item)
-              }
-            }}
-          >
-            <Card.Title
-              title={item.worker?.name || "حذف شده"}
-              subtitle={attendanceSubtitle(item)}
-            />
-            <Card.Content style={{ flex: 1 }}>
+    return (
+      <>
+        <Card
+          mode="elevated"
+          style={{ borderRadius: 0, marginBottom: 2 }}
+          onPress={() => {
+            if (selectedItem === item) {
+              setSelectedItem(undefined)
+            } else {
+              setSelectedItem(item)
+            }
+          }}
+        >
+          <Card.Title
+            title={item.worker?.name || "حذف شده"}
+            subtitle={attendanceSubtitle(item)}
+          />
+          <Card.Content style={{ flex: 1 }}>
+            <View
+              style={[
+                {
+                  alignSelf: "flex-start",
+                  flexDirection: "row-reverse",
+                },
+              ]}
+            >
+              <Text
+                style={[{ paddingHorizontal: 20, paddingTop: 6 }]}
+                variant="bodyMedium"
+              >{`${format(item.from, "HH:mm")} ${item.to ? "" : "-"} ${item.to ? format(item.to, "HH:mm") : ""
+                }`}</Text>
+              <View style={{ alignItems: "center", justifyContent: "center" }}>
+                <Icon source="book-clock-outline" size={18} />
+              </View>
+            </View>
+            {!!item.description && (
               <View
                 style={[
                   {
+                    marginBottom: spacing.xs,
                     alignSelf: "flex-start",
-                    paddingHorizontal: 20,
                     flexDirection: "row-reverse",
-                    marginBottom: 20,
                   },
                 ]}
               >
-                <Text
-                  style={[{ paddingHorizontal: 20, paddingTop: 7 }]}
-                  variant="bodyMedium"
-                >{`${format(item.from, "HH:mm")} ${item.to ? "" : "-"} ${item.to ? format(item.to, "HH:mm") : ""
-                  }`}</Text>
-                  <View style={{alignItems:"center", justifyContent:"center"}}>
-                    <Icon source="book-clock-outline" size={18} />
-                  </View>
+                <Text style={[{ paddingHorizontal: 20, paddingTop: 5 }]} variant="bodyMedium">
+                  {item.description}
+                </Text>
+                <Icon source="text-long" size={24} />
               </View>
-              {!!item.description && (
-                <View
-                  style={[
-                    {
-                      marginBottom: spacing.xs,
-                      alignSelf: "flex-start",
-                      paddingHorizontal: 20,
-                      flexDirection: "row-reverse",
-                    },
-                  ]}
-                >
-                  <Text style={[{ paddingHorizontal: 20, paddingTop: 5 }]} variant="bodyMedium">
-                    {item.description}
-                  </Text>
-                  <Icon source="text-long" size={24} />
-                </View>
-              )}
-            </Card.Content>
-            <Divider />
-            {selectedItem === item && (
-              <Card.Actions style={{ flexDirection: "row", justifyContent: "space-around" }}>
-                <View style={{ flex: 1, flexDirection: "row", justifyContent: "space-around" }}>
-                  <IconButton
+            )}
+          </Card.Content>
+          {selectedItem === item && (
+            <Card.Actions style={{ flexDirection: "row", justifyContent: "space-around" }}>
+              <View style={{ flex: 1, flexDirection: "row", justifyContent: "space-around" }}>
+                <IconButton
                   icon="clipboard-edit-outline"
                   mode="outlined"
                   onPress={handleFormEdit(item)}
                 />
                 <IconButton icon="delete" mode="outlined" onPress={handleDeleteItem(item)} />
-                </View>
-              </Card.Actions>
-            )}
-          </Card>
-        </>
-      )
+              </View>
+            </Card.Actions>
+          )}
+        </Card>
+      </>
+    )
 
   }
 
   const renderNoteItem: ListRenderItem<CalenderNote> = ({ item, index }) => {
-      return (
-        <>
-          <Card
-            mode="outlined"
-            style={{ margin: 2 }}
-            onPress={() => {
-              if (selectedItem === item) {
-                setSelectedItem(undefined)
-              } else {
-                setSelectedItem(item)
-              }
-            }}
-          >
-            <Card.Title title={item.title} />
-            <Card.Content style={{ flex: 1 }}>
-              <Text>{item.text}</Text>
-            </Card.Content>
-            <View style={{ marginBottom: spacing.xs }} />
-            <Divider />
-            {selectedItem === item && (
-              <Card.Actions style={{ flexDirection: "row", justifyContent: "space-around" }}>
-                <View style={{ flex: 1, flexDirection: "row", justifyContent: "space-around" }}>
-                  <IconButton
+    return (
+      <>
+        <Card
+          mode="elevated"
+          style={{ borderRadius: 0, marginBottom: 2 }}
+          onPress={() => {
+            if (selectedItem === item) {
+              setSelectedItem(undefined)
+            } else {
+              setSelectedItem(item)
+            }
+          }}
+        >
+          <Card.Title title={item.title} right={(props) => item.isPinned ? <View style={{ paddingEnd: 15 }}><Icon source={"pin"} size={15}></Icon></View> : undefined} />
+          <Card.Content style={{ flex: 1 }}>
+            <Text>{item.text}</Text>
+          </Card.Content>
+          <View style={{ marginBottom: spacing.xs }} />
+          {selectedItem === item && (
+            <Card.Actions >
+              <View style={{ flex: 1, flexDirection: "row", justifyContent: "space-around" }}>
+                <IconButton
                   icon="clipboard-edit-outline"
                   mode="outlined"
                   onPress={handleFormEdit(item)}
                 />
                 <IconButton icon="delete" mode="outlined" onPress={handleDeleteItem(item)} />
-                </View>
-              </Card.Actions>
-            )}
-          </Card>
-        </>
-      )
+                <IconButton mode="outlined" icon={"pin"} style={{ transform: [{ rotate: item.isPinned ? '0deg' : '30deg' }] }} onPress={handlePinItem(item)} selected={item.isPinned}></IconButton>
+              </View>
+            </Card.Actions>
+          )}
+        </Card >
+      </>
+    )
 
   }
 
@@ -295,22 +319,12 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
             }}
           />
           <Drawer.CollapsedItem
-            active={currentView === "event"}
-            focusedIcon="calendar"
-            unfocusedIcon="calendar-outline"
-            label="رخداد"
+            active={currentView === "note"}
+            focusedIcon="note"
+            unfocusedIcon="note-outline"
+            label="یاداشت"
             onPress={() => {
-              setProp("currentView", "event")
-              setDrawerOpen(false)
-            }}
-          />
-          <Drawer.CollapsedItem
-            active={currentView === "task"}
-            focusedIcon="bell"
-            unfocusedIcon="bell-outline"
-            label="کارها"
-            onPress={() => {
-              setProp("currentView", "task")
+              setProp("currentView", "note")
               setDrawerOpen(false)
             }}
           />
@@ -341,7 +355,7 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
   )
 
   const data = useMemo(() => {
-    if (currentView === "all") return ["حضور", ...currentAttendance, "یاداشتها", ...currentNotes]
+    if (currentView === "all") return ["حضور", ...currentAttendance, "یاداشتها", ...pinnedNotes, ...currentNotes]
     if (currentView === "attendance") {
       return currentAttendance.slice()
     }
@@ -370,7 +384,7 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
         }}
       >
         {projects.map((i, index) => (
-          <View key={i._id.toHexString()} style={[{ flex: 1, flexDirection: "row-reverse" }]}>
+          <View key={i._id.toHexString()} style={[{ flex: 1, flexDirection: "row-reverse", backgroundColor: theme.colors.background }]}>
             <ListView data={data} scrollEnabled renderItem={renderItem} />
             <View>{drawerOpen && renderDrawer()}</View>
           </View>
@@ -400,8 +414,8 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
 
 const $root: ViewStyle = {
   flex: 1,
-  borderColor: "red",
-  borderWidth: 2,
+  // borderColor: "red",
+  // borderWidth: 2,
 }
 
 const $fab: ViewStyle = {

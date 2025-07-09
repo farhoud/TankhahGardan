@@ -1,7 +1,7 @@
 import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { createFormFieldDefaultModel } from "./FormField"
-import { BSON,Realm, UpdateMode } from "realm"
+import { BSON, Realm, UpdateMode } from "realm"
 import { Project, CalenderNote } from "./realm/calendar"
 import { Alert } from "react-native"
 
@@ -25,8 +25,8 @@ export const CalendarNoteModel = types
   .actions(withSetPropAction)
   .views((self) => ({
     get isValid() {
-      for(const item of Object.values(self)){
-        if(item && item instanceof Object && item.error){
+      for (const item of Object.values(self)) {
+        if (item && item instanceof Object && item.error) {
           return false
         }
       }
@@ -45,10 +45,10 @@ export const CalendarNoteModel = types
       self.isDone = note.isDone
       self.dueDate = note.dueDate || undefined
       self.text = note.text
-      self.isPinned == note.isPinned
+      self.isPinned = note.isPinned
       self.at = note.at
     },
-    submit(realm: Realm, project:Project|undefined) {
+    submit(realm: Realm, project: Project | undefined) {
       self.loading = true
       try {
         const res = realm.write(() => {
@@ -82,13 +82,14 @@ export const CalendarNoteModel = types
       self.at = defaultValues?.date || new Date()
       self.title.clear()
       self.isDone = false
+      self.isPinned = false
       self.dueDate = undefined
       self.text = undefined
       self.loading = false
     },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
 
-export interface CalendarNote extends Instance<typeof CalendarNoteModel> {}
-export interface CalendarNoteSnapshotOut extends SnapshotOut<typeof CalendarNoteModel> {}
-export interface CalendarNoteSnapshotIn extends SnapshotIn<typeof CalendarNoteModel> {}
+export interface CalendarNote extends Instance<typeof CalendarNoteModel> { }
+export interface CalendarNoteSnapshotOut extends SnapshotOut<typeof CalendarNoteModel> { }
+export interface CalendarNoteSnapshotIn extends SnapshotIn<typeof CalendarNoteModel> { }
 export const createCalendarNoteDefaultModel = () => types.optional(CalendarNoteModel, {})

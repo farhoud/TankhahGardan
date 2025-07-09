@@ -3,7 +3,7 @@ import { View } from "react-native"
 import { AppNavigation } from "app/navigators"
 import { Button, DatePicker, TextField } from "app/components"
 import { $row, spacing } from "app/theme"
-import { Divider, TextInput, useTheme } from "react-native-paper"
+import { Divider, IconButton, useTheme } from "react-native-paper"
 import { useNavigation } from "@react-navigation/native"
 import { format } from "date-fns"
 import { useObject, useRealm } from "@realm/react"
@@ -31,6 +31,7 @@ export const CalenderNoteForm = observer(function CalenderNoteForm(_props: Calen
         submit,
         setProp,
         isValid,
+        isPinned,
       },
       setProp: setCalendarProps,
     },
@@ -60,7 +61,7 @@ export const CalenderNoteForm = observer(function CalenderNoteForm(_props: Calen
           placeholder={"تاریخ"}
           icon={"clock"}
           onPress={() => open(currentDate)}
-          // onClear={() => clear()}
+        // onClear={() => clear()}
         />
       )
     },
@@ -87,6 +88,7 @@ export const CalenderNoteForm = observer(function CalenderNoteForm(_props: Calen
         >
           ذخیره
         </Button>
+        <IconButton icon={"pin"} style={{ transform: [{ rotate: isPinned ? '0deg' : '30deg' }] }} onPress={() => { setProp("isPinned", !isPinned) }} selected={isPinned}></IconButton>
       </View>
 
       <Select
