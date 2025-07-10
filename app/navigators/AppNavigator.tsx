@@ -57,7 +57,8 @@ export type AppStackParamList = {
   NoteView: { itemId: string }
   Print: undefined
   Backup: undefined
-  // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
+  TankhahSearch: undefined
+	// IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
 
 /**
@@ -144,6 +145,7 @@ const AppStack = observer(function AppStack() {
               </Appbar.Header>
             ),
           }} />
+      <Stack.Screen name="TankhahSearch" component={Screens.TankhahSearchScreen} />
       </Stack.Group>
       <Stack.Group>
         <Stack.Screen
@@ -196,7 +198,7 @@ const AppStack = observer(function AppStack() {
 
       {/* <Stack.Screen name="NoteList" component={Screens.NoteListScreen} /> */}
       <Stack.Screen name="Backup" component={Screens.BackupScreen} />
-      {/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
+			{/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
     </Stack.Navigator>
   )
 })

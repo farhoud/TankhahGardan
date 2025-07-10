@@ -20,5 +20,5 @@ export * from "./NoteScreen/NoteFormScreen"
 export * from "./NoteScreen/NoteViewScreen"
 export * from "./TankhahScreen/TankhahGroup/TankhahGroupListScreen"
 export * from "./TankhahScreen/TankhahGroup/TankhahGroupDetailScreen"
-
+export * from "./TankhahScreen/TankhahSearchScreen"
 export * from "./BackupScreen"
