@@ -49,4 +49,6 @@ export interface ApiConfig {
   timeout: number
 
   apiKey: string
+
+  apiVersion: string
 }

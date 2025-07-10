@@ -27,6 +27,7 @@ export const DEFAULT_API_CONFIG: ApiConfig = {
   url: Config.apiUrl,
   timeout: 10000,
   apiKey: Config.apiKey,
+  apiVersion: "2025-01-01-preview"
 }
 
 /**
@@ -52,7 +53,7 @@ export class Api {
       baseURL: this.config.url,
       timeout: this.config.timeout,
       headers: {
-        "api-key": config.apiKey,
+        Authorization: `Bearer ${config.apiKey}`,
         Accept: "application/json",
       },
     })
@@ -60,7 +61,7 @@ export class Api {
 
   async autoTitle(
     text: string,
-  ): Promise<{ extracted: { title: string| undefined, category: string|undefined, doneAt: Date | undefined, amount: number | undefined, paymentMethod: PaymentMethod | undefined }; kind: "ok" } | GeneralApiProblem> {
+  ): Promise<{ extracted: { title: string | undefined, category: string | undefined, doneAt: Date | undefined, amount: number | undefined, paymentMethod: PaymentMethod | undefined }; kind: "ok" } | GeneralApiProblem> {
     // make the api call
     const messages = [
       {
@@ -78,7 +79,7 @@ you always format output to JSON with keys for a title for the text and category
     ]
 
     const response: ApiResponse<ApiFeedResponse> = await this.apisauce.post(
-      `completions?api-version=2024-02-15-preview`,
+      `completions?api-version=${this.config.apiVersion}`,
       {
         messages: messages,
         temperature: 0.6,
@@ -144,7 +145,7 @@ you always format output to JSON with keys for a title for the text and category
     ]
 
     const response: ApiResponse<ApiFeedResponse> = await this.apisauce.post(
-      `completions?api-version=2024-02-15-preview`,
+      `completions?api-version=${this.config.apiVersion}`,
       {
         messages: messages,
         temperature: 0.6,
