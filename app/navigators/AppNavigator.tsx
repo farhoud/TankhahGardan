@@ -57,6 +57,8 @@ export type AppStackParamList = {
   NoteView: { itemId: string }
   Print: undefined
   Backup: undefined
+  TankhahSearch: undefined
+  CalendarSearch: undefined
   // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
 
@@ -144,6 +146,7 @@ const AppStack = observer(function AppStack() {
               </Appbar.Header>
             ),
           }} />
+        <Stack.Screen name="TankhahSearch" component={Screens.TankhahSearchScreen} />
       </Stack.Group>
       <Stack.Group>
         <Stack.Screen
@@ -158,6 +161,7 @@ const AppStack = observer(function AppStack() {
           component={Screens.ProjectListScreen}
         />
         <Stack.Screen name="ProjectDetail" component={Screens.ProjectDetailScreen} />
+        <Stack.Screen name="CalendarSearch" component={Screens.CalendarSearchScreen} />
       </Stack.Group>
 
       <Stack.Group>

@@ -16,17 +16,12 @@ import { ListRenderItemInfo } from "@shopify/flash-list"
 import Reanimated, { BounceIn, FadeOut } from "react-native-reanimated"
 import { TxKeyPath, translate } from "app/i18n"
 import { $row, spacing } from "app/theme"
-import { useStores } from "app/models"
+import { OperationEnum, useStores } from "app/models"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { startOfDay, endOfDay } from "date-fns-jalali"
 import randomColor from "randomcolor"
 
-enum FilterEnum {
-  all = "all",
-  buy = "buy",
-  transfer = "transfer",
-  fund = "fund",
-}
+
 
 const iconMap = {
   fund: "cash-plus",
@@ -88,15 +83,19 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
     }
 
     const headItem = useObject(TankhahItem, new BSON.ObjectID(itemId))
-    const totalFund = useQuery({type:TankhahItem, query:(items) => {
-      return items.filtered('opType == "fund"')
-    }}).sum("total")
-    const totalSpend = useQuery({type:TankhahItem, query:(items) => {
-      return items.filtered('opType != "fund"')
-    }}).sum("total")
+    const totalFund = useQuery({
+      type: TankhahItem, query: (items) => {
+        return items.filtered('opType == "fund"')
+      }
+    }).sum("total")
+    const totalSpend = useQuery({
+      type: TankhahItem, query: (items) => {
+        return items.filtered('opType != "fund"')
+      }
+    }).sum("total")
     const spendGroupsNames = useQuery({
-      type:TankhahGroup,
-       query:(item) => item.filtered("active == $0", true).sorted("order")
+      type: TankhahGroup,
+      query: (item) => item.filtered("active == $0", true).sorted("order")
     }).map((i) => i.name || "no_group")
 
     const groupNames: string[] = useMemo<string[]>(
@@ -105,12 +104,13 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
     )
 
     const tankhahItemList = useQuery({
-      type:TankhahItem,
-      query:(items) => {
+      type: TankhahItem,
+      query: (items) => {
         const groupName = groupNames && groupNames[selectedGroup]
         const list = items.filtered(...getQueryString(startDate, endDate, selectedOp, groupName))
         return list.sorted('doneAt', true)
-    }},
+      }
+    },
       [groupNames, selectedGroup],
     )
 
@@ -139,7 +139,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
             </Button>
           }
         >
-          {Object.keys(FilterEnum).map((i) => (
+          {Object.keys(OperationEnum).map((i) => (
             <Menu.Item
               key={i}
               onPress={selectFilter(i as ItemFilterPreset)}
@@ -294,6 +294,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
           <Appbar.Action icon={"content-save-move"} onPress={() => {
             navigation.navigate("Backup")
           }} />
+          <Appbar.Action icon="magnify" onPress={() => { navigation.navigate("TankhahSearch") }} />
         </Appbar>
         <View>
           <View style={$row}>

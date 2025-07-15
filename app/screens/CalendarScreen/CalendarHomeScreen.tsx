@@ -348,7 +348,15 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
               navigation.navigate("ProjectList", {})
             }}
           />
-          {/* </Drawer.Section> */}
+          <Drawer.CollapsedItem
+            // active={currentForm === "event"}
+            focusedIcon="magnify"
+            // unfocusedIcon="account-group-outline"
+            label="جستجو"
+            onPress={() => {
+              navigation.navigate("CalendarSearch")
+            }}
+          />
         </Drawer.Section>
       </Surface>
     </Animated.View>
