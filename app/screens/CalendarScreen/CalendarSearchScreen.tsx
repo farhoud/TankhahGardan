@@ -11,12 +11,12 @@ import { SearchResultItem } from "app/models"
 import { useStores } from "app/models"
 import { ListRenderItemInfo } from "@shopify/flash-list"
 
-interface TankhahSearchScreenProps extends AppStackScreenProps<"TankhahSearch"> { }
+interface CalendarSearchScreenProps extends AppStackScreenProps<"CalendarSearch"> { }
 
-export const TankhahSearchScreen: FC<TankhahSearchScreenProps> = observer(function TankhahSearchScreen() {
+export const CalendarSearchScreen: FC<CalendarSearchScreenProps> = observer(function CalendarSearchScreen() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   // Pull in one of our MST stores
-  const { tankhahHomeStore: { search: { search, query, opFilter, pmFilter, gpFilter, clean, setRealm, setProp, result, gpFilterList, opFilterList } } } = useStores()
+  const { calendarStore: { search: { search, query, typeFilter, projectFilter, clean, setRealm, setProp, result, projectFilterList, typeFilterList } } } = useStores()
   // Pull in navigation via hook
   const navigation = useNavigation<AppNavigation>()
   const theme = useTheme()
@@ -35,7 +35,7 @@ export const TankhahSearchScreen: FC<TankhahSearchScreenProps> = observer(functi
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
-          routes: [{ name: "AppTabs", params: { screen: "TankhahHome", params: {} } }],
+          routes: [{ name: "AppTabs", params: { screen: "CalendarHome", params: {} } }],
         }),
       )
     }
@@ -62,22 +62,18 @@ export const TankhahSearchScreen: FC<TankhahSearchScreenProps> = observer(functi
 
   useEffect(() => {
     search()
-  }, [query, opFilterList, gpFilterList])
+  }, [query, typeFilterList, projectFilterList])
 
   const renderDrawer = () => (
     <Animated.ScrollView nestedScrollEnabled scrollEnabled entering={FadeInLeft} exiting={FadeOutLeft} style={[$scrollView, { backgroundColor: theme.colors.background }]}>
       <Drawer.Section>
         {/* <Text text="عملیات" /> */}
-        {gpFilter.map(i => (<SearchFilterItem store={i}></SearchFilterItem>))}
+        {typeFilter.map(i => (<SearchFilterItem store={i}></SearchFilterItem>))}
       </Drawer.Section>
       <Drawer.Section>
         {/* <Text text="عملیات" /> */}
-        {opFilter.map(i => (<SearchFilterItem store={i}></SearchFilterItem>))}
+        {projectFilter.map(i => (<SearchFilterItem store={i}></SearchFilterItem>))}
 
-      </Drawer.Section>
-      <Drawer.Section>
-        {/* <Text text="عملیات" /> */}
-        {pmFilter.map(i => (<SearchFilterItem store={i}></SearchFilterItem>))}
       </Drawer.Section>
     </Animated.ScrollView >
   )
@@ -89,7 +85,7 @@ export const TankhahSearchScreen: FC<TankhahSearchScreenProps> = observer(functi
           onChangeText={(text) => { setProp("query", text) }}
           value={query}
         />
-        <ListView renderItem={({ item }: ListRenderItemInfo<SearchResultItem>) => (<List.Item title={item.title}></List.Item>)} data={result}></ListView>
+        <ListView renderItem={({ item }: ListRenderItemInfo<SearchResultItem>) => (<List.Item title={item.title} onPress={() => { navigation.navigate("AppTabs", { screen: "CalendarHome" }) }}></List.Item>)} data={result}></ListView>
         {drawerOpen && renderDrawer()}
       </Surface >
     </>

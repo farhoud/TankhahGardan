@@ -58,7 +58,8 @@ export type AppStackParamList = {
   Print: undefined
   Backup: undefined
   TankhahSearch: undefined
-	// IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
+  CalendarSearch: undefined
+  // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
 
 /**
@@ -145,7 +146,7 @@ const AppStack = observer(function AppStack() {
               </Appbar.Header>
             ),
           }} />
-      <Stack.Screen name="TankhahSearch" component={Screens.TankhahSearchScreen} />
+        <Stack.Screen name="TankhahSearch" component={Screens.TankhahSearchScreen} />
       </Stack.Group>
       <Stack.Group>
         <Stack.Screen
@@ -160,6 +161,7 @@ const AppStack = observer(function AppStack() {
           component={Screens.ProjectListScreen}
         />
         <Stack.Screen name="ProjectDetail" component={Screens.ProjectDetailScreen} />
+        <Stack.Screen name="CalendarSearch" component={Screens.CalendarSearchScreen} />
       </Stack.Group>
 
       <Stack.Group>
@@ -198,7 +200,7 @@ const AppStack = observer(function AppStack() {
 
       {/* <Stack.Screen name="NoteList" component={Screens.NoteListScreen} /> */}
       <Stack.Screen name="Backup" component={Screens.BackupScreen} />
-			{/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
+      {/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
     </Stack.Navigator>
   )
 })

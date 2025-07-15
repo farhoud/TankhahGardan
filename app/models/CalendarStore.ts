@@ -3,6 +3,7 @@ import { CalendarAttendanceModel } from "./CalendarAttendance"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { Attendance, CalenderNote } from "./realm/calendar"
 import { CalendarNoteModel } from "./CalendarNote"
+import { CalendarSearchModel } from "./CalendarSearch"
 
 /**
  * Model description here for TypeScript hints.
@@ -10,6 +11,7 @@ import { CalendarNoteModel } from "./CalendarNote"
 export const CalendarStoreModel = types
   .model("CalendarStore")
   .props({
+    search: types.optional(CalendarSearchModel, {}),
     attendanceForm: types.optional(CalendarAttendanceModel, {}),
     noteForm: types.optional(CalendarNoteModel, {}),
     currentForm: types.optional(types.enumeration(["note", "attendance"]), "attendance"),
