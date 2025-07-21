@@ -23,12 +23,12 @@ export function ErrorDetails(props: ErrorDetailsProps) {
     >
       <View style={$topSection}>
         <Icon icon="ladybug" size={64} />
-        <Text style={$heading} preset="subheading" tx="errorScreen.title" />
+        <Text style={$heading} variant="headlineMedium" tx="errorScreen.title" />
         <Text tx="errorScreen.friendlySubtitle" />
       </View>
 
       <ScrollView style={$errorSection} contentContainerStyle={$errorSectionContentContainer}>
-        <Text style={$errorContent} weight="bold" text={`${props.error}`.trim()} />
+        <Text style={$errorContent} text={`${props.error}`.trim()} />
         <Text
           selectable
           style={$errorBacktrace}
@@ -37,7 +37,6 @@ export function ErrorDetails(props: ErrorDetailsProps) {
       </ScrollView>
 
       <Button
-        preset="reversed"
         style={$resetButton}
         onPress={props.onReset}
         tx="errorScreen.reset"

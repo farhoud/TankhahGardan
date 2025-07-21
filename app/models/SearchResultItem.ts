@@ -9,7 +9,10 @@ export const SearchResultItemModel = types
   .props({
     id: types.string,
     title: types.string,
-    description: types.string
+    description: types.string,
+    timestamp: types.Date,
+    icon: types.maybe(types.string),
+    rightText: types.maybe(types.string)
   })
   .actions(withSetPropAction)
   .views((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars

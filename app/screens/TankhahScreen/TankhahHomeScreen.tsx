@@ -191,7 +191,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
       const icon = iconMap[item.opType]
       const mapDescription = {
         fund: `دریافت`,
-        buy: `خرید  ${item.receiptItems?.map((i) => `${i.title}`).join("، ")}`,
+        buy: `${item.receiptItems?.map((i) => `${i.title}`).join("، ")}`,
         transfer: `انتقال وجه ${translate(
           ("paymentMethod." + item.paymentMethod) as TxKeyPath,
         )} به ${item.recipient || item.accountNum || "نامشخص"}`,

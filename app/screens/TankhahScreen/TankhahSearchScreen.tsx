@@ -2,7 +2,7 @@ import React, { FC, useEffect, useLayoutEffect, useState } from "react"
 import { observer } from "mobx-react-lite"
 import { ViewStyle } from "react-native"
 import { AppNavigation, AppStackScreenProps } from "app/navigators"
-import { ListView, SearchFilterItem } from "app/components"
+import { ListView, SearchFilterItem, SearchResultListItem } from "app/components"
 import { Surface, Drawer, Appbar, useTheme, Searchbar, List } from "react-native-paper"
 import Animated, { FadeInLeft, FadeOutLeft } from "react-native-reanimated"
 import { CommonActions, useNavigation } from "@react-navigation/native"
@@ -89,7 +89,11 @@ export const TankhahSearchScreen: FC<TankhahSearchScreenProps> = observer(functi
           onChangeText={(text) => { setProp("query", text) }}
           value={query}
         />
-        <ListView renderItem={({ item }: ListRenderItemInfo<SearchResultItem>) => (<List.Item title={item.title}></List.Item>)} data={result}></ListView>
+        <ListView renderItem={(props: ListRenderItemInfo<SearchResultItem>) => (<SearchResultListItem {...props} onPress={(id) => {
+          navigation.navigate("TankhahItem", {
+            itemId: id,
+          })
+        }} />)} data={result}></ListView>
         {drawerOpen && renderDrawer()}
       </Surface >
     </>
