@@ -8,5 +8,5 @@ export enum PaymentMethodEnum { satna = "satna", paya = "paya", cash = "cash", c
 
 export enum CalendarItemEnum {
   attendance = "attendance",
-  note = "node",
+  note = "note",
 }

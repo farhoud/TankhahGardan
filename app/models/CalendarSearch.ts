@@ -3,7 +3,7 @@ import { withSetPropAction } from "./helpers/withSetPropAction"
 import { CalendarItemEnum } from "./Shared"
 import { BSON, Realm } from "realm"
 import { SearchFilterModel } from "./SearchFilter"
-import { SearchResultItemModel } from "./SearchResultItem"
+import { SearchResultItem, SearchResultItemModel, SearchResultItemSnapshotIn } from "./SearchResultItem"
 import { Attendance, CalenderNote, Project } from "./realm/calendar"
 
 /**
@@ -60,31 +60,40 @@ export const CalendarSearchModel = types
       }
       const formatTitle = (item: Attendance | CalenderNote) => {
         if (item instanceof Attendance) {
-          return `${item.project.name} ${item.worker.name}`
+          return `${item.worker.name}`
         }
         if (item instanceof CalenderNote) {
-          return `${item.project.name} ${item.title}`
+          return `${item.title}`
         }
         return ""
       }
       self.result = cast([])
-      const res: { title: string, description: string, id: string }[] = []
-      if (self.typeFilter.find(i => i.id == CalendarItemEnum.attendance)) {
+      console.log(self.typeFilter)
+      const res: SearchResultItemSnapshotIn[] = []
+      if (self.typeFilter.find(i => i.id == CalendarItemEnum.attendance && i.value)) {
         realmIns?.objects(Attendance)
           .filtered("(worker.name CONTAINS $0 OR worker.skill CONTAINS $0 OR worker.proficiency CONTAINS $0 OR description CONTAINS $0) AND project._id IN $1", self.query, self.projectFilterList)
+          .sorted("from", true)
           .forEach(i => res.push({
             id: i._id.toHexString(),
             title: formatTitle(i),
-            description: i.description || ""
+            description: i.description || "",
+            timestamp: i.from,
+            rightText: i.project.name,
+            icon: "account-check"
           }))
       }
-      if (self.typeFilter.find(i => i.id == CalendarItemEnum.note)) {
+      if (self.typeFilter.find(i => i.id == CalendarItemEnum.note && i.value)) {
         realmIns?.objects(CalenderNote)
           .filtered("(title CONTAINS $0 OR text CONTAINS $0) AND project._id IN $1", self.query, self.projectFilterList)
+          .sorted("at", true)
           .forEach(i => res.push({
             id: i._id.toHexString(),
             title: formatTitle(i),
-            description: i.text
+            description: i.text,
+            timestamp: i.at,
+            rightText: i.project.name,
+            icon: "note"
           }))
       }
       self.result = cast(res)
