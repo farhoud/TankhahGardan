@@ -58,16 +58,16 @@ export function AppTabNavigator() {
           ),
         }}
       />
-      <Tab.Screen
-        name="NoteHome"
-        component={Screens.NoteListScreen}
-        options={{
-          tabBarLabel: translate("tabNavigator.attendanceTab"),
-          tabBarIcon: ({ color }) => (
-            <Icon source="note" color={color} size={26} />
-          ),
-        }}
-      />
+      {/* <Tab.Screen */}
+      {/*   name="NoteHome" */}
+      {/*   component={Screens.NoteListScreen} */}
+      {/*   options={{ */}
+      {/*     tabBarLabel: translate("tabNavigator.attendanceTab"), */}
+      {/*     tabBarIcon: ({ color }) => ( */}
+      {/*       <Icon source="note" color={color} size={26} /> */}
+      {/*     ), */}
+      {/*   }} */}
+      {/* /> */}
     </Tab.Navigator>
   )
 }

@@ -2,7 +2,7 @@ import { Instance, SnapshotIn, SnapshotOut, cast, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { OperationEnum, PaymentMethodEnum } from "./Shared"
 import { BSON, Realm, UpdateMode } from "realm"
-import { TankhahGroup, TankhahItem } from "./realm/tankhah"
+import { TankhahArchiveItem, TankhahGroup, TankhahItem } from "./realm/tankhah"
 import { SearchFilterModel } from "./SearchFilter"
 import { SearchResultItemModel } from "./SearchResultItem"
 import { TxKeyPath, translate } from "app/i18n"
@@ -15,6 +15,7 @@ export const TankhahSearchModel = types
   .model("TankhahSearch")
   .props({
     query: types.optional(types.string, ""),
+    archiveId: types.maybe(types.string),
     opFilter: types.optional(types.array(SearchFilterModel), []),
     pmFilter: types.optional(types.array(SearchFilterModel), []),
     gpFilter: types.optional(types.array(SearchFilterModel), []),
@@ -38,10 +39,15 @@ export const TankhahSearchModel = types
       self.query = ""
       self.result = cast([])
 
-      realmIns?.objects(TankhahGroup)
-        .filtered("active == true").forEach(i => {
+      if (self.archiveId) {
+        realmIns?.objects(TankhahGroup).forEach(i => {
           self.gpFilter.push(cast({ id: i._id.toHexString(), name: i.name }))
         })
+      } else {
+        realmIns?.objects(TankhahGroup).filtered("active == true").forEach(i => {
+          self.gpFilter.push(cast({ id: i._id.toHexString(), name: i.name }))
+        })
+      }
 
       Object.entries(OperationEnum).forEach(([k, v]) => {
         self.opFilter.push(cast({ id: k, name: v }))
@@ -76,7 +82,7 @@ export const TankhahSearchModel = types
         buy: "cash-register",
         transfer: "cash-fast",
       }
-      const formatTitle = (item: TankhahItem) => {
+      const formatTitle = (item: TankhahItem | TankhahArchiveItem) => {
         switch (item.opType) {
           case OperationEnum.fund:
             return `دریافت`
@@ -88,17 +94,32 @@ export const TankhahSearchModel = types
             return ""
         }
       }
-      self.result = cast(realmIns?.objects(TankhahItem)
-        .filtered("(description CONTAINS $0 OR recipient CONTAINS $0 OR trackingNum CONTAINS $0 OR receiptItems.title CONTAINS $0) AND opType IN $1 AND group._id IN $2", self.query, self.opFilterList, self.gpFilterList)
-        .sorted("doneAt", true)
-        .map(i => ({
-          id: i._id.toHexString(),
-          title: formatTitle(i),
-          description: i.description || "",
-          timestamp: i.doneAt,
-          icon: iconMap[i.opType],
-          rightText: tomanFormatter(i.total),
-        }))) || cast([])
+      if (self.archiveId) {
+        console.log(self.archiveId)
+        self.result = cast(realmIns?.objects(TankhahArchiveItem)
+          .filtered("archiveId == $0 AND (description CONTAINS $1 OR recipient CONTAINS $1 OR trackingNum CONTAINS $1 OR receiptItems.title CONTAINS $1) AND opType IN $2 AND group._id IN $2", self.archiveId, self.query, self.opFilterList, self.gpFilterList)
+          .sorted("doneAt", true)
+          .map(i => ({
+            id: i._id.toHexString(),
+            title: formatTitle(i),
+            description: i.description || "",
+            timestamp: i.doneAt,
+            icon: iconMap[i.opType],
+            rightText: tomanFormatter(i.total),
+          }))) || cast([])
+      } else {
+        self.result = cast(realmIns?.objects(TankhahItem)
+          .filtered("(description CONTAINS $0 OR recipient CONTAINS $0 OR trackingNum CONTAINS $0 OR receiptItems.title CONTAINS $0) AND opType IN $1 AND group._id IN $2", self.query, self.opFilterList, self.gpFilterList)
+          .sorted("doneAt", true)
+          .map(i => ({
+            id: i._id.toHexString(),
+            title: formatTitle(i),
+            description: i.description || "",
+            timestamp: i.doneAt,
+            icon: iconMap[i.opType],
+            rightText: tomanFormatter(i.total),
+          }))) || cast([])
+      }
     }
     return {
       clean,

@@ -69,6 +69,7 @@ export const TankhahArchiveScreen: FC<TankhahArchiveScreenProps> = observer(func
           keyExtractor={(i) => i.id}
           renderItem={({ item }) => (
             <List.Item
+              onPress={() => navigation.navigate("TankhahSearch", { archiveId: item.id })}
               title={`دوره ${formatDateIR(item.start)} - ${formatDateIR(item.end)}`} />
           )}
         />

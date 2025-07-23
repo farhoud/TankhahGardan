@@ -1,11 +1,11 @@
 import React, { FC, useEffect, useLayoutEffect, useState } from "react"
 import { observer } from "mobx-react-lite"
 import { ViewStyle } from "react-native"
-import { AppNavigation, AppStackScreenProps } from "app/navigators"
+import { AppNavigation, AppStackParamList, AppStackScreenProps } from "app/navigators"
 import { ListView, SearchFilterItem, SearchResultListItem } from "app/components"
 import { Surface, Drawer, Appbar, useTheme, Searchbar, List } from "react-native-paper"
 import Animated, { FadeInLeft, FadeOutLeft } from "react-native-reanimated"
-import { CommonActions, useNavigation } from "@react-navigation/native"
+import { CommonActions, RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { useRealm } from "@realm/react"
 import { SearchResultItem } from "app/models"
 import { useStores } from "app/models"
@@ -19,14 +19,19 @@ export const TankhahSearchScreen: FC<TankhahSearchScreenProps> = observer(functi
   const { tankhahHomeStore: { search: { search, query, opFilter, pmFilter, gpFilter, clean, setRealm, setProp, result, gpFilterList, opFilterList } } } = useStores()
   // Pull in navigation via hook
   const navigation = useNavigation<AppNavigation>()
+  const route = useRoute<RouteProp<AppStackParamList, "TankhahSearch">>()
+  const { archiveId } = route.params || { archiveId: undefined }
   const theme = useTheme()
+
+
 
   const realm = useRealm()
 
   useEffect(() => {
     setRealm(realm)
     clean()
-  }, [realm])
+    setProp("archiveId", archiveId)
+  }, [realm, archiveId])
 
   const goBack = () => {
     if (navigation.canGoBack()) {

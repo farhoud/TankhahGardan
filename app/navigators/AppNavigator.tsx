@@ -57,7 +57,7 @@ export type AppStackParamList = {
   NoteView: { itemId: string }
   Print: undefined
   Backup: undefined
-  TankhahSearch: undefined
+  TankhahSearch: { archiveId?: string }
   CalendarSearch: undefined
   TankhahArchive: undefined
   // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
