@@ -63,6 +63,51 @@ export class TankhahGroup extends Realm.Object<TankhahGroup> {
   }
 }
 
+export class TankhahArchiveItem extends Realm.Object<TankhahArchiveItem> {
+  _id!: BSON.ObjectId
+  createAt!: Date
+  doneAt!: Date
+  paymentMethod!: PaymentMethod
+  opType!: OperationType
+  amount!: number
+  transferFee!: number
+  total!: number
+  archiveStart!: Date
+  archiveEnd!: Date
+  archiveId!: string
+  group?: TankhahGroup
+  recipient?: string
+  accountNum?: string
+  description?: string
+  attachments?: string[]
+  trackingNum?: string
+  receiptItems?: Realm.List<SpendReceiptItem>
+  static schema: ObjectSchema = {
+    name: "TankhahArchiveItem",
+    properties: {
+      _id: { type: "objectId", default: () => new BSON.ObjectID() },
+      createdAt: { type: "date", default: () => new Date() },
+      doneAt: "date",
+      paymentMethod: { type: "string", indexed: true },
+      opType: { type: "string", indexed: true },
+      amount: "int",
+      transferFee: { type: "int", default: 0 },
+      total: "int",
+      archiveStart: "date",
+      archiveEnd: "date",
+      archiveId: { type: "string", indexed: true },
+      recipient: { type: "string", indexed: true, optional: true },
+      accountNum: { type: "string", indexed: true, optional: true },
+      group: "TankhahGroup?",
+      description: { type: "string", indexed: true, optional: true },
+      attachments: { type: "list", optional: true, objectType: "string" },
+      trackingNum: { type: "string", indexed: true, optional: true },
+      receiptItems: "SpendReceiptItem[]",
+    },
+    primaryKey: "_id",
+  }
+
+}
 
 export class TankhahItem extends Realm.Object<TankhahItem> {
   _id!: BSON.ObjectId

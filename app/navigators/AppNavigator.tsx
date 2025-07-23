@@ -59,6 +59,7 @@ export type AppStackParamList = {
   Backup: undefined
   TankhahSearch: undefined
   CalendarSearch: undefined
+  TankhahArchive: undefined
   // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
 
@@ -139,6 +140,16 @@ const AppStack = observer(function AppStack() {
           name="Print"
           component={Screens.PrintScreen}
           options={{
+            headerShown: true,
+            header: () => (
+              <Appbar.Header>
+                <Appbar.BackAction onPress={goBack} />
+              </Appbar.Header>
+            ),
+          }} />
+        <Stack.Screen
+          name="TankhahArchive"
+          component={Screens.TankhahArchiveScreen} options={{
             headerShown: true,
             header: () => (
               <Appbar.Header>

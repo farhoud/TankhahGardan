@@ -294,6 +294,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
           <Appbar.Action icon={"content-save-move"} onPress={() => {
             navigation.navigate("Backup")
           }} />
+          <Appbar.Action icon="archive" onPress={() => { navigation.navigate("TankhahArchive") }} />
           <Appbar.Action icon="magnify" onPress={() => { navigation.navigate("TankhahSearch") }} />
         </Appbar>
         <View>
