@@ -1,6 +1,6 @@
 import { Instance, SnapshotIn, SnapshotOut, cast, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
-import { OperationEnum, PaymentMethodEnum } from "./Shared"
+import { OperationEnum, PaymentMethodEnum, formatTitle } from "./Shared"
 import { BSON, Realm, UpdateMode } from "realm"
 import { TankhahArchiveItem, TankhahGroup, TankhahItem } from "./realm/tankhah"
 import { SearchFilterModel } from "./SearchFilter"
@@ -82,18 +82,7 @@ export const TankhahSearchModel = types
         buy: "cash-register",
         transfer: "cash-fast",
       }
-      const formatTitle = (item: TankhahItem | TankhahArchiveItem) => {
-        switch (item.opType) {
-          case OperationEnum.fund:
-            return `دریافت`
-          case OperationEnum.buy:
-            return `${item.receiptItems?.map((i) => `${i.title}`).join("، ")}`
-          case OperationEnum.transfer:
-            return `انتقال وجه ${translate(("paymentMethod." + item.paymentMethod) as TxKeyPath)} به ${item.recipient || item.accountNum || "نامشخص"}`
-          default:
-            return ""
-        }
-      }
+
       if (self.archiveId) {
         console.log(self.archiveId)
         self.result = cast(realmIns?.objects(TankhahArchiveItem)

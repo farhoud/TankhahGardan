@@ -5,6 +5,7 @@ import { endOfDay, startOfDay } from "date-fns-jalali"
 import { OperationType } from "./realm/tankhah"
 import { TankhahSearchModel } from "./TankhahSearch"
 import { TankhahArchiveModel } from "./TankhahArchive"
+import { TankhahPrintModel } from "./TankhahPrint"
 
 type ItemFilterPreset = OperationType | "all" | "spend"
 
@@ -16,6 +17,7 @@ export const TankhahHomeStoreModel = types
   .props({
     search: types.optional(TankhahSearchModel, {}),
     archive: types.optional(TankhahArchiveModel, {}),
+    print: types.optional(TankhahPrintModel, {}),
     startDate: types.optional(types.Date, startOfDay(subMonths(new Date(), 1))),
     endDate: types.optional(types.Date, endOfDay(new Date())),
     selectedGroup: types.optional(types.integer, 0),
