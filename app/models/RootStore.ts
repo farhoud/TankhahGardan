@@ -4,6 +4,7 @@ import { CalendarStoreModel } from "./CalendarStore"
 import { AuthenticationStoreModel } from "./AuthenticationStore"
 import { createSpendFormStoreDefaultModel } from "./SpendFormStore"
 import { NoteStoreModel, createNoteStoreDefaultModel } from "./NoteStore"
+import { createShareIntentDefaultModel } from "./ShareIntent"
 
 /**
  * A RootStore model.
@@ -13,7 +14,7 @@ export const RootStoreModel = types.model("RootStore").props({
   calendarStore: types.optional(CalendarStoreModel, {} as any),
   authenticationStore: types.optional(AuthenticationStoreModel, {}),
   spendFormStore: createSpendFormStoreDefaultModel(),
-  noteStore: createNoteStoreDefaultModel(),
+  shareIntent: createShareIntentDefaultModel()
 })
 
 /**

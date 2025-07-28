@@ -6,9 +6,11 @@
  */
 import {
   CommonActions,
+  LinkingOptions,
   NavigationContainer,
   NavigationProp,
   NavigatorScreenParams,
+  getStateFromPath,
   useNavigation,
 } from "@react-navigation/native"
 import { createNativeStackNavigator, NativeStackScreenProps } from "@react-navigation/native-stack"
@@ -21,6 +23,9 @@ import { AppTabNavigator, AppTabParamList } from "./AppTabNavigator"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 import { Appbar } from "react-native-paper"
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet"
+import Constants from "expo-constants"
+import * as Linking from "expo-linking";
+import { ShareIntentModule, getScheme, getShareExtensionKey } from "expo-share-intent"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -36,7 +41,6 @@ import { BottomSheetModalProvider } from "@gorhom/bottom-sheet"
  *   https://reactnavigation.org/docs/typescript/#organizing-types
  */
 export type AppStackParamList = {
-  Welcome: undefined
   Login: undefined
   AppTabs: NavigatorScreenParams<AppTabParamList>
   TankhahItem: { itemId: string }
@@ -60,6 +64,7 @@ export type AppStackParamList = {
   TankhahSearch: { archiveId?: string }
   CalendarSearch: undefined
   TankhahArchive: undefined
+  ShareIntent: undefined
   // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
 
@@ -149,7 +154,8 @@ const AppStack = observer(function AppStack() {
           }} />
         <Stack.Screen
           name="TankhahArchive"
-          component={Screens.TankhahArchiveScreen} options={{
+          component={Screens.TankhahArchiveScreen}
+          options={{
             headerShown: true,
             header: () => (
               <Appbar.Header>
@@ -211,19 +217,148 @@ const AppStack = observer(function AppStack() {
 
       {/* <Stack.Screen name="NoteList" component={Screens.NoteListScreen} /> */}
       <Stack.Screen name="Backup" component={Screens.BackupScreen} />
+      <Stack.Screen
+        name="ShareIntent"
+        component={Screens.ShareIntentScreen}
+        options={{
+          headerShown: true,
+          header: () => (
+            <Appbar.Header>
+              <Appbar.BackAction onPress={goBack} />
+            </Appbar.Header>
+          ),
+        }} />
       {/* IGNITE_GENERATOR_ANCHOR_APP_STACK_SCREENS */}
     </Stack.Navigator>
   )
 })
 
+// Web linking configuration
+const PREFIX = Linking.createURL("/")
+const PACKAGE_NAME =
+  Constants.expoConfig?.android?.package || Constants.expoConfig?.ios?.bundleIdentifier
+
+
+const linking: LinkingOptions<AppStackParamList> = {
+  prefixes: [
+    `${Constants.expoConfig?.scheme}://`,
+    `${PACKAGE_NAME}://`,
+    PREFIX,
+  ],
+  config: {
+    initialRouteName: "AppTabs",
+    screens: {
+      Login: {
+        path: "",
+      },
+      AppTabs: {
+        screens: {
+          TankhahHome: {
+            path: "home/:itemId?",
+          },
+        },
+      },
+      TankhahItem: { path: "spenditem/:itemId?" },
+      TankhahSpendForm: { path: "spendform/:itemId?" },
+      ShareIntent: { path: "shareintent" },
+    },
+  },
+  // see: https://reactnavigation.org/docs/configuring-links/#advanced-cases
+  getStateFromPath(path, config) {
+    // REQUIRED FOR iOS FIRST LAUNCH
+    if (path.includes(`dataUrl=${getShareExtensionKey()}`)) {
+      // redirect to the ShareIntent Screen to handle data with the hook
+      console.debug(
+        "react-navigation[getStateFromPath] redirect to ShareIntent screen",
+      );
+      return {
+        routes: [
+          {
+            name: "ShareIntent",
+          },
+        ],
+      };
+    }
+    return getStateFromPath(path, config);
+  },
+  subscribe(listener: (url: string) => void): undefined | void | (() => void) {
+    console.debug("react-navigation[subscribe]", PREFIX, PACKAGE_NAME);
+    const onReceiveURL = ({ url }: { url: string }) => {
+      if (url.includes(getShareExtensionKey())) {
+        // REQUIRED FOR iOS WHEN APP IS IN BACKGROUND
+        console.debug(
+          "react-navigation[onReceiveURL] Redirect to ShareIntent Screen",
+          url,
+        );
+        listener(`${getScheme()}://shareintent`);
+      } else {
+        console.debug("react-navigation[onReceiveURL] OPEN URL", url);
+        listener(url);
+      }
+    };
+    const shareIntentStateSubscription = ShareIntentModule?.addListener(
+      "onStateChange",
+      (event) => {
+        // REQUIRED FOR ANDROID WHEN APP IS IN BACKGROUND
+        console.debug(
+          "react-navigation[subscribe] shareIntentStateListener",
+          event.value,
+        );
+        if (event.value === "pending") {
+          listener(`${getScheme()}://shareintent`);
+        }
+      },
+    );
+    const shareIntentValueSubscription = ShareIntentModule?.addListener(
+      "onChange",
+      async (event) => {
+        // REQUIRED FOR IOS WHEN APP IS IN BACKGROUND
+        console.debug(
+          "react-navigation[subscribe] shareIntentValueListener",
+          event.value,
+        );
+        const url = await linking.getInitialURL!();
+        if (url) {
+          onReceiveURL({ url });
+        }
+      },
+    );
+    const urlEventSubscription = Linking.addEventListener("url", onReceiveURL);
+    return () => {
+      // Clean up the event listeners
+      shareIntentStateSubscription?.remove();
+      shareIntentValueSubscription?.remove();
+      urlEventSubscription.remove();
+    };
+  },
+  // https://reactnavigation.org/docs/deep-linking/#third-party-integrations
+  async getInitialURL() {
+    console.debug("react-navigation[getInitialURL] ?");
+    // REQUIRED FOR ANDROID FIRST LAUNCH
+    const needRedirect = ShareIntentModule?.hasShareIntent(
+      getShareExtensionKey(),
+    );
+    console.debug(
+      "react-navigation[getInitialURL] redirect to ShareIntent screen:",
+      needRedirect,
+    );
+    if (needRedirect) {
+      return `${Constants.expoConfig?.scheme}://shareintent`;
+    }
+    // As a fallback, do the default deep link handling
+    const url = await Linking.getLinkingURL();
+    return url;
+  },
+};
+
 export interface NavigationProps
-  extends Partial<React.ComponentProps<typeof NavigationContainer>> { }
+  extends Partial<React.ComponentProps<typeof NavigationContainer<AppStackParamList>>> { }
 
 export const AppNavigator = observer(function AppNavigator(props: NavigationProps) {
   useBackButtonHandler((routeName) => exitRoutes.includes(routeName))
 
   return (
-    <NavigationContainer ref={navigationRef} {...props}>
+    <NavigationContainer ref={navigationRef} linking={linking} {...props}>
       <BottomSheetModalProvider>
         <AppStack />
       </BottomSheetModalProvider>

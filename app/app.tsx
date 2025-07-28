@@ -20,13 +20,11 @@ import "./i18n"
 import "./utils/ignoreWarnings"
 import { useFonts } from "expo-font"
 import React, { useMemo } from "react"
-import Constants from "expo-constants"
 import {
   DarkTheme as NavigationDarkTheme,
   DefaultTheme as NavigationDefaultTheme,
 } from "@react-navigation/native"
 import { initialWindowMetrics, SafeAreaProvider } from "react-native-safe-area-context"
-import * as Linking from "expo-linking"
 import { useInitialRootStore } from "./models"
 import { AppNavigator, useNavigationPersistence } from "./navigators"
 import { ErrorBoundary } from "./screens/ErrorScreen/ErrorBoundary"
@@ -45,13 +43,8 @@ import {
   adaptNavigationTheme,
 } from "react-native-paper"
 import {
-  addStateListener,
-  getScheme,
-  getShareExtensionKey,
-  hasShareIntent,
   ShareIntentProvider,
-} from "expo-share-intent"
-import { getStateFromPath } from "@react-navigation/native"
+} from "expo-share-intent";
 
 export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
 
@@ -77,29 +70,6 @@ const CombinedDarkTheme = {
   },
 }
 
-// Web linking configuration
-const PREFIX = Linking.createURL("/")
-const PACKAGE_NAME =
-  Constants.expoConfig?.android?.package || Constants.expoConfig?.ios?.bundleIdentifier
-
-const config = {
-  screens: {
-    Login: {
-      path: "",
-    },
-    AppTabs: {
-      screens: {
-        TankhahHome: {
-          path: "home/:itemId?",
-        },
-        ChargeList: "chargelist",
-      },
-    },
-    TankhahItem: { path: "spenditem/:itemId?" },
-    TankhahSpendForm: { path: "spendform/:itemId?" },
-    BuyItemForm: "buyform",
-  },
-}
 
 interface AppProps {
   hideSplashScreen: () => Promise<boolean>
@@ -147,58 +117,6 @@ function App(props: AppProps) {
   // You can replace with your own loading component if you wish.
   if (!rehydrated || !isNavigationStateRestored || !areFontsLoaded) return null
 
-  const linking = {
-    prefixes: [`${Constants.expoConfig?.scheme}://`, `${PACKAGE_NAME}://`, PREFIX],
-    config,
-    getStateFromPath(path: string, config: any) {
-      // REQUIRED FOR iOS FIRST LAUNCH
-      if (path.includes(`dataUrl=${getShareExtensionKey()}`)) {
-        // redirect to the ShareIntent Screen to handle data with the hook
-        return {
-          routes: [
-            {
-              name: "TankhahSpendForm",
-            },
-          ],
-        }
-      }
-      return getStateFromPath(path, config)
-    },
-    subscribe(listener: (url: string) => void): undefined | void | (() => void) {
-      const onReceiveURL = ({ url }: { url: string }) => {
-        if (url.includes(getShareExtensionKey())) {
-          // REQUIRED FOR iOS WHEN APP IS IN BACKGROUND
-          listener(`${getScheme()}://spendform`)
-        } else {
-          listener(url)
-        }
-      }
-      const shareIntentEventSubscription = addStateListener((event) => {
-        // REQUIRED FOR ANDROID WHEN APP IS IN BACKGROUND
-        if (event.value === "pending") {
-          listener(`${getScheme()}://spendform`)
-        }
-      })
-      const urlEventSubscription = Linking.addEventListener("url", onReceiveURL)
-      return () => {
-        // Clean up the event listeners
-        shareIntentEventSubscription.remove()
-        urlEventSubscription.remove()
-      }
-    },
-    // https://reactnavigation.org/docs/deep-linking/#third-party-integrations
-    async getInitialURL() {
-      // REQUIRED FOR ANDROID FIRST LAUNCH
-      const needRedirect = hasShareIntent(getShareExtensionKey())
-      if (needRedirect) {
-        return `${Constants.expoConfig?.scheme}://spendform`
-      }
-      // As a fallback, do the default deep link handling
-      const url = await Linking.getInitialURL()
-      return url
-    },
-  }
-
   // otherwise, we're ready to render the app
   return (
     <ShareIntentProvider
@@ -215,12 +133,11 @@ function App(props: AppProps) {
           <ErrorBoundary catchErrors={Config.catchErrors}>
             <GestureHandlerRootView style={$container}>
               <PaperProvider theme={theme}>
-                  <AppNavigator
-                    theme={theme}
-                    linking={linking}
-                    initialState={initialNavigationState}
-                    onStateChange={onNavigationStateChange}
-                  />
+                <AppNavigator
+                  theme={theme}
+                  initialState={initialNavigationState}
+                  onStateChange={onNavigationStateChange}
+                />
               </PaperProvider>
             </GestureHandlerRootView>
           </ErrorBoundary>

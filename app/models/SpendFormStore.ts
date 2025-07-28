@@ -19,7 +19,7 @@ export const SpendFormStoreModel = types
     _id: types.maybe(types.string),
     doneAt: types.Date,
     group: types.string,
-    opType: types.enumeration<OperationType>("OperationType", ["buy", "transfer","fund"]),
+    opType: types.enumeration<OperationType>("OperationType", ["buy", "transfer", "fund"]),
     paymentMethod: types.enumeration<PaymentMethod>("PaymentMethod", [
       "cash",
       "ctc",
@@ -91,7 +91,7 @@ export const SpendFormStoreModel = types
     get isValid() {
       return !!Object.keys(self.errors).length
     },
-  })) 
+  }))
   .actions((self) => ({
     addReceiptItem(item: { title: string; _id: string; price: number }) {
       const { title, price, _id } = item
@@ -110,31 +110,20 @@ export const SpendFormStoreModel = types
       if (self.expandedItemKey === key) self.expandedItemKey = ""
       else self.expandedItemKey = key
     },
-    async applyShareText(text: string) {
+    async applyFormData(formData: Partial<SpendFormStoreSnapshotIn>) {
       self.setProp("loading", true)
       let report = ""
       try {
-        const res = await api.extractInfo(text)
-        if (res.kind === "bad-data") {
-          self.setProp("loading", false)
-          self.setProp("error", "تکست قابل هضم نبود")
-          return false
-        }
-        if  (res.kind !== "ok") {
-          self.setProp("loading", false)
-          self.setProp("error", res.kind)
-          return false
-        }
         this.reset()
-        if (Object.keys(res.extracted).length === 0) {
+        if (Object.keys(formData).length === 0) {
           return false
         }
-        
-        for (const [key, value] of Object.entries(res.extracted)) {
+
+        for (const [key, value] of Object.entries(formData)) {
           if (key && value) {
             self.setProp(key as keyof SpendFormStoreSnapshotIn, value)
-            const formatedValue = value instanceof Date ? formatDateIR(value): value
-            report = report.concat(`${translate('spend.'+key as TxKeyPath)} با مقدار ${formatedValue} .\n`)
+            const formatedValue = value instanceof Date ? formatDateIR(value) : value
+            report = report.concat(`${translate('spend.' + key as TxKeyPath)} با مقدار ${formatedValue} .\n`)
           }
         }
         report += "استخراج شد."
@@ -148,7 +137,6 @@ export const SpendFormStoreModel = types
       } finally {
         self.setProp("loading", false)
       }
-
       return !!self.error
     },
     reset() {
@@ -255,9 +243,9 @@ export const SpendFormStoreModel = types
     },
   }))
 
-export interface SpendFormStore extends Instance<typeof SpendFormStoreModel> {}
-export interface SpendFormStoreSnapshotOut extends SnapshotOut<typeof SpendFormStoreModel> {}
-export interface SpendFormStoreSnapshotIn extends SnapshotIn<typeof SpendFormStoreModel> {}
+export interface SpendFormStore extends Instance<typeof SpendFormStoreModel> { }
+export interface SpendFormStoreSnapshotOut extends SnapshotOut<typeof SpendFormStoreModel> { }
+export interface SpendFormStoreSnapshotIn extends SnapshotIn<typeof SpendFormStoreModel> { }
 export const createSpendFormStoreDefaultModel = () =>
   types.optional(SpendFormStoreModel, {
     doneAt: new Date(),

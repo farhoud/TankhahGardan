@@ -8,18 +8,19 @@ import { BSON } from "realm"
 import { TankhahItem, OperationType, TankhahGroup } from "app/models/realm/tankhah"
 import { PieChart } from "react-native-gifted-charts"
 import { formatDateIR, formatDateIRDisplay, tomanFormatter } from "app/utils/formatDate"
-import { useNavigation } from "@react-navigation/native"
-import { AppTabScreenProps } from "app/navigators/AppTabNavigator"
-import { Chip, Icon, Button, useTheme, FAB, Menu, Appbar, List, Divider } from "react-native-paper"
+import { NavigatorScreenParams, useNavigation } from "@react-navigation/native"
+import { AppTabParamList, AppTabScreenProps } from "app/navigators/AppTabNavigator"
+import { Chip, Icon, Button, useTheme, FAB, Menu, Appbar, List, Divider, Drawer } from "react-native-paper"
 import { DatePicker } from "app/components/DatePicker/DatePicker"
 import { ListRenderItemInfo } from "@shopify/flash-list"
-import Reanimated, { BounceIn, FadeOut } from "react-native-reanimated"
+import Reanimated, { BounceIn, FadeInLeft, FadeInRight, FadeOut, FadeOutLeft, FadeOutRight } from "react-native-reanimated"
 import { TxKeyPath, translate } from "app/i18n"
 import { $row, spacing } from "app/theme"
 import { OperationEnum, useStores } from "app/models"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { startOfDay, endOfDay } from "date-fns-jalali"
 import randomColor from "randomcolor"
+import Animated from "react-native-reanimated"
 
 
 
@@ -42,9 +43,11 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
     const navigation = useNavigation<AppNavigation>()
     const theme = useTheme()
     const realm = useRealm()
+    const safeArea = useSafeAreaInsets()
 
     const [openFilterMenu, setOpenFilterMenu] = useState(false)
     const [fabOpen, setFabOpen] = useState(false)
+    const [drawerOpen, setDrawerOpen] = useState(false)
 
     const getQueryString = (
       startDate: Date,
@@ -257,8 +260,22 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
       )
     }
 
-    const handlePrint = () => {
-      navigation.navigate("Print")
+    const renderDrawer = () => (
+      <Animated.View entering={FadeInRight} exiting={FadeOutRight} style={[{ top: 50, position: "absolute", backgroundColor: theme.colors.background }]}>
+        <Drawer.CollapsedItem focusedIcon="printer" onPress={handleNavigation("Print")} />
+        <Drawer.CollapsedItem focusedIcon="basket" onPress={handleNavigation("ReceiptItemList", {})} />
+        <Drawer.CollapsedItem focusedIcon="file-tree" onPress={handleNavigation("TankhahGroupList", {})} />
+        <Drawer.CollapsedItem focusedIcon="content-save-move" onPress={handleNavigation("Backup")} />
+        <Drawer.CollapsedItem focusedIcon="archive" onPress={handleNavigation("TankhahArchive")} />
+        <Drawer.CollapsedItem focusedIcon="magnify" onPress={handleNavigation("TankhahSearch")} />
+        <Drawer.CollapsedItem focusedIcon="share-variant-outline" onPress={handleNavigation("ShareIntent")} />
+      </Animated.View >
+    )
+
+
+    const handleNavigation = (path: string, params?: any) => () => {
+      // @ts-ignore
+      navigation.navigate(path, params)
     }
 
     useEffect(() => {
@@ -269,33 +286,17 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
       }
       return () => navigation.setParams({ itemId: undefined })
     }, [])
-    const safeArea = useSafeAreaInsets()
+
     return (
       <>
         <Appbar mode="small" safeAreaInsets={{ top: safeArea.top }}>
+          <Appbar.Action icon={"menu"} onPress={() => setDrawerOpen((prev) => !prev)} />
           <Appbar.Content
             titleStyle={{ fontSize: 16 }}
             mode="small"
             title={tomanFormatter(totalFund - totalSpend)}
           />
-          <Appbar.Action icon={"printer"} onPress={handlePrint} />
-          <Appbar.Action
-            icon={"basket"}
-            onPress={() => {
-              navigation.navigate("ReceiptItemList", {})
-            }}
-          />
-          <Appbar.Action
-            icon={"file-tree"}
-            onPress={() => {
-              navigation.navigate("TankhahGroupList", {})
-            }}
-          />
-          <Appbar.Action icon={"content-save-move"} onPress={() => {
-            navigation.navigate("Backup")
-          }} />
-          <Appbar.Action icon="archive" onPress={() => { navigation.navigate("TankhahArchive") }} />
-          <Appbar.Action icon="magnify" onPress={() => { navigation.navigate("TankhahSearch") }} />
+
         </Appbar>
         <View>
           <View style={$row}>
@@ -399,6 +400,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
           color={theme.colors.primary}
           style={{ position: "absolute", bottom: 40, right: 20 }}
         />
+        {drawerOpen && renderDrawer()}
       </>
     )
   },
