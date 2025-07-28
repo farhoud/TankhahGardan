@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useEffect, useMemo, useState } from "react"
+import React, { FC, useEffect } from "react"
 import { observer } from "mobx-react-lite"
 import { ViewStyle, View } from "react-native"
 import { Dialog, List, Menu, Portal, Surface, useTheme, Text } from "react-native-paper"
@@ -6,14 +6,9 @@ import { AppStackScreenProps } from "app/navigators"
 import { Screen, Button, DatePicker, ListView } from "app/components"
 import { translate, TxKeyPath } from "app/i18n"
 import { $row } from "app/theme"
-import { formatDateIR, formatDateIRDisplay } from "app/utils/formatDate"
+import { formatDateIRDisplay } from "app/utils/formatDate"
 import { useStores } from "app/models"
-import { useQuery, useRealm } from "@realm/react"
-import { err } from "react-native-svg"
-// import { TankhahGroup, TankhahItem } from "app/models/realm/tankhah"
-// import { usePrint } from "app/utils/usePrint"
-// import { useNavigation } from "@react-navigation/native"
-
+import { useRealm } from "@realm/react"
 
 interface PrintScreenProps extends AppStackScreenProps<"Print"> { }
 

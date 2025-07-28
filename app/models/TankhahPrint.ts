@@ -117,9 +117,10 @@ export const TankhahPrintModel = types
         } else {
           self.error = String(e)
         }
-      } finally {
-        self.loading = false
       }
+      setTimeout(() => {
+        self.setProp("loading", false)
+      }, 100)
     }
 
     function selectOpFilter(id: string) {

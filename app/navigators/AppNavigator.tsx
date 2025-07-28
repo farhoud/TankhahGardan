@@ -126,7 +126,7 @@ const AppStack = observer(function AppStack() {
           options={{
             headerShown: true,
             header: () => (
-              <Appbar.Header>
+              <Appbar.Header mode="small">
                 <Appbar.BackAction onPress={goBack} />
                 <Appbar.Content title="خرج" />
               </Appbar.Header>
@@ -147,7 +147,7 @@ const AppStack = observer(function AppStack() {
           options={{
             headerShown: true,
             header: () => (
-              <Appbar.Header>
+              <Appbar.Header mode="small">
                 <Appbar.BackAction onPress={goBack} />
               </Appbar.Header>
             ),
@@ -158,7 +158,7 @@ const AppStack = observer(function AppStack() {
           options={{
             headerShown: true,
             header: () => (
-              <Appbar.Header>
+              <Appbar.Header mode="small">
                 <Appbar.BackAction onPress={goBack} />
               </Appbar.Header>
             ),
@@ -181,25 +181,6 @@ const AppStack = observer(function AppStack() {
         <Stack.Screen name="CalendarSearch" component={Screens.CalendarSearchScreen} />
       </Stack.Group>
 
-      <Stack.Group>
-
-        <Stack.Screen
-          name="NoteForm"
-          component={Screens.NoteFormScreen}
-        />
-        <Stack.Screen
-          name="NoteView"
-          component={Screens.NoteViewScreen}
-          options={{
-            headerShown: true,
-            header: () => (
-              <Appbar.Header>
-                <Appbar.BackAction onPress={goBack} />
-              </Appbar.Header>
-            ),
-          }}
-        />
-      </Stack.Group>
 
       {/** 🔥 Your screens go here */}
       <Stack.Screen
@@ -208,7 +189,7 @@ const AppStack = observer(function AppStack() {
         options={{
           headerShown: true,
           header: () => (
-            <Appbar.Header>
+            <Appbar.Header mode="small">
               <Appbar.BackAction onPress={goBack} />
             </Appbar.Header>
           ),
@@ -223,7 +204,7 @@ const AppStack = observer(function AppStack() {
         options={{
           headerShown: true,
           header: () => (
-            <Appbar.Header>
+            <Appbar.Header mode="small">
               <Appbar.BackAction onPress={goBack} />
             </Appbar.Header>
           ),
