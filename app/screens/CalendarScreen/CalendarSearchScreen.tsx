@@ -7,7 +7,7 @@ import { Surface, Drawer, Appbar, useTheme, Searchbar } from "react-native-paper
 import Animated, { FadeInLeft, FadeOutLeft } from "react-native-reanimated"
 import { CommonActions, useNavigation } from "@react-navigation/native"
 import { useRealm } from "@realm/react"
-import { SearchResultItem } from "app/models"
+import { CalendarItemEnum, SearchResultItem } from "app/models"
 import { useStores } from "app/models"
 import { ListRenderItemInfo } from "@shopify/flash-list"
 
@@ -83,8 +83,9 @@ export const CalendarSearchScreen: FC<CalendarSearchScreenProps> = observer(func
           value={query}
         />
         <ListView renderItem={(props: ListRenderItemInfo<SearchResultItem>) => (<SearchResultListItem {...props} onPress={(id) => {
-          navigation.navigate("TankhahItem", {
+          navigation.navigate("CalendarItem", {
             itemId: id,
+            itemType: props.item.itemType === CalendarItemEnum.note ? CalendarItemEnum.note : CalendarItemEnum.attendance
           })
         }} />)} data={sorted}></ListView>
         {drawerOpen && renderDrawer()}
@@ -95,7 +96,8 @@ export const CalendarSearchScreen: FC<CalendarSearchScreenProps> = observer(func
 
 const $root: ViewStyle = {
   flex: 1,
-  position: "relative"
+  position: "relative",
+  padding: 10
 }
 
 const $scrollView: ViewStyle = { height: "100%", width: 300, position: "absolute", right: 0 }

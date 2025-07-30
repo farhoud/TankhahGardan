@@ -84,7 +84,8 @@ export const CalendarSearchModel = types
             description: i.description || "",
             timestamp: i.from,
             rightText: i.project.name,
-            icon: "account-check"
+            icon: "account-check",
+            itemType: CalendarItemEnum.attendance
           }))
       }
       if (self.typeFilter.find(i => i.id == CalendarItemEnum.note && i.value)) {
@@ -97,7 +98,8 @@ export const CalendarSearchModel = types
             description: i.text,
             timestamp: i.at,
             rightText: i.project.name,
-            icon: "note"
+            icon: "note",
+            itemType: CalendarItemEnum.note
           }))
       }
       self.result = cast(res)

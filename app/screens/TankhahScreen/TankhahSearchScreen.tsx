@@ -104,7 +104,8 @@ export const TankhahSearchScreen: FC<TankhahSearchScreenProps> = observer(functi
 
 const $root: ViewStyle = {
   flex: 1,
-  position: "relative"
+  position: "relative",
+  padding: 10
 }
 
 const $scrollView: ViewStyle = { height: "100%", width: 300, position: "absolute", right: 0 }

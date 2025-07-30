@@ -18,7 +18,7 @@ import { observer } from "mobx-react-lite"
 import React from "react"
 import * as Screens from "app/screens"
 import Config from "../config"
-import { useStores } from "../models"
+import { CalendarItemEnum, useStores } from "../models"
 import { AppTabNavigator, AppTabParamList } from "./AppTabNavigator"
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 import { Appbar } from "react-native-paper"
@@ -65,6 +65,7 @@ export type AppStackParamList = {
   CalendarSearch: undefined
   TankhahArchive: undefined
   ShareIntent: undefined
+  CalendarItem: { itemId: string, itemType: keyof typeof CalendarItemEnum }
   // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
 
@@ -179,6 +180,16 @@ const AppStack = observer(function AppStack() {
         />
         <Stack.Screen name="ProjectDetail" component={Screens.ProjectDetailScreen} />
         <Stack.Screen name="CalendarSearch" component={Screens.CalendarSearchScreen} />
+        <Stack.Screen name="CalendarItem"
+          component={Screens.CalendarItemScreen}
+          options={{
+            headerShown: true,
+            header: () => (
+              <Appbar.Header mode="small">
+                <Appbar.BackAction onPress={goBack} />
+              </Appbar.Header>
+            ),
+          }} />
       </Stack.Group>
 
 
