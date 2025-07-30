@@ -8,27 +8,19 @@ import { BSON } from "realm"
 import { TankhahItem, OperationType, TankhahGroup } from "app/models/realm/tankhah"
 import { PieChart } from "react-native-gifted-charts"
 import { formatDateIR, formatDateIRDisplay, tomanFormatter } from "app/utils/formatDate"
-import { NavigatorScreenParams, useNavigation } from "@react-navigation/native"
-import { AppTabParamList, AppTabScreenProps } from "app/navigators/AppTabNavigator"
+import { useNavigation } from "@react-navigation/native"
+import { AppTabScreenProps } from "app/navigators/AppTabNavigator"
 import { Chip, Icon, Button, useTheme, FAB, Menu, Appbar, List, Divider, Drawer } from "react-native-paper"
 import { DatePicker } from "app/components/DatePicker/DatePicker"
 import { ListRenderItemInfo } from "@shopify/flash-list"
-import Reanimated, { BounceIn, FadeInLeft, FadeInRight, FadeOut, FadeOutLeft, FadeOutRight } from "react-native-reanimated"
+import Reanimated, { BounceIn, FadeInRight, FadeOut, FadeOutRight } from "react-native-reanimated"
 import { TxKeyPath, translate } from "app/i18n"
 import { $row, spacing } from "app/theme"
-import { OperationEnum, useStores } from "app/models"
+import { iconMap, OperationEnum, useStores } from "app/models"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { startOfDay, endOfDay } from "date-fns-jalali"
 import randomColor from "randomcolor"
 import Animated from "react-native-reanimated"
-
-
-
-const iconMap = {
-  fund: "cash-plus",
-  buy: "cash-register",
-  transfer: "cash-fast",
-}
 
 type ItemFilterPreset = OperationType | "all" | "spend"
 
@@ -164,7 +156,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
           .objects(TankhahItem)
           .filtered(...getQueryString(startDate, endDate, "spend", item))
           .sum("total")
-        if (res && total) {
+        if (res && total > 0) {
           pieData.push({
             ...pieCharColors[index],
             value: (res * 100) / total,
@@ -174,13 +166,13 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
       }
       return (
         <View style={{ flexDirection: "column", justifyContent: "space-around" }}>
-          <PieChart
+          {pieData.length > 0 && <PieChart
             data={pieData}
             sectionAutoFocus
             radius={70}
             innerCircleColor={theme.colors.primary}
             showValuesAsLabels
-          />
+          />}
           <View style={{ justifyContent: "center", alignItems: "center" }}>
             <Text variant="bodyLarge">
               {tomanFormatter(tankhahItemList.filtered('opType != "fund"').sum("total"))}
@@ -195,9 +187,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
       const mapDescription = {
         fund: `دریافت`,
         buy: `${item.receiptItems?.map((i) => `${i.title}`).join("، ")}`,
-        transfer: `انتقال وجه ${translate(
-          ("paymentMethod." + item.paymentMethod) as TxKeyPath,
-        )} به ${item.recipient || item.accountNum || "نامشخص"}`,
+        transfer: `${translate("paymentMethod." + item.paymentMethod as TxKeyPath)} به ${item.recipient || item.accountNum || "نامشخص"}`,
       }
       return (
         <List.Item
@@ -276,6 +266,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
     const handleNavigation = (path: string, params?: any) => () => {
       // @ts-ignore
       navigation.navigate(path, params)
+      setDrawerOpen(false)
     }
 
     useEffect(() => {

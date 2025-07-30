@@ -11,11 +11,11 @@ import {
 } from "@expo-google-fonts/space-grotesk"
 
 export const customFontsToLoad = {
-  spaceGroteskLight,
-  spaceGroteskRegular,
-  spaceGroteskMedium,
-  spaceGroteskSemiBold,
-  spaceGroteskBold,
+  // spaceGroteskLight,
+  // spaceGroteskRegular,
+  // spaceGroteskMedium,
+  // spaceGroteskSemiBold,
+  // spaceGroteskBold,
   "IRANSansXFaNum-Regular": require("../../assets/fonts/IRANSansXFaNum-Regular.ttf"),
   "IRANSansXFaNum-Bold": require("../../assets/fonts/IRANSansXFaNum-Bold.ttf"),
 }

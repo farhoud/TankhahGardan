@@ -1,6 +1,6 @@
 import { Instance, SnapshotIn, SnapshotOut, cast, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
-import { OperationEnum, PaymentMethodEnum, formatTitle } from "./Shared"
+import { OperationEnum, PaymentMethodEnum } from "./Shared"
 import { BSON, Realm, UpdateMode } from "realm"
 import { TankhahArchiveItem, TankhahGroup, TankhahItem } from "./realm/tankhah"
 import { SearchFilterModel } from "./SearchFilter"
@@ -73,7 +73,10 @@ export const TankhahSearchModel = types
         realmIns = realm
     }
     function search() {
-      if (self.query === "") {
+      if (!realmIns) {
+        return
+      }
+      if (self.query === "" && !self.archiveId) {
         self.result = cast([])
         return
       }
@@ -82,33 +85,30 @@ export const TankhahSearchModel = types
         buy: "cash-register",
         transfer: "cash-fast",
       }
-
-      if (self.archiveId) {
-        console.log(self.archiveId)
-        self.result = cast(realmIns?.objects(TankhahArchiveItem)
-          .filtered("archiveId == $0 AND (description CONTAINS $1 OR recipient CONTAINS $1 OR trackingNum CONTAINS $1 OR receiptItems.title CONTAINS $1) AND opType IN $2 AND group._id IN $2", self.archiveId, self.query, self.opFilterList, self.gpFilterList)
-          .sorted("doneAt", true)
-          .map(i => ({
-            id: i._id.toHexString(),
-            title: formatTitle(i),
-            description: i.description || "",
-            timestamp: i.doneAt,
-            icon: iconMap[i.opType],
-            rightText: tomanFormatter(i.total),
-          }))) || cast([])
-      } else {
-        self.result = cast(realmIns?.objects(TankhahItem)
-          .filtered("(description CONTAINS $0 OR recipient CONTAINS $0 OR trackingNum CONTAINS $0 OR receiptItems.title CONTAINS $0) AND opType IN $1 AND group._id IN $2", self.query, self.opFilterList, self.gpFilterList)
-          .sorted("doneAt", true)
-          .map(i => ({
-            id: i._id.toHexString(),
-            title: formatTitle(i),
-            description: i.description || "",
-            timestamp: i.doneAt,
-            icon: iconMap[i.opType],
-            rightText: tomanFormatter(i.total),
-          }))) || cast([])
+      const formatTitle = (item: TankhahItem | TankhahArchiveItem) => {
+        switch (item.opType) {
+          case OperationEnum.fund:
+            return `دریافت`
+          case OperationEnum.buy:
+            return `${item.receiptItems?.map((i) => `${i.title}`).join("، ")}`
+          case OperationEnum.transfer:
+            return `${translate(("paymentMethod." + item.paymentMethod) as TxKeyPath)} به ${item.recipient || item.accountNum || "نامشخص"}`
+          default:
+            return ""
+        }
       }
+
+      self.result = cast((self.archiveId ? realmIns.objects(TankhahArchiveItem) : realmIns.objects(TankhahItem))
+        .filtered(...getQueryString(self.archiveId, self.query, self.opFilterList, self.gpFilterList))
+        .sorted("doneAt", true)
+        .map(i => ({
+          id: i._id.toHexString(),
+          title: formatTitle(i),
+          description: i.description || "",
+          timestamp: i.doneAt,
+          icon: iconMap[i.opType],
+          rightText: tomanFormatter(i.total),
+        }))) || cast([])
     }
     return {
       clean,
@@ -122,3 +122,36 @@ export interface TankhahSearch extends Instance<typeof TankhahSearchModel> { }
 export interface TankhahSearchSnapshotOut extends SnapshotOut<typeof TankhahSearchModel> { }
 export interface TankhahSearchSnapshotIn extends SnapshotIn<typeof TankhahSearchModel> { }
 export const createTankhahSearchDefaultModel = () => types.optional(TankhahSearchModel, {})
+
+function getQueryString(
+  archiveId?: string,
+  searchQuery?: string,
+  opFilters?: string[],
+  groups?: BSON.ObjectId[],
+): [string, ...Array<string | string[] | BSON.ObjectId[]>] {
+  const parts = []
+  const args: Array<string | string[] | BSON.ObjectId[]> = []
+  let index = 0
+  if (archiveId) {
+    parts.push(`archiveId == $${index}`)
+    args.push(archiveId)
+    index++
+  }
+  if (searchQuery) {
+    parts.push(`(description CONTAINS $${index} OR recipient CONTAINS $${index} OR trackingNum CONTAINS $${index} OR receiptItems.title CONTAINS $0)`)
+    args.push(searchQuery)
+    index++
+  }
+  if (opFilters && opFilters.length > 0) {
+    parts.push(`opType IN $${index}`)
+    args.push(opFilters)
+    index++
+  }
+
+  if (groups && groups.length > 0) {
+    parts.push(`group._id IN $${index}`)
+    args.push(groups)
+    index++
+  }
+  return [parts.join(" AND "), ...args]
+}

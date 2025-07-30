@@ -21,8 +21,15 @@ export function formatTitle(item: TankhahItem | TankhahArchiveItem) {
     case OperationEnum.buy:
       return `${item.receiptItems?.map((i) => `${i.title}`).join("، ")}`
     case OperationEnum.transfer:
-      return `انتقال وجه ${translate(("paymentMethod." + item.paymentMethod) as TxKeyPath)} به ${item.recipient || item.accountNum || "نامشخص"}`
+      return `${translate(("paymentMethod." + item.paymentMethod) as TxKeyPath)} به ${item.recipient || item.accountNum || "نامشخص"}`
     default:
       return ""
   }
 }
+
+export const iconMap = {
+  fund: "cash-plus",
+  buy: "cash-register",
+  transfer: "cash-fast",
+}
+

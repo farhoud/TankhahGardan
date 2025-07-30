@@ -2,7 +2,7 @@ import { Instance, SnapshotIn, SnapshotOut, cast, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { startOfDay, subMonths, endOfDay } from "date-fns"
 import { BSON, Realm } from "realm"
-import { TankhahArchiveItem, TankhahItem } from "./realm/tankhah"
+import { SpendReceiptItem, TankhahArchiveItem, TankhahItem } from "./realm/tankhah"
 import { TankhahArchiveItemModel } from "./TankhahArchiveItem"
 
 /**
@@ -31,8 +31,9 @@ export const TankhahArchiveModel = types
     function setRealm(r: Realm) {
       if (!realm)
         realm = r
+      self.archiveList = cast([])
       realm.objects(TankhahArchiveItem).filtered("archiveId != $0 DISTINCT(archiveId)", null).forEach(i => {
-        self.archiveList = cast([])
+        console.log(i.archiveId)
         self.archiveList.push({ start: i.archiveStart, end: i.archiveEnd, id: i.archiveId })
       })
     }
@@ -70,7 +71,9 @@ export const TankhahArchiveModel = types
         const items = realm?.objects(TankhahItem).filtered("doneAt BETWEEN { $0 , $1 } SORT(doneAt DESC)", self.startDate, self.endDate).slice()
         let index = 0
         for (let i of items) {
-          realm.create(TankhahArchiveItem, { ...i, archiveStart: self.startDate, archiveEnd: self.endDate, archiveId: self.archiveId });
+          const receiptItems = i.receiptItems?.map(i => { return { amount: i.amount, title: i.title, price: i.price } })
+          // @ts-ignore
+          realm.create(TankhahArchiveItem, { ...i, archiveStart: self.startDate, archiveEnd: self.endDate, archiveId: self.archiveId, receiptItems })
           realm.delete(i)
           index++
           self.progress = index / items.length
