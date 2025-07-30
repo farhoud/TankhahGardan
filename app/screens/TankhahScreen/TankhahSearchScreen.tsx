@@ -72,17 +72,13 @@ export const TankhahSearchScreen: FC<TankhahSearchScreenProps> = observer(functi
   const renderDrawer = () => (
     <Animated.ScrollView nestedScrollEnabled scrollEnabled entering={FadeInLeft} exiting={FadeOutLeft} style={[$scrollView, { backgroundColor: theme.colors.background }]}>
       <Drawer.Section>
-        {/* <Text text="عملیات" /> */}
-        {gpFilter.map(i => (<SearchFilterItem store={i}></SearchFilterItem>))}
+        {gpFilter.map(i => (<SearchFilterItem key={i.id} store={i}></SearchFilterItem>))}
       </Drawer.Section>
       <Drawer.Section>
-        {/* <Text text="عملیات" /> */}
-        {opFilter.map(i => (<SearchFilterItem store={i}></SearchFilterItem>))}
-
+        {opFilter.map(i => (<SearchFilterItem key={i.id} store={i}></SearchFilterItem>))}
       </Drawer.Section>
       <Drawer.Section>
-        {/* <Text text="عملیات" /> */}
-        {pmFilter.map(i => (<SearchFilterItem store={i}></SearchFilterItem>))}
+        {pmFilter.map(i => (<SearchFilterItem key={i.id} store={i}></SearchFilterItem>))}
       </Drawer.Section>
     </Animated.ScrollView >
   )

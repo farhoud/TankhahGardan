@@ -3,7 +3,7 @@ import { observer } from "mobx-react-lite"
 import { ViewStyle } from "react-native"
 import { AppNavigation, AppStackScreenProps } from "app/navigators"
 import { ListView, SearchFilterItem, SearchResultListItem } from "app/components"
-import { Surface, Drawer, Appbar, useTheme, Searchbar, List } from "react-native-paper"
+import { Surface, Drawer, Appbar, useTheme, Searchbar } from "react-native-paper"
 import Animated, { FadeInLeft, FadeOutLeft } from "react-native-reanimated"
 import { CommonActions, useNavigation } from "@react-navigation/native"
 import { useRealm } from "@realm/react"
@@ -16,7 +16,7 @@ interface CalendarSearchScreenProps extends AppStackScreenProps<"CalendarSearch"
 export const CalendarSearchScreen: FC<CalendarSearchScreenProps> = observer(function CalendarSearchScreen() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   // Pull in one of our MST stores
-  const { calendarStore: { search: { search, query, typeFilter, projectFilter, clean, setRealm, setProp, result, projectFilterList, typeFilterList } } } = useStores()
+  const { calendarStore: { search: { search, query, typeFilter, projectFilter, clean, setRealm, setProp, sorted, projectFilterList, typeFilterList } } } = useStores()
   // Pull in navigation via hook
   const navigation = useNavigation<AppNavigation>()
   const theme = useTheme()
@@ -67,13 +67,10 @@ export const CalendarSearchScreen: FC<CalendarSearchScreenProps> = observer(func
   const renderDrawer = () => (
     <Animated.ScrollView nestedScrollEnabled scrollEnabled entering={FadeInLeft} exiting={FadeOutLeft} style={[$scrollView, { backgroundColor: theme.colors.background }]}>
       <Drawer.Section>
-        {/* <Text text="عملیات" /> */}
-        {typeFilter.map(i => (<SearchFilterItem store={i}></SearchFilterItem>))}
+        {typeFilter.map(i => (<SearchFilterItem key={i.id} store={i}></SearchFilterItem>))}
       </Drawer.Section>
       <Drawer.Section>
-        {/* <Text text="عملیات" /> */}
-        {projectFilter.map(i => (<SearchFilterItem store={i}></SearchFilterItem>))}
-
+        {projectFilter.map(i => (<SearchFilterItem key={i.id} store={i}></SearchFilterItem>))}
       </Drawer.Section>
     </Animated.ScrollView >
   )
@@ -89,7 +86,7 @@ export const CalendarSearchScreen: FC<CalendarSearchScreenProps> = observer(func
           navigation.navigate("TankhahItem", {
             itemId: id,
           })
-        }} />)} data={result}></ListView>
+        }} />)} data={sorted}></ListView>
         {drawerOpen && renderDrawer()}
       </Surface >
     </>

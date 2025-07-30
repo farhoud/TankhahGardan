@@ -1,3 +1,5 @@
+import { Attendance } from "app/models/realm/calendar"
+
 const fa = {
   opType: {
     buy: "خرید",
@@ -13,9 +15,9 @@ const fa = {
     ctc: "کارت به کارت",
     pos: "پوز",
     sts: "سپرده به سپرده",
-    pol_r: "پل آنی",
-    pol_c: "پل چرخه",
-    pol_d: "پل روزانه",
+    "pol-r": "پل آنی",
+    "pol-c": "پل چرخه",
+    "pol-d": "پل روزانه",
     other: "دیگر",
   },
   accountNumType: {
@@ -135,6 +137,10 @@ const fa = {
     defaultPricePlaceholder: "قیمت پیش فرض درست وارد نشده",
     searchableLabel: "قابل جستجو",
   },
+  calendar: {
+    attendance: "حضور",
+    note: "یاداشت"
+  }
 }
 
 export default fa

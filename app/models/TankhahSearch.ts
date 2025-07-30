@@ -1,7 +1,7 @@
 import { Instance, SnapshotIn, SnapshotOut, cast, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { OperationEnum, PaymentMethodEnum } from "./Shared"
-import { BSON, Realm, UpdateMode } from "realm"
+import { BSON, Realm } from "realm"
 import { TankhahArchiveItem, TankhahGroup, TankhahItem } from "./realm/tankhah"
 import { SearchFilterModel } from "./SearchFilter"
 import { SearchResultItemModel } from "./SearchResultItem"
@@ -50,11 +50,11 @@ export const TankhahSearchModel = types
       }
 
       Object.entries(OperationEnum).forEach(([k, v]) => {
-        self.opFilter.push(cast({ id: k, name: v }))
+        self.opFilter.push(cast({ id: k, name: translate(("opType." + v) as TxKeyPath) }))
       })
 
       Object.entries(PaymentMethodEnum).forEach(([k, v]) => {
-        self.pmFilter.push(cast({ id: k, name: v }))
+        self.pmFilter.push(cast({ id: k, name: translate(("paymentMethod." + v) as TxKeyPath) }))
       })
     }
     function toggle(group: "op" | "gp" | "pm", id: string) {

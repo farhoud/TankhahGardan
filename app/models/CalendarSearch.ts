@@ -5,6 +5,7 @@ import { BSON, Realm } from "realm"
 import { SearchFilterModel } from "./SearchFilter"
 import { SearchResultItem, SearchResultItemModel, SearchResultItemSnapshotIn } from "./SearchResultItem"
 import { Attendance, CalenderNote, Project } from "./realm/calendar"
+import { translate, TxKeyPath } from "app/i18n"
 
 /**
  * Model description here for TypeScript hints.
@@ -15,7 +16,7 @@ export const CalendarSearchModel = types
     query: types.optional(types.string, ""),
     typeFilter: types.optional(types.array(SearchFilterModel), []),
     projectFilter: types.optional(types.array(SearchFilterModel), []),
-    result: types.optional(types.array(SearchResultItemModel), [])
+    result: types.optional(types.array(SearchResultItemModel), []),
   })
   .actions(withSetPropAction)
   .views((self) => ({
@@ -24,6 +25,9 @@ export const CalendarSearchModel = types
     },
     get projectFilterList() {
       return self.projectFilter.filter(i => i.value).map(i => new BSON.ObjectId(i.id))
+    },
+    get sorted() {
+      return self.result.slice().sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
     }
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions(self => {
@@ -38,7 +42,7 @@ export const CalendarSearchModel = types
           self.projectFilter.push(cast({ id: i._id.toHexString(), name: i.name }))
         })
       Object.entries(CalendarItemEnum).forEach(([k, v]) => {
-        self.typeFilter.push(cast({ id: k, name: v }))
+        self.typeFilter.push(cast({ id: k, name: translate(("calendar." + v) as TxKeyPath) }))
       })
     }
     function toggle(group: "type" | "project", id: string) {
