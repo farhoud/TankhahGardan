@@ -4,17 +4,18 @@ import { View, ViewStyle } from "react-native"
 import { AppStackScreenProps, AppNavigation } from "app/navigators"
 import { AutoImage, Button, EmptyState, Screen, Text } from "app/components"
 import { CommonActions, useNavigation } from "@react-navigation/native"
-import { TankhahItem } from "app/models/realm/tankhah"
+import { TankhahArchiveItem, TankhahItem } from "app/models/realm/tankhah"
 import { useObject, useRealm } from "@realm/react"
 import { formatDateIR, tomanFormatter } from "app/utils/formatDate"
 import { BSON } from "realm"
 import { TouchableOpacity } from "react-native-gesture-handler"
-import { Appbar, Dialog, Modal, Portal, Surface } from "react-native-paper"
+import { Appbar, Dialog, Portal, Surface } from "react-native-paper"
 import { TxKeyPath } from "app/i18n"
 
 export const TankhahItemScreen: FC<AppStackScreenProps<"TankhahItem">> = observer(
   function TankhahItemScreen(_props) {
     const itemId = _props.route.params.itemId
+    const archived = _props.route.params.archived
     const [confirmVisible, setConfirmVisible] = useState(false)
     // Pull in one of our MST stores
     // const { someStore, anotherStore } = useStores()
@@ -22,7 +23,7 @@ export const TankhahItemScreen: FC<AppStackScreenProps<"TankhahItem">> = observe
     // Pull in navigation via hook
     const navigation = useNavigation<AppNavigation>()
 
-    const tankhahItem = useObject(TankhahItem, new BSON.ObjectID(itemId))
+    const tankhahItem = useObject<TankhahArchiveItem | TankhahItem>(archived ? TankhahArchiveItem : TankhahItem, new BSON.ObjectID(itemId))
 
     const realm = useRealm()
 
@@ -65,7 +66,7 @@ export const TankhahItemScreen: FC<AppStackScreenProps<"TankhahItem">> = observe
     }
 
     const goToEdit = () => {
-      if (tankhahItem?.opType === "fund") {
+      if (tankhahItem?.opType === "fund" && !archived) {
         navigation.navigate("TankhahFundForm", { itemId })
         return
       }
@@ -83,8 +84,8 @@ export const TankhahItemScreen: FC<AppStackScreenProps<"TankhahItem">> = observe
           <Appbar.Header>
             <Appbar.BackAction onPress={goBack} />
             <Appbar.Content title="خرج" />
-            <Appbar.Action icon="delete" onPress={showConfirm} />
-            <Appbar.Action icon="pencil" onPress={goToEdit} />
+            <Appbar.Action disabled={archived} icon="delete" onPress={showConfirm} />
+            <Appbar.Action disabled={archived} icon="pencil" onPress={goToEdit} />
           </Appbar.Header>
         ),
       })
@@ -167,7 +168,7 @@ export const TankhahItemScreen: FC<AppStackScreenProps<"TankhahItem">> = observe
           )}
           <View style={$row}>
             <Text tx="spend.total" />
-            <Text text={tomanFormatter(tankhahItem.total ?? 0)} />
+            <Text text={tomanFormatter(tankhahItem.total ?? 0)} variant="labelSmall" />
           </View>
           {!!tankhahItem.attachments?.length && (
             <>

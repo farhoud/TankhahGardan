@@ -24,7 +24,7 @@ export function SearchResultListItem(props: SearchResultItemProps) {
             <Text style={{ textAlign: "right" }} variant="labelSmall">
               {item.timestamp && formatDateIR(item.timestamp)}
             </Text>
-            {item.rightText && <Text style={{ textAlign: "right" }}>{item.rightText}</Text>}
+            {item.rightText && <Text variant="labelMedium" style={{ textAlign: "right" }}>{item.rightText}</Text>}
           </View>
         )}
         titleStyle={{ fontFamily: "IRANSansXFaNum-Regular", fontSize: 14 }}

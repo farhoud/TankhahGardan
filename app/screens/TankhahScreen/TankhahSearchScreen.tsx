@@ -3,7 +3,7 @@ import { observer } from "mobx-react-lite"
 import { ViewStyle } from "react-native"
 import { AppNavigation, AppStackParamList, AppStackScreenProps } from "app/navigators"
 import { ListView, SearchFilterItem, SearchResultListItem } from "app/components"
-import { Surface, Drawer, Appbar, useTheme, Searchbar, List } from "react-native-paper"
+import { Surface, Drawer, Appbar, useTheme, Searchbar } from "react-native-paper"
 import Animated, { FadeInLeft, FadeOutLeft } from "react-native-reanimated"
 import { CommonActions, RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { useRealm } from "@realm/react"
@@ -97,6 +97,7 @@ export const TankhahSearchScreen: FC<TankhahSearchScreenProps> = observer(functi
         <ListView renderItem={(props: ListRenderItemInfo<SearchResultItem>) => (<SearchResultListItem {...props} onPress={(id) => {
           navigation.navigate("TankhahItem", {
             itemId: id,
+            archived: !!archiveId
           })
         }} />)} data={result}></ListView>
         {drawerOpen && renderDrawer()}

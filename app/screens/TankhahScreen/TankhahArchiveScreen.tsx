@@ -2,14 +2,14 @@ import React, { FC, useEffect } from "react"
 import { observer } from "mobx-react-lite"
 import { View, ViewStyle } from "react-native"
 import { AppNavigation, AppStackScreenProps } from "app/navigators"
-import { DatePicker, ListView, Screen, Text } from "app/components"
+import { DatePicker, ListView, Text } from "app/components"
 import { Banner, Button, Dialog, Divider, List, Portal, ProgressBar, Surface } from "react-native-paper"
 import { $row, } from "app/theme"
 import { useNavigation } from "@react-navigation/native"
 import { useStores } from "app/models"
 import { TimeRangeBtn } from "app/components/TimeRangeBtn"
 import { useRealm } from "@realm/react"
-import { formatDate, formatDateIR } from "app/utils/formatDate"
+import { formatDateIR } from "app/utils/formatDate"
 
 interface TankhahArchiveScreenProps extends AppStackScreenProps<"TankhahArchive"> { }
 
@@ -61,16 +61,18 @@ export const TankhahArchiveScreen: FC<TankhahArchiveScreenProps> = observer(func
         {archiving && <View style={[{ width: "100%", padding: 5 }]}>
           <ProgressBar progress={progress} ></ProgressBar>
         </View>}
-        <Button disabled={archiving} onPress={() => showConfirm()}>شروع</Button>
-        <Divider></Divider>
+        <Button style={{ marginHorizontal: 10 }} mode="outlined" disabled={archiving} onPress={() => showConfirm()}>شروع</Button>
+        <Divider style={{ marginTop: 5 }}></Divider>
         <ListView
-          ListHeaderComponent={() => (<Text>تاریخچه</Text>)}
+          style={{ padding: 5 }}
+          ListHeaderComponent={() => (<Text variant="titleMedium">تاریخچه</Text>)}
           data={archiveList.slice()}
           keyExtractor={(i) => i.id}
           renderItem={({ item }) => (
             <List.Item
+              left={props => <List.Icon {...props} icon="archive-check" />}
               onPress={() => navigation.navigate("TankhahSearch", { archiveId: item.id })}
-              title={`دوره ${formatDateIR(item.start)} - ${formatDateIR(item.end)}`} />
+              title={`دوره ${formatDateIR(item.start)} - ${formatDateIR(item.end)}`} titleStyle={{ fontFamily: "IRANSansXFaNum-Regular", fontSize: 13 }} />
           )}
         />
       </Surface >

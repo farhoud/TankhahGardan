@@ -43,7 +43,7 @@ import { ShareIntentModule, getScheme, getShareExtensionKey } from "expo-share-i
 export type AppStackParamList = {
   Login: undefined
   AppTabs: NavigatorScreenParams<AppTabParamList>
-  TankhahItem: { itemId: string }
+  TankhahItem: { itemId: string, archived?: boolean }
   TankhahSpendForm: { itemId?: string }
   TankhahFundForm: { itemId?: string }
   TestScreen: undefined
