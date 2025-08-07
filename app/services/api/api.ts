@@ -24,10 +24,10 @@ interface GPTSpendPart extends Omit<SpendPart, "doneAt"> {
  * Configuring the apisauce instance.
  */
 export const DEFAULT_API_CONFIG: ApiConfig = {
-  url: Config.apiUrl,
-  timeout: 10000,
-  apiKey: Config.apiKey,
-  apiVersion: "2025-01-01-preview"
+  url: "https://mlk-openai-farhoud.openai.azure.com/openai/deployments/gpt-35-turbo/chat/",
+  timeout: 5000,
+  apiKey: "a24bb613c3de4479938ff95d3aeab2f4",
+  apiVersion: "2025-01-01-preview",
 }
 
 /**
@@ -59,9 +59,19 @@ export class Api {
     })
   }
 
-  async autoTitle(
-    text: string,
-  ): Promise<{ extracted: { title: string | undefined, category: string | undefined, doneAt: Date | undefined, amount: number | undefined, paymentMethod: PaymentMethod | undefined }; kind: "ok" } | GeneralApiProblem> {
+  async autoTitle(text: string): Promise<
+    | {
+        extracted: {
+          title: string | undefined
+          category: string | undefined
+          doneAt: Date | undefined
+          amount: number | undefined
+          paymentMethod: PaymentMethod | undefined
+        }
+        kind: "ok"
+      }
+    | GeneralApiProblem
+  > {
     // make the api call
     const messages = [
       {
@@ -112,7 +122,16 @@ you always format output to JSON with keys for a title for the text and category
       if (extracted.amount) {
         amount = Number(extracted.amount)
       }
-      return { kind: "ok", extracted: { title: extracted.title, category: extracted.category, doneAt, amount, paymentMethod: extracted.paymentMethod } }
+      return {
+        kind: "ok",
+        extracted: {
+          title: extracted.title,
+          category: extracted.category,
+          doneAt,
+          amount,
+          paymentMethod: extracted.paymentMethod,
+        },
+      }
     } catch (e) {
       if (__DEV__ && e instanceof Error) {
         console.error(`Bad data: ${e.message}\n${response.data}`, e.stack)

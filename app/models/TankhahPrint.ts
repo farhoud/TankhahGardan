@@ -10,7 +10,6 @@ import * as Print from "expo-print"
 import { formatDateIR } from "app/utils/formatDate"
 import { formatTitle } from "./Shared"
 
-
 enum OperationEnum {
   spend = "spend",
   fund = "fund",
@@ -53,31 +52,33 @@ export const TankhahPrintModel = types
     gpFilter: types.optional(types.array(SearchFilterModel), []),
     items: types.optional(types.array(TankhahPrintItemModel), []),
     loading: types.optional(types.boolean, false),
-    error: types.maybe(types.string)
+    error: types.maybe(types.string),
   })
   .actions(withSetPropAction)
   .views((self) => ({
     get selectedOpFilter() {
-      return self.opFilter.filter(i => i.value).at(0)
+      return self.opFilter.filter((i) => i.value).at(0)
     },
     get selectedGpFilter() {
-      return self.gpFilter.filter(i => i.value).at(0)
-    }
+      return self.gpFilter.filter((i) => i.value).at(0)
+    },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => {
     let realm: Realm | undefined = undefined
     function setRealm(r: Realm) {
-      if (!realm)
-        realm = r
+      realm = r
     }
     function clear() {
       self.opFilter = cast([])
       self.gpFilter = cast([])
       self.error = undefined
       self.loading = false
-      realm?.objects(TankhahGroup).filtered("active == true").forEach(i => {
-        self.gpFilter.push(cast({ id: i._id.toHexString(), name: i.name, value: false }))
-      })
+      realm
+        ?.objects(TankhahGroup)
+        .filtered("active == true")
+        .forEach((i) => {
+          self.gpFilter.push(cast({ id: i._id.toHexString(), name: i.name, value: false }))
+        })
       self.gpFilter.push({ id: "all", name: "all" })
       Object.entries(OperationEnum).forEach(([k, v]) => {
         self.opFilter.push(cast({ id: k, name: v, value: v === "spend" }))
@@ -90,14 +91,27 @@ export const TankhahPrintModel = types
         return
       }
       try {
-        const items = realm.objects(TankhahItem).filtered(...getQueryString(self.start, self.end, self.selectedOpFilter, self.selectedGpFilter))
-        self.items = cast(items.map(i => ({ opType: i.opType, date: i.doneAt, description: i.description || undefined, fee: i.transferFee, info: formatTitle(i), amount: i.total })))
+        const items = realm
+          .objects(TankhahItem)
+          .filtered(
+            ...getQueryString(self.start, self.end, self.selectedOpFilter, self.selectedGpFilter),
+          )
+        self.items = cast(
+          items.map((i) => ({
+            opType: i.opType,
+            date: i.doneAt,
+            description: i.description || undefined,
+            fee: i.transferFee,
+            info: formatTitle(i),
+            amount: i.total,
+          })),
+        )
         const total = items.sum("total")
-        const fTotal = new Intl.NumberFormat('fa-IR', {
+        const fTotal = new Intl.NumberFormat("fa-IR", {
           // style: 'currency',
           // currency: 'IRR',
-          maximumFractionDigits: 0
-        }).format(total);
+          maximumFractionDigits: 0,
+        }).format(total)
         const fStart = formatDateIR(self.start)
         const fEnd = formatDateIR(self.end)
         if (self.selectedOpFilter?.id == "fund") {
@@ -106,7 +120,13 @@ export const TankhahPrintModel = types
             html: htmlBase(body),
           })
         } else if (self.selectedOpFilter?.id == "spend") {
-          const body = renderSpendContent(self.items, fTotal, self.selectedGpFilter?.name || "ثبت نشده", fStart, fEnd)
+          const body = renderSpendContent(
+            self.items,
+            fTotal,
+            self.selectedGpFilter?.name || "ثبت نشده",
+            fStart,
+            fEnd,
+          )
           await Print.printAsync({
             html: htmlBase(body),
           })
@@ -124,12 +144,12 @@ export const TankhahPrintModel = types
     }
 
     function selectOpFilter(id: string) {
-      self.opFilter.forEach(i => i.setProp("value", id === i.id))
+      self.opFilter.forEach((i) => i.setProp("value", id === i.id))
       self.opFilterOpen = false
     }
 
     function selectGpFilter(id: string) {
-      self.gpFilter.forEach(i => i.setProp("value", id === i.id))
+      self.gpFilter.forEach((i) => i.setProp("value", id === i.id))
       self.gpFilterOpen = false
     }
     return {
@@ -137,13 +157,11 @@ export const TankhahPrintModel = types
       print,
       clear,
       selectGpFilter,
-      selectOpFilter
+      selectOpFilter,
     }
   }) // eslint-disable-line @typescript-eslint/no-unused-vars
 
-export interface TankhahPrint extends Instance<typeof TankhahPrintModel> { }
-export interface TankhahPrintSnapshotOut extends SnapshotOut<typeof TankhahPrintModel> { }
-export interface TankhahPrintSnapshotIn extends SnapshotIn<typeof TankhahPrintModel> { }
+export interface TankhahPrint extends Instance<typeof TankhahPrintModel> {}
+export interface TankhahPrintSnapshotOut extends SnapshotOut<typeof TankhahPrintModel> {}
+export interface TankhahPrintSnapshotIn extends SnapshotIn<typeof TankhahPrintModel> {}
 export const createTankhahPrintDefaultModel = () => types.optional(TankhahPrintModel, {})
-
-

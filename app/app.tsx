@@ -72,7 +72,7 @@ const CombinedDarkTheme = {
 
 
 interface AppProps {
-  hideSplashScreen: () => Promise<boolean>
+  hideSplashScreen: () => Promise<void>
 }
 
 /**

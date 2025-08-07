@@ -19,18 +19,18 @@ export const TankhahSearchModel = types
     opFilter: types.optional(types.array(SearchFilterModel), []),
     pmFilter: types.optional(types.array(SearchFilterModel), []),
     gpFilter: types.optional(types.array(SearchFilterModel), []),
-    result: types.optional(types.array(SearchResultItemModel), [])
+    result: types.optional(types.array(SearchResultItemModel), []),
   })
   .actions(withSetPropAction)
   .views((self) => ({
     get opFilterList() {
-      return self.opFilter.filter(i => i.value).map(i => i.id)
+      return self.opFilter.filter((i) => i.value).map((i) => i.id)
     },
     get gpFilterList() {
-      return self.gpFilter.filter(i => i.value).map(i => new BSON.ObjectId(i.id))
-    }
+      return self.gpFilter.filter((i) => i.value).map((i) => new BSON.ObjectId(i.id))
+    },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
-  .actions(self => {
+  .actions((self) => {
     let realmIns: Realm | undefined = undefined
     function clean() {
       self.gpFilter = cast([])
@@ -40,13 +40,16 @@ export const TankhahSearchModel = types
       self.result = cast([])
 
       if (self.archiveId) {
-        realmIns?.objects(TankhahGroup).forEach(i => {
+        realmIns?.objects(TankhahGroup).forEach((i) => {
           self.gpFilter.push(cast({ id: i._id.toHexString(), name: i.name }))
         })
       } else {
-        realmIns?.objects(TankhahGroup).filtered("active == true").forEach(i => {
-          self.gpFilter.push(cast({ id: i._id.toHexString(), name: i.name }))
-        })
+        realmIns
+          ?.objects(TankhahGroup)
+          .filtered("active == true")
+          .forEach((i) => {
+            self.gpFilter.push(cast({ id: i._id.toHexString(), name: i.name }))
+          })
       }
 
       Object.entries(OperationEnum).forEach(([k, v]) => {
@@ -59,18 +62,17 @@ export const TankhahSearchModel = types
     }
     function toggle(group: "op" | "gp" | "pm", id: string) {
       if (group === "op") {
-        self.opFilter.find(i => i.id === id)?.toggle()
+        self.opFilter.find((i) => i.id === id)?.toggle()
       }
       if (group === "gp") {
-        self.gpFilter.find(i => i.id === id)?.toggle()
+        self.gpFilter.find((i) => i.id === id)?.toggle()
       }
       if (group === "pm") {
-        self.pmFilter.find(i => i.id === id)?.toggle()
+        self.pmFilter.find((i) => i.id === id)?.toggle()
       }
     }
     function setRealm(realm: Realm) {
-      if (!realmIns)
-        realmIns = realm
+      realmIns = realm
     }
     function search() {
       if (!realmIns) {
@@ -92,23 +94,30 @@ export const TankhahSearchModel = types
           case OperationEnum.buy:
             return `${item.receiptItems?.map((i) => `${i.title}`).join("، ")}`
           case OperationEnum.transfer:
-            return `${translate(("paymentMethod." + item.paymentMethod) as TxKeyPath)} به ${item.recipient || item.accountNum || "نامشخص"}`
+            return `${translate(("paymentMethod." + item.paymentMethod) as TxKeyPath)} به ${
+              item.recipient || item.accountNum || "نامشخص"
+            }`
           default:
             return ""
         }
       }
 
-      self.result = cast((self.archiveId ? realmIns.objects(TankhahArchiveItem) : realmIns.objects(TankhahItem))
-        .filtered(...getQueryString(self.archiveId, self.query, self.opFilterList, self.gpFilterList))
-        .sorted("doneAt", true)
-        .map(i => ({
-          id: i._id.toHexString(),
-          title: formatTitle(i),
-          description: i.description || "",
-          timestamp: i.doneAt,
-          icon: iconMap[i.opType],
-          rightText: tomanFormatter(i.total),
-        }))) || cast([])
+      self.result =
+        cast(
+          (self.archiveId ? realmIns.objects(TankhahArchiveItem) : realmIns.objects(TankhahItem))
+            .filtered(
+              ...getQueryString(self.archiveId, self.query, self.opFilterList, self.gpFilterList),
+            )
+            .sorted("doneAt", true)
+            .map((i) => ({
+              id: i._id.toHexString(),
+              title: formatTitle(i),
+              description: i.description || "",
+              timestamp: i.doneAt,
+              icon: iconMap[i.opType],
+              rightText: tomanFormatter(i.total),
+            })),
+        ) || cast([])
     }
     return {
       clean,
@@ -118,9 +127,9 @@ export const TankhahSearchModel = types
     }
   }) // eslint-disable-line @typescript-eslint/no-unused-vars
 
-export interface TankhahSearch extends Instance<typeof TankhahSearchModel> { }
-export interface TankhahSearchSnapshotOut extends SnapshotOut<typeof TankhahSearchModel> { }
-export interface TankhahSearchSnapshotIn extends SnapshotIn<typeof TankhahSearchModel> { }
+export interface TankhahSearch extends Instance<typeof TankhahSearchModel> {}
+export interface TankhahSearchSnapshotOut extends SnapshotOut<typeof TankhahSearchModel> {}
+export interface TankhahSearchSnapshotIn extends SnapshotIn<typeof TankhahSearchModel> {}
 export const createTankhahSearchDefaultModel = () => types.optional(TankhahSearchModel, {})
 
 function getQueryString(
@@ -138,7 +147,9 @@ function getQueryString(
     index++
   }
   if (searchQuery) {
-    parts.push(`(description CONTAINS $${index} OR recipient CONTAINS $${index} OR trackingNum CONTAINS $${index} OR receiptItems.title CONTAINS $0)`)
+    parts.push(
+      `(description CONTAINS $${index} OR recipient CONTAINS $${index} OR trackingNum CONTAINS $${index} OR receiptItems.title CONTAINS $0)`,
+    )
     args.push(searchQuery)
     index++
   }

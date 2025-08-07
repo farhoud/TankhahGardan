@@ -19,7 +19,7 @@ export const ShareIntentModel = types
   .views((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
     async parseText(id: string) {
-      const item = self.list.find(i => i.id === id)
+      const item = self.list.find((i) => i.id === id)
       if (!item) {
         Alert.alert("wrong item id")
         return
@@ -40,7 +40,10 @@ export const ShareIntentModel = types
         navigationRef.navigate("TankhahSpendForm", {})
         item.done()
         // self.list.remove(item)
-        self.setProp("list", self.list.filter(i => i.id !== id))
+        self.setProp(
+          "list",
+          self.list.filter((i) => i.id !== id),
+        )
       } catch (e) {
         if (e instanceof Error) {
           item.failed(e.toString())
@@ -49,20 +52,25 @@ export const ShareIntentModel = types
         }
       }
     },
-  })).actions((self) => ({
+  }))
+  .actions((self) => ({
     addNewShareIntent(text: string) {
       const id = new BSON.UUID().toHexString()
-      self.list.push(
-        {
-          id,
-          text: text,
-        }
-      )
+      self.list.push({
+        id,
+        text: text,
+      })
       self.parseText(id)
+    },
+    deleteListItem(id: string) {
+      self.setProp(
+        "list",
+        self.list.filter((i) => i.id !== id),
+      )
     },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
 
-export interface ShareIntent extends Instance<typeof ShareIntentModel> { }
-export interface ShareIntentSnapshotOut extends SnapshotOut<typeof ShareIntentModel> { }
-export interface ShareIntentSnapshotIn extends SnapshotIn<typeof ShareIntentModel> { }
+export interface ShareIntent extends Instance<typeof ShareIntentModel> {}
+export interface ShareIntentSnapshotOut extends SnapshotOut<typeof ShareIntentModel> {}
+export interface ShareIntentSnapshotIn extends SnapshotIn<typeof ShareIntentModel> {}
 export const createShareIntentDefaultModel = () => types.optional(ShareIntentModel, {})

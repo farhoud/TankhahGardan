@@ -14,44 +14,23 @@
       "resizeMode": "contain",
       "backgroundColor": "#e6e6e6"
     },
-    "updates": {
-      "fallbackToCacheTimeout": 0
-    },
+    "updates": {},
     "jsEngine": "hermes",
-    "assetBundlePatterns": [
-      "**/*"
-    ],
     "android": {
       "icon": "./assets/images/app-icon-android-legacy.png",
       "package": "com.tankhahgardan",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/app-icon-android-adaptive-foreground.png",
         "backgroundImage": "./assets/images/app-icon-android-adaptive-background.png"
-      },
-      "splash": {
-        "image": "./assets/images/splash-logo-android-universal.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#e6e6e6"
       }
     },
     "ios": {
       "icon": "./assets/images/app-icon-ios.png",
       "supportsTablet": true,
-      "bundleIdentifier": "com.tankhahgardan",
-      "splash": {
-        "image": "./assets/images/splash-logo-ios-mobile.png",
-        "tabletImage": "./assets/images/splash-logo-ios-tablet.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#e6e6e6"
-      }
+      "bundleIdentifier": "com.tankhahgardan"
     },
     "web": {
       "favicon": "./assets/images/app-icon-web-favicon.png",
-      "splash": {
-        "image": "./assets/images/splash-logo-web.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#e6e6e6"
-      },
       "bundler": "metro"
     },
     "plugins": [
@@ -82,6 +61,25 @@
         "expo-image-picker",
         {
           "photosPermission": "The app accesses your photos to let you share them with your friends."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-logo-all.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#e6e6e6",
+          "ios": {
+            "image": "./assets/images/splash-logo-ios-mobile.png",
+            "tabletImage": "./assets/images/splash-logo-ios-tablet.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#e6e6e6"
+          },
+          "android": {
+            "image": "./assets/images/splash-logo-android-universal.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#e6e6e6"
+          }
         }
       ]
     ],
