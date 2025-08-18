@@ -67,11 +67,7 @@ export const ListItem = observer(
           <Button disabled={loading} loading={loading} onPress={() => onRun(id)}>
             هضم
           </Button>
-          {onDelete && (
-            <Button disabled={loading} onPress={() => onDelete(id)}>
-              حذف
-            </Button>
-          )}
+          {onDelete && <Button onPress={() => onDelete(id)}>حذف</Button>}
         </Card.Actions>
       </Card>
     )
