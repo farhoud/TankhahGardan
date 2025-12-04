@@ -26,7 +26,7 @@ import {
 } from "@react-navigation/native"
 import { initialWindowMetrics, SafeAreaProvider } from "react-native-safe-area-context"
 import { useInitialRootStore } from "./models"
-import { AppNavigator, useNavigationPersistence } from "./navigators"
+import { AppNavigator, navigationRef, useNavigationPersistence } from "./navigators"
 import { ErrorBoundary } from "./screens/ErrorScreen/ErrorBoundary"
 import * as storage from "./utils/storage"
 import { CustomMD3Dark, CustomMD3Light, customFontsToLoad, fontConfig } from "./theme"
@@ -41,10 +41,9 @@ import {
   MD3DarkTheme,
   MD3LightTheme,
   adaptNavigationTheme,
+  Text,
 } from "react-native-paper"
-import {
-  ShareIntentProvider,
-} from "expo-share-intent";
+import { ShareIntentProvider } from "expo-share-intent"
 
 export const NAVIGATION_PERSISTENCE_KEY = "NAVIGATION_STATE"
 
@@ -69,7 +68,6 @@ const CombinedDarkTheme = {
     ...CustomMD3Dark.colors,
   },
 }
-
 
 interface AppProps {
   hideSplashScreen: () => Promise<void>
@@ -124,11 +122,11 @@ function App(props: AppProps) {
         debug: false,
         // @ts-ignore
         onResetShareIntent: () => {
-          // navigationRef?.current?.navigate("AppTabs", { screen: "TankhahHome", params: {} })
+          navigationRef?.current?.navigate("SpendImport")
         },
       }}
     >
-      <RealmProvider {...realmConfig}>
+      <RealmProvider {...realmConfig} closeOnUnmount={false} fallback={<Text>loading</Text>}>
         <SafeAreaProvider initialMetrics={initialWindowMetrics}>
           <ErrorBoundary catchErrors={Config.catchErrors}>
             <GestureHandlerRootView style={$container}>
