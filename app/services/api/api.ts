@@ -12,6 +12,7 @@ import type { ApiConfig, ApiFeedResponse } from "./api.types"
 import { SpendFormStoreSnapshotIn } from "app/models"
 import { addMonths, newDate } from "date-fns-jalali"
 import { PaymentMethod } from "app/models/realm/tankhah"
+import { parseLlmResponse } from "app/utils/llmJsonParser"
 
 type SpendPart = Partial<SpendFormStoreSnapshotIn>
 interface GPTSpendPart extends Omit<SpendPart, "doneAt"> {
@@ -24,10 +25,8 @@ interface GPTSpendPart extends Omit<SpendPart, "doneAt"> {
  * Configuring the apisauce instance.
  */
 export const DEFAULT_API_CONFIG: ApiConfig = {
-  url: "https://mlk-openai-farhoud.openai.azure.com/openai/deployments/gpt-35-turbo/chat/",
-  timeout: 5000,
-  apiKey: "a24bb613c3de4479938ff95d3aeab2f4",
-  apiVersion: "2025-01-01-preview",
+  url: "https://openrouter.ai/api/v1",
+  timeout: 50000,
 }
 
 /**
@@ -42,9 +41,6 @@ export class Api {
    * Set up our API instance. Keep this lightweight!
    */
   constructor(config: ApiConfig = DEFAULT_API_CONFIG) {
-    if (!config.apiKey) {
-      throw new Error("API key is required")
-    }
     if (!config.url) {
       throw new Error("API url is required")
     }
@@ -52,92 +48,8 @@ export class Api {
     this.apisauce = create({
       baseURL: this.config.url,
       timeout: this.config.timeout,
-      headers: {
-        Authorization: `Bearer ${config.apiKey}`,
-        Accept: "application/json",
-      },
+
     })
-  }
-
-  async autoTitle(text: string): Promise<
-    | {
-        extracted: {
-          title: string | undefined
-          category: string | undefined
-          doneAt: Date | undefined
-          amount: number | undefined
-          paymentMethod: PaymentMethod | undefined
-        }
-        kind: "ok"
-      }
-    | GeneralApiProblem
-  > {
-    // make the api call
-    const messages = [
-      {
-        role: "system",
-        content: `You are a knowledgeable assistant specialized in naming and categorizing text note of clients for better access. you work at construction site and recored event throw notes.
-you always format output to JSON with keys for a title for the text and category for the text. please follow these rules:
-- if text is unclear return a  empty JSON
-- title should be short and clear
-- response language should be same as text
-
-
-      text:
-       ${text || ""}`,
-      },
-    ]
-
-    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.post(
-      `completions?api-version=${this.config.apiVersion}`,
-      {
-        messages: messages,
-        temperature: 0.6,
-        max_tokens: 800,
-        top_p: 0.95,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-        stop: null,
-      },
-    )
-
-    // the typical ways to die when calling an api
-    if (!response.ok) {
-      const problem = getGeneralApiProblem(response)
-      if (problem) return problem
-    }
-
-    // transform the data into the format we are expecting
-    try {
-      const rawData = (response.data as any).choices[0].message.content
-      console.log(rawData)
-
-      // This is where we transform the data into the shape we expect for our MST model.
-      const extracted = JSON.parse(rawData) as GPTSpendPart
-      let doneAt
-      let amount
-      if (extracted.doneAt) {
-        doneAt = addMonths(newDate(...extracted.doneAt), -1)
-      }
-      if (extracted.amount) {
-        amount = Number(extracted.amount)
-      }
-      return {
-        kind: "ok",
-        extracted: {
-          title: extracted.title,
-          category: extracted.category,
-          doneAt,
-          amount,
-          paymentMethod: extracted.paymentMethod,
-        },
-      }
-    } catch (e) {
-      if (__DEV__ && e instanceof Error) {
-        console.error(`Bad data: ${e.message}\n${response.data}`, e.stack)
-      }
-      return { kind: "bad-data" }
-    }
   }
 
   /**
@@ -145,45 +57,61 @@ you always format output to JSON with keys for a title for the text and category
    */
   async extractInfo(
     text: string,
+    apiKey: string,
+    model: string
   ): Promise<{ extracted: SpendPart; kind: "ok" } | GeneralApiProblem> {
     // make the api call
     const messages = [
       {
-        role: "system",
-        content: `You are a knowledgeable assistant specialized in 
-      analyzing and bank receipt or report texts. Extract key information in JSON 
-      format with keys 'trackingNum', 'doneAt', 'recipient', 'accountNum','paymentMethod', amount as number 'amount' . If
-      certain information is not available, return null for the key.
-      values are string or number except doneAt.
-      paymentMethod is how money transferred and can be if انتقال کارت به کارت :'ctc' OR انتقال پایا : 'paya' OR انتقال ساتنا : 'satna' OR (انواع خرید کالا یا خدمات) : 'pos' OR انتقال وجه سپرده به سپرده : 'sts' OR انتقال وجه پل : 'pol-r' OR any other method : 'other' .
-      doneAt is a hejri shamsi time and may not be available if available convert it to array of [year,month,day,hours,minutes,seconds] .
-      accountNum is card (کارت) or sheba (شبا) or account number (شماره حساب) of the recipient (destination) .
-      text:
-       ${text || ""}`,
+        role: "user",
+        content: `You are a specialized assistant for analyzing bank receipts and transaction reports in Persian. Your task is to extract specific key information from the provided text and present it in a structured format.
+Extraction Requirements:
+trackingNum: The tracking number of the transaction. Look for keywords like "شماره پیگیری" or "کدرهگیری". If not found, return null.
+paymentMethod: The method of money transfer. Categorize as follows:
+ctc for "انتقال کارت به کارت"
+paya for "انتقال پایا"
+satna for "انتقال ساتنا"
+pos for "خرید کالا", "خدمات", or "برداشت وجه"
+sts for "انتقال وجه سپرده به سپرده"
+pol-r for "انتقال وجه پل"
+other for any other method.
+If the method cannot be determined, return null.
+doneAt: The date and time of the transaction. The text may use the Hijri Shamsi calendar. Convert this to array of [year,month,day,hours,minutes,seconds] in hejri shamsi, return null.
+recipient: The name of the recipient of the transaction. If not available, return null.
+accountNum: The recipient's card number ("کارت"), IBAN ("شبا"), or account number ("شماره حساب"). If none of these are found, return null.
+amount: The amount of money transferred or withdrawn. Ignore any remaining or balance amounts. If the amount cannot be identified, return null.
+
+Formatting Rules:
+All numerical values (e.g., in trackingNum, accountNum, and amount) must be converted from Persian or Arabic numerals to English numerals.
+If any key information is not found in the text, its corresponding value must be null.
+Convert Hijri Shamsi calendar to Georgian calendar with care 
+
+Input Text:
+${text || ""}`,
       },
     ]
 
-    const response: ApiResponse<ApiFeedResponse> = await this.apisauce.post(
-      `completions?api-version=${this.config.apiVersion}`,
-      {
-        messages: messages,
-        temperature: 0.6,
-        max_tokens: 800,
-        top_p: 0.95,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-        stop: null,
-      },
-    )
-
-    // the typical ways to die when calling an api
-    if (!response.ok) {
-      const problem = getGeneralApiProblem(response)
-      if (problem) return problem
-    }
-
     // transform the data into the format we are expecting
     try {
+      const response: ApiResponse<ApiFeedResponse> = await this.apisauce.post(`chat/completions`, {
+        messages: messages,
+        model: model,
+        temperature: 0.6,
+        response_format: {
+          type: "json_object",
+        },
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          Accept: "application/json",
+        },
+      })
+
+      console.debug(JSON.stringify(response, undefined, 2))
+      // the typical ways to die when calling an api
+      if (!response.ok) {
+        const problem = getGeneralApiProblem(response)
+        if (problem) return problem
+      }
       const rawData = (response.data as any).choices[0].message.content
 
       // This is where we transform the data into the shape we expect for our MST model.
@@ -191,15 +119,20 @@ you always format output to JSON with keys for a title for the text and category
       let doneAt
       let amount
       if (extracted.doneAt) {
-        doneAt = addMonths(newDate(...extracted.doneAt), -1)
+        doneAt = doneAt = addMonths(newDate(...extracted.doneAt), -1)
       }
       if (extracted.amount) {
         amount = Number(extracted.amount)
       }
+      Object.keys(extracted).forEach((key) => {
+        if (extracted[key] === null) {
+          delete extracted[key];
+        }
+      });
       return { kind: "ok", extracted: { ...extracted, doneAt, amount } }
     } catch (e) {
       if (__DEV__ && e instanceof Error) {
-        console.error(`Bad data: ${e.message}\n${response.data}`, e.stack)
+        console.error(`Bad data: ${e.message}\n`, e.stack)
       }
       return { kind: "bad-data" }
     }
