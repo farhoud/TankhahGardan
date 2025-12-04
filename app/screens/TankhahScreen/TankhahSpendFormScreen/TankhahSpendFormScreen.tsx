@@ -32,7 +32,6 @@ export const TankhahSpendFormScreen: FC<AppStackScreenProps<"TankhahSpendForm">>
         errors,
         _id,
         setSpend,
-        applyShareText,
         loading,
         setProp,
         error: apiError,
@@ -54,17 +53,6 @@ export const TankhahSpendFormScreen: FC<AppStackScreenProps<"TankhahSpendForm">>
       ]
     }, [opType])
 
-    useEffect(() => {
-      const { hasShareIntent, shareIntent, resetShareIntent } = sharedIntentContext
-      let res
-      if (hasShareIntent && shareIntent.text) {
-        res = applyShareText(shareIntent.text)
-        resetShareIntent()
-      }
-      if (!res) {
-        resetShareIntent()
-      }
-    }, [sharedIntentContext])
 
     const renderBanner = () => {
       return (

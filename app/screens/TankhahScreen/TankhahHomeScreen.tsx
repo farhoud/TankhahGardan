@@ -10,7 +10,18 @@ import { PieChart } from "react-native-gifted-charts"
 import { formatDateIR, formatDateIRDisplay, tomanFormatter } from "app/utils/formatDate"
 import { useNavigation } from "@react-navigation/native"
 import { AppTabScreenProps } from "app/navigators/AppTabNavigator"
-import { Chip, Icon, Button, useTheme, FAB, Menu, Appbar, List, Divider, Drawer } from "react-native-paper"
+import {
+  Chip,
+  Icon,
+  Button,
+  useTheme,
+  FAB,
+  Menu,
+  Appbar,
+  List,
+  Divider,
+  Drawer,
+} from "react-native-paper"
 import { DatePicker } from "app/components/DatePicker/DatePicker"
 import { ListRenderItemInfo } from "@shopify/flash-list"
 import Reanimated, { BounceIn, FadeInRight, FadeOut, FadeOutRight } from "react-native-reanimated"
@@ -79,18 +90,20 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
 
     const headItem = useObject(TankhahItem, new BSON.ObjectID(itemId))
     const totalFund = useQuery({
-      type: TankhahItem, query: (items) => {
+      type: TankhahItem,
+      query: (items) => {
         return items.filtered('opType == "fund"')
-      }
+      },
     }).sum("total")
     const totalSpend = useQuery({
-      type: TankhahItem, query: (items) => {
+      type: TankhahItem,
+      query: (items) => {
         return items.filtered('opType != "fund"')
-      }
+      },
     }).sum("total")
     const spendGroupsNames = useQuery({
       type: TankhahGroup,
-      query: (item) => item.filtered("active == $0", true).sorted("order")
+      query: (item) => item.filtered("active == $0", true).sorted("order"),
     }).map((i) => i.name || "no_group")
 
     const groupNames: string[] = useMemo<string[]>(
@@ -98,14 +111,15 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
       [spendGroupsNames],
     )
 
-    const tankhahItemList = useQuery({
-      type: TankhahItem,
-      query: (items) => {
-        const groupName = groupNames && groupNames[selectedGroup]
-        const list = items.filtered(...getQueryString(startDate, endDate, selectedOp, groupName))
-        return list.sorted('doneAt', true)
-      }
-    },
+    const tankhahItemList = useQuery(
+      {
+        type: TankhahItem,
+        query: (items) => {
+          const groupName = groupNames && groupNames[selectedGroup]
+          const list = items.filtered(...getQueryString(startDate, endDate, selectedOp, groupName))
+          return list.sorted("doneAt", true)
+        },
+      },
       [groupNames, selectedGroup],
     )
 
@@ -166,13 +180,15 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
       }
       return (
         <View style={{ flexDirection: "column", justifyContent: "space-around" }}>
-          {pieData.length > 0 && <PieChart
-            data={pieData}
-            sectionAutoFocus
-            radius={70}
-            innerCircleColor={theme.colors.primary}
-            showValuesAsLabels
-          />}
+          {pieData.length > 0 && (
+            <PieChart
+              data={pieData}
+              sectionAutoFocus
+              radius={70}
+              innerCircleColor={theme.colors.primary}
+              showValuesAsLabels
+            />
+          )}
           <View style={{ justifyContent: "center", alignItems: "center" }}>
             <Text variant="bodyLarge">
               {tomanFormatter(tankhahItemList.filtered('opType != "fund"').sum("total"))}
@@ -187,7 +203,9 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
       const mapDescription = {
         fund: `دریافت`,
         buy: `${item.receiptItems?.map((i) => `${i.title}`).join("، ")}`,
-        transfer: `${translate("paymentMethod." + item.paymentMethod as TxKeyPath)} به ${item.recipient || item.accountNum || "نامشخص"}`,
+        transfer: `${translate(("paymentMethod." + item.paymentMethod) as TxKeyPath)} به ${
+          item.recipient || item.accountNum || "نامشخص"
+        }`,
       }
       return (
         <List.Item
@@ -242,26 +260,40 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
       value?: Date,
     ) => {
       return (
-        <Button
-          onPress={open}
-        >
-          {(type === "start" ? " از " : "تا ") + (value ? formatDateIRDisplay(value, "dd MMM yy") : " : ")}
+        <Button onPress={open}>
+          {(type === "start" ? " از " : "تا ") +
+            (value ? formatDateIRDisplay(value, "dd MMM yy") : " : ")}
         </Button>
       )
     }
 
     const renderDrawer = () => (
-      <Animated.View entering={FadeInRight} exiting={FadeOutRight} style={[{ top: 50, position: "absolute", backgroundColor: theme.colors.background }]}>
+      <Animated.View
+        entering={FadeInRight}
+        exiting={FadeOutRight}
+        style={[{ top: 50, position: "absolute", backgroundColor: theme.colors.background }]}
+      >
         <Drawer.CollapsedItem focusedIcon="printer" onPress={handleNavigation("Print")} />
-        <Drawer.CollapsedItem focusedIcon="basket" onPress={handleNavigation("ReceiptItemList", {})} />
-        <Drawer.CollapsedItem focusedIcon="file-tree" onPress={handleNavigation("TankhahGroupList", {})} />
-        <Drawer.CollapsedItem focusedIcon="content-save-move" onPress={handleNavigation("Backup")} />
+        <Drawer.CollapsedItem
+          focusedIcon="basket"
+          onPress={handleNavigation("ReceiptItemList", {})}
+        />
+        <Drawer.CollapsedItem
+          focusedIcon="file-tree"
+          onPress={handleNavigation("TankhahGroupList", {})}
+        />
+        <Drawer.CollapsedItem
+          focusedIcon="content-save-move"
+          onPress={handleNavigation("Backup")}
+        />
         <Drawer.CollapsedItem focusedIcon="archive" onPress={handleNavigation("TankhahArchive")} />
         <Drawer.CollapsedItem focusedIcon="magnify" onPress={handleNavigation("TankhahSearch")} />
-        <Drawer.CollapsedItem focusedIcon="share-variant-outline" onPress={handleNavigation("ShareIntent")} />
-      </Animated.View >
+        <Drawer.CollapsedItem
+          focusedIcon="share-variant-outline"
+          onPress={handleNavigation("SpendImport")}
+        />
+      </Animated.View>
     )
-
 
     const handleNavigation = (path: string, params?: any) => () => {
       // @ts-ignore
@@ -287,7 +319,6 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
             mode="small"
             title={tomanFormatter(totalFund - totalSpend)}
           />
-
         </Appbar>
         <View>
           <View style={$row}>
