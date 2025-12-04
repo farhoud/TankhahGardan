@@ -1,11 +1,12 @@
-import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
+import { Instance, SnapshotIn, SnapshotOut, types, flow, getRoot } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { ShareIntentItemModel } from "./ShareIntentItem"
 import { BSON } from "realm"
 import { Alert } from "react-native"
 import { api } from "app/services/api"
+import { SpendFormStoreModel } from "./SpendFormStore"
 import { getRootStore } from "./helpers/getRootStore"
-import { navigationRef } from "app/navigators"
+import { RootStore } from "./RootStore"
 
 /**
  * Model description here for TypeScript hints.
@@ -18,7 +19,7 @@ export const ShareIntentModel = types
   .actions(withSetPropAction)
   .views((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => ({
-    async parseText(id: string) {
+    parseText: flow(function* parseText(id: string, apiKey: string, model: string) {
       const item = self.list.find((i) => i.id === id)
       if (!item) {
         Alert.alert("wrong item id")
@@ -26,7 +27,7 @@ export const ShareIntentModel = types
       }
       item.start()
       try {
-        const res = await api.extractInfo(item.text)
+        const res = yield api.extractInfo(item.text, apiKey, model)
         if (res.kind === "bad-data" || res.kind !== "ok") {
           item.failed(res.kind)
           return
@@ -35,15 +36,9 @@ export const ShareIntentModel = types
           item.failed("exteraction failed")
           return
         }
-        const root = getRootStore(self)
-        root.spendFormStore.applyFormData(res.extracted)
-        navigationRef.navigate("TankhahSpendForm", {})
+        item.extracted = SpendFormStoreModel.create(res.extracted!)
+        console.debug(item.extracted)
         item.done()
-        // self.list.remove(item)
-        self.setProp(
-          "list",
-          self.list.filter((i) => i.id !== id),
-        )
       } catch (e) {
         if (e instanceof Error) {
           item.failed(e.toString())
@@ -51,7 +46,7 @@ export const ShareIntentModel = types
           item.failed(String(e))
         }
       }
-    },
+    }),
   }))
   .actions((self) => ({
     addNewShareIntent(text: string) {
@@ -60,17 +55,17 @@ export const ShareIntentModel = types
         id,
         text: text,
       })
-      self.parseText(id)
+      // self.parseText(id)
     },
     deleteListItem(id: string) {
-      self.setProp(
-        "list",
-        self.list.filter((i) => i.id !== id),
-      )
+      const value = self.list.find((i) => i.id === id)
+      if (value) {
+        self.list.remove(value)
+      }
     },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
 
-export interface ShareIntent extends Instance<typeof ShareIntentModel> {}
-export interface ShareIntentSnapshotOut extends SnapshotOut<typeof ShareIntentModel> {}
-export interface ShareIntentSnapshotIn extends SnapshotIn<typeof ShareIntentModel> {}
+export interface ShareIntent extends Instance<typeof ShareIntentModel> { }
+export interface ShareIntentSnapshotOut extends SnapshotOut<typeof ShareIntentModel> { }
+export interface ShareIntentSnapshotIn extends SnapshotIn<typeof ShareIntentModel> { }
 export const createShareIntentDefaultModel = () => types.optional(ShareIntentModel, {})

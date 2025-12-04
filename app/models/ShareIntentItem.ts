@@ -1,5 +1,6 @@
 import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
+import { SpendFormStoreModel } from "./SpendFormStore"
 
 /**
  * Model description here for TypeScript hints.
@@ -12,7 +13,8 @@ export const ShareIntentItemModel = types
     loading: types.optional(types.boolean, false),
     error: types.maybe(types.string),
     complete: types.optional(types.boolean, false),
-    createdAt: types.optional(types.Date, () => new Date())
+    createdAt: types.optional(types.Date, () => new Date()),
+    extracted: types.optional(types.maybeNull(SpendFormStoreModel), null),
   })
   .actions(withSetPropAction)
   .views((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -30,10 +32,10 @@ export const ShareIntentItemModel = types
       self.error = undefined
       self.loading = true
       self.complete = false
-    }
+    },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
 
-export interface ShareIntentItem extends Instance<typeof ShareIntentItemModel> { }
-export interface ShareIntentItemSnapshotOut extends SnapshotOut<typeof ShareIntentItemModel> { }
-export interface ShareIntentItemSnapshotIn extends SnapshotIn<typeof ShareIntentItemModel> { }
+export interface ShareIntentItem extends Instance<typeof ShareIntentItemModel> {}
+export interface ShareIntentItemSnapshotOut extends SnapshotOut<typeof ShareIntentItemModel> {}
+export interface ShareIntentItemSnapshotIn extends SnapshotIn<typeof ShareIntentItemModel> {}
 // export const createShareIntentItemDefaultModel = () => types.optional(ShareIntentItemModel, {})

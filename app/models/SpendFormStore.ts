@@ -6,7 +6,6 @@ import { isNumber } from "app/utils/validation"
 import Realm, { BSON, UpdateMode } from "realm"
 import { Alert } from "react-native"
 import { calcTransferFee } from "app/utils/finance"
-import { api } from "app/services/api"
 import { TxKeyPath, translate } from "app/i18n"
 import { formatDateIR } from "app/utils/formatDate"
 
@@ -17,25 +16,31 @@ export const SpendFormStoreModel = types
   .model("SpendFormStore")
   .props({
     _id: types.maybe(types.string),
-    doneAt: types.Date,
-    group: types.string,
-    opType: types.enumeration<OperationType>("OperationType", ["buy", "transfer", "fund"]),
-    paymentMethod: types.enumeration<PaymentMethod>("PaymentMethod", [
-      "cash",
-      "ctc",
-      "other",
-      "paya",
+    doneAt: types.optional(types.Date, new Date()),
+    group: types.optional(types.string, ""),
+    opType: types.optional(
+      types.enumeration<OperationType>("OperationType", ["buy", "transfer", "fund"]),
+      "buy",
+    ),
+    paymentMethod: types.optional(
+      types.enumeration<PaymentMethod>("PaymentMethod", [
+        "cash",
+        "ctc",
+        "other",
+        "paya",
+        "pos",
+        "satna",
+        "pol-r",
+        "pol-c",
+        "pol-d",
+        "sts",
+      ]),
       "pos",
-      "satna",
-      "pol-r",
-      "pol-c",
-      "pol-d",
-      "sts",
-    ]),
+    ),
     recipient: types.maybe(types.string),
     accountNum: types.maybe(types.string),
-    amount: types.integer,
-    transferFee: types.number,
+    amount: types.optional(types.integer, 0),
+    transferFee: types.optional(types.number, 0),
     trackingNum: types.maybe(types.string),
     description: types.maybe(types.string),
     receiptItems: types.map(ReceiptItemModel),
@@ -44,7 +49,7 @@ export const SpendFormStoreModel = types
     loading: types.optional(types.boolean, false),
     error: types.maybe(types.string),
     editMode: types.optional(types.boolean, false),
-    report: types.maybe(types.string)
+    report: types.maybe(types.string),
   })
   .actions(withSetPropAction)
   .views((self) => ({
@@ -123,7 +128,9 @@ export const SpendFormStoreModel = types
           if (key && value) {
             self.setProp(key as keyof SpendFormStoreSnapshotIn, value)
             const formatedValue = value instanceof Date ? formatDateIR(value) : value
-            report = report.concat(`${translate('spend.' + key as TxKeyPath)} با مقدار ${formatedValue} .\n`)
+            report = report.concat(
+              `${translate(("spend." + key) as TxKeyPath)} با مقدار ${formatedValue} .\n`,
+            )
           }
         }
         report += "استخراج شد."
@@ -198,7 +205,7 @@ export const SpendFormStoreModel = types
         title: i.title,
       }))
 
-      const groups = realm.objects(TankhahGroup).filtered('name = $0', group)
+      const groups = realm.objects(TankhahGroup).filtered("name = $0", group)
       if (groups.length === 0) {
         groupObject = realm.create(TankhahGroup, {
           _id: new BSON.ObjectID(),
@@ -207,7 +214,6 @@ export const SpendFormStoreModel = types
       } else {
         groupObject = groups[0]
       }
-
 
       try {
         const res = realm.write(() => {
@@ -243,9 +249,9 @@ export const SpendFormStoreModel = types
     },
   }))
 
-export interface SpendFormStore extends Instance<typeof SpendFormStoreModel> { }
-export interface SpendFormStoreSnapshotOut extends SnapshotOut<typeof SpendFormStoreModel> { }
-export interface SpendFormStoreSnapshotIn extends SnapshotIn<typeof SpendFormStoreModel> { }
+export interface SpendFormStore extends Instance<typeof SpendFormStoreModel> {}
+export interface SpendFormStoreSnapshotOut extends SnapshotOut<typeof SpendFormStoreModel> {}
+export interface SpendFormStoreSnapshotIn extends SnapshotIn<typeof SpendFormStoreModel> {}
 export const createSpendFormStoreDefaultModel = () =>
   types.optional(SpendFormStoreModel, {
     doneAt: new Date(),
