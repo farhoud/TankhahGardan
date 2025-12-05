@@ -32,6 +32,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { startOfDay, endOfDay } from "date-fns-jalali"
 import randomColor from "randomcolor"
 import Animated from "react-native-reanimated"
+import * as Clipboard from "expo-clipboard"
+
 
 type ItemFilterPreset = OperationType | "all" | "spend"
 
@@ -41,6 +43,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
 
     const {
       tankhahHomeStore: { startDate, endDate, selectedGroup, selectedOp, setProp },
+      shareIntent: { addNewShareIntent },
     } = useStores()
 
     const navigation = useNavigation<AppNavigation>()
@@ -160,7 +163,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
     }, [openFilterMenu, selectedOp])
 
     const renderPieChart = useCallback(() => {
-      let pieData = []
+      const pieData = []
       const total = realm
         .objects(TankhahItem)
         .filtered(...getQueryString(startDate, endDate, "fund"))
@@ -203,9 +206,8 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
       const mapDescription = {
         fund: `دریافت`,
         buy: `${item.receiptItems?.map((i) => `${i.title}`).join("، ")}`,
-        transfer: `${translate(("paymentMethod." + item.paymentMethod) as TxKeyPath)} به ${
-          item.recipient || item.accountNum || "نامشخص"
-        }`,
+        transfer: `${translate(("paymentMethod." + item.paymentMethod) as TxKeyPath)} به ${item.recipient || item.accountNum || "نامشخص"
+          }`,
       }
       return (
         <List.Item
@@ -271,7 +273,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
       <Animated.View
         entering={FadeInRight}
         exiting={FadeOutRight}
-        style={[{ top: 50, position: "absolute", backgroundColor: theme.colors.background }]}
+        style={{ top: 50, position: "absolute", backgroundColor: theme.colors.background }}
       >
         <Drawer.CollapsedItem focusedIcon="printer" onPress={handleNavigation("Print")} />
         <Drawer.CollapsedItem
@@ -292,6 +294,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
           focusedIcon="share-variant-outline"
           onPress={handleNavigation("SpendImport")}
         />
+        <Drawer.CollapsedItem focusedIcon="cog" onPress={handleNavigation("Setting")} />
       </Animated.View>
     )
 
@@ -408,6 +411,21 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
               icon: "wallet-plus",
               label: "دریافت",
               onPress: () => navigation.navigate("TankhahFundForm", {}),
+            },
+            {
+              icon: "clipboard",
+              label: "هضمس",
+              onPress: async () => {
+                try {
+                  const text = await Clipboard.getStringAsync()
+                  if (text) {
+                    addNewShareIntent(text)
+                  }
+                } catch (e) {
+                  console.log(e)
+                }
+                navigation.navigate("SpendImport")
+              },
             },
           ]}
           onStateChange={({ open }) => {
