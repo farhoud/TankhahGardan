@@ -67,6 +67,7 @@ export type AppStackParamList = {
   TankhahArchive: undefined
   ShareIntent: undefined
   CalendarItem: { itemId: string; itemType: keyof typeof CalendarItemEnum }
+  Setting: undefined
   // IGNITE_GENERATOR_ANCHOR_APP_STACK_PARAM_LIST
 }
 
@@ -222,6 +223,19 @@ const AppStack = observer(function AppStack() {
           header: () => (
             <Appbar.Header mode="small">
               <Appbar.BackAction onPress={goBack} />
+            </Appbar.Header>
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="Setting"
+        component={Screens.SettingScreen}
+        options={{
+          headerShown: true,
+          header: () => (
+            <Appbar.Header mode="small">
+              <Appbar.BackAction onPress={goBack} />
+              <Appbar.Content title="تنظیمات" />
             </Appbar.Header>
           ),
         }}
