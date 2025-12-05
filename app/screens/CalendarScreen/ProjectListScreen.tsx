@@ -1,4 +1,4 @@
-import { FC, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import React, { FC, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { observer } from "mobx-react-lite"
 import { View, ViewStyle } from "react-native"
 import { AppStackScreenProps, AppNavigation } from "app/navigators"
@@ -9,7 +9,6 @@ import { BSON, UpdateMode } from "realm"
 import { Button, ListViewRef, TextField } from "app/components"
 import { useNavigation } from "@react-navigation/native"
 import { useStores } from "app/models"
-import React from "react"
 import DraggableFlatList from "react-native-draggable-flatlist"
 
 interface ProjectListScreenProps extends AppStackScreenProps<"ProjectList"> { }
@@ -103,7 +102,7 @@ export const ProjectListScreen: FC<ProjectListScreenProps> = observer(function P
   useEffect(() => {
     if (res) {
       const index = data.findIndex((i) => i._objectKey() === res._objectKey())
-      if (index > -1) refList.current?.scrollToIndex({ animated: true, index: index })
+      if (index > -1) refList.current?.scrollToIndex({ animated: true, index })
       setRes(undefined)
     }
   }, [res])
@@ -171,12 +170,12 @@ export const ProjectModal: FC<ProjectModalProps> = (_props) => {
   const [errors, setErrors] = useState<Record<string, string>>()
 
   const validateForm = () => {
-    let errors: Record<string, string> = {}
+    const errors: Record<string, string> = {}
     if (!name) {
       errors.name = "فیلد نام الزامیست"
     }
     setErrors(errors)
-    let iv = Object.keys(errors).length === 0 || errors === undefined
+    const iv = Object.keys(errors).length === 0 || errors === undefined
     return iv
   }
 

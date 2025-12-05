@@ -35,7 +35,7 @@ export const CalendarSearchModel = types
     },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => {
-    let realmIns: Realm | undefined = undefined
+    let realmIns: Realm | undefined
     function clean() {
       self.projectFilter = cast([])
       self.typeFilter = cast([])

@@ -25,12 +25,12 @@ interface TankhahGroupFormModalProps extends Omit<DialogProps, "children"> {
     const [errors, setErrors] = useState<Record<string, string>>()
   
     const validateForm = () => {
-      let errors: Record<string, string> = {}
+      const errors: Record<string, string> = {}
       if (!name) {
         errors.name = "فیلد نام الزامیست"
       }
       setErrors(errors)
-      let iv = Object.keys(errors).length === 0 || errors === undefined
+      const iv = Object.keys(errors).length === 0 || errors === undefined
       return iv
     }
   

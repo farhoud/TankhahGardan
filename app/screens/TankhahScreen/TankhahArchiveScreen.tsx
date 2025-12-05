@@ -58,7 +58,7 @@ export const TankhahArchiveScreen: FC<TankhahArchiveScreenProps> = observer(func
             }}
           />
         </View>
-        {archiving && <View style={[{ width: "100%", padding: 5 }]}>
+        {archiving && <View style={{ width: "100%", padding: 5 }}>
           <ProgressBar progress={progress} ></ProgressBar>
         </View>}
         <Button style={{ marginHorizontal: 10 }} mode="outlined" disabled={archiving} onPress={() => showConfirm()}>شروع</Button>

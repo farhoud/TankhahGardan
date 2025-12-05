@@ -45,7 +45,7 @@ export const tomanFormatter = (value: number) => {
     .split("")
     .reverse()
     .reduce((acc, curr, index) => {
-      let res = curr + acc
+      const res = curr + acc
       if ((index + 1) % 3 === 0) {
         return "٫" + res
       }

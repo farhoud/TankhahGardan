@@ -5,7 +5,7 @@ import { Alert } from "react-native"
 import { Attendance, Project, Worker } from "./realm/calendar"
 
 const defaultStartTime = (_date?: Date) => {
-  const date = !!_date ? new Date(_date) : new Date()
+  const date = _date ? new Date(_date) : new Date()
   date.setHours(8)
   date.setMinutes(0)
   date.setSeconds(0)
@@ -14,7 +14,7 @@ const defaultStartTime = (_date?: Date) => {
 }
 
 const defaultEndTime = (_date?: Date) => {
-  const date = !!_date ? new Date(_date) : new Date()
+  const date = _date ? new Date(_date) : new Date()
   date.setHours(17)
   date.setMinutes(0)
   date.setSeconds(0)
@@ -44,7 +44,7 @@ export const CalendarAttendanceModel = types
       if (!self.touched) {
         return {}
       }
-      let errors: Record<string, string> = {}
+      const errors: Record<string, string> = {}
       const required = "این فیلد الزامیست"
       if (!self.from) {
         errors.from = required
@@ -78,9 +78,9 @@ export const CalendarAttendanceModel = types
             Attendance,
             {
               _id: self._id ? new BSON.ObjectID(self._id) : new BSON.ObjectID(),
-              worker: worker,
+              worker,
               group: self.group,
-              project: project,
+              project,
               from: self.from,
               to: self.to,
               description: self.description,

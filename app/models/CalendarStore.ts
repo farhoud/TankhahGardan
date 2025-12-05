@@ -55,14 +55,14 @@ export const CalendarStoreModel = types
       switch (self.currentForm) {
         case "attendance":
           self.attendanceForm.setProp("workerId", workerId)
-          return
+          
       }
     },
     deSelectWorker(workerId: string) {
       switch (self.currentForm) {
         case "attendance":
           self.attendanceForm.setProp("workerId", undefined)
-          return
+          
       }
     },
   }))

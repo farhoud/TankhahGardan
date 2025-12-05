@@ -53,7 +53,7 @@ export const ShareIntentModel = types
       const id = new BSON.UUID().toHexString()
       self.list.push({
         id,
-        text: text,
+        text,
       })
       // self.parseText(id)
     },

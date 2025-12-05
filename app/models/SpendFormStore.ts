@@ -64,7 +64,7 @@ export const SpendFormStoreModel = types
       return self.receiptItems.get(key)
     },
     get errors(): Record<string, string> {
-      let errors: Record<string, string> = {}
+      const errors: Record<string, string> = {}
       const required = "این فیلد الزامیست"
       if (!self.doneAt) {
         errors.doneAt = required

@@ -27,7 +27,7 @@ export const ImageViewScreen: FC<ImageViewScreenProps> = observer(function Image
   }
 
   const prevImage = (index: number) => {
-    if (0 <= index - 1) {
+    if (index - 1 >= 0) {
       return index - 1
     }
     return images.length - 1

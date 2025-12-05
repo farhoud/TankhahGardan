@@ -31,7 +31,7 @@ export const TankhahChargeFromScreen: FC<AppStackScreenProps<"TankhahFundForm">>
 
 
     const validateForm = () => {
-      let errors: Record<string, string> = {}
+      const errors: Record<string, string> = {}
       if (!amount || !isNumber(Number(amount))) {
         errors.amount = "لطفا مقدار را درست وارد کنید."
       }

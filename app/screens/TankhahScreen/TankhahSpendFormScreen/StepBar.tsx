@@ -135,10 +135,33 @@ const $col: ViewStyle = { display: "flex", flexDirection: "column", alignItems: 
 const $row: ViewStyle = { display: "flex", flexDirection: "row-reverse", alignItems: "center" }
 
 const styles = StyleSheet.create({
-  tabbar: {
-    flexDirection: "row-reverse",
+  active: {
+    color: "#0084ff",
+  },
+  activeItem: {
+    bottom: 0,
+    left: 0,
+    position: "absolute",
+    right: 0,
+    top: 0,
+  },
+  icon: {
+    height: 26,
+    width: 26,
+  },
+  inactive: {
+    color: "#939393",
+  },
+  item: {
+    alignItems: "center",
     justifyContent: "center",
-    // backgroundColor: "#fafafa",
+    paddingTop: 4.5,
+  },
+  label: {
+    backgroundColor: "transparent",
+    fontSize: 10,
+    marginBottom: 1.5,
+    marginTop: 3,
   },
   tab: {
     // flex: 1,
@@ -147,32 +170,9 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "rgba(0, 0, 0, .2)",
   },
-  item: {
-    alignItems: "center",
+  tabbar: {
+    flexDirection: "row-reverse",
     justifyContent: "center",
-    paddingTop: 4.5,
-  },
-  activeItem: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  active: {
-    color: "#0084ff",
-  },
-  inactive: {
-    color: "#939393",
-  },
-  icon: {
-    height: 26,
-    width: 26,
-  },
-  label: {
-    fontSize: 10,
-    marginTop: 3,
-    marginBottom: 1.5,
-    backgroundColor: "transparent",
+    // backgroundColor: "#fafafa",
   },
 })

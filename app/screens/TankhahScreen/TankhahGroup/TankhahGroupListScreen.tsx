@@ -1,17 +1,15 @@
-import { FC, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import React, { FC, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { observer } from "mobx-react-lite"
 import { ViewStyle } from "react-native"
 import { AppStackScreenProps, AppNavigation } from "app/navigators"
 import { Appbar, List, Searchbar } from "react-native-paper"
-import { useQuery } from "@realm/react"
+import { useQuery , useRealm } from "@realm/react"
 import { ListView, ListViewRef } from "app/components"
 import { useNavigation } from "@react-navigation/native"
 import { useStores } from "app/models"
-import React from "react"
 import { TankhahGroupFormModal } from "./TankhahGroupFromModal"
 import { TankhahGroup } from "app/models/realm/tankhah"
 import DraggableFlatList from "react-native-draggable-flatlist"
-import { useRealm } from "@realm/react"
 
 interface TankhahGroupListScreenProps extends AppStackScreenProps<"TankhahGroupList"> { }
 
@@ -104,7 +102,7 @@ export const TankhahGroupListScreen: FC<TankhahGroupListScreenProps> = observer(
   useEffect(() => {
     if (res) {
       const index = data.findIndex((i) => i._objectKey() === res._objectKey())
-      if (index > -1) refList.current?.scrollToIndex({ animated: true, index: index })
+      if (index > -1) refList.current?.scrollToIndex({ animated: true, index })
       setRes(undefined)
     }
   }, [res])

@@ -55,7 +55,7 @@ export const MoneyFormScreen: FC = memo(
       // No permissions request is necessary for launching the image library
       const lunchFunc =
         source === "gallery" ? ImagePicker.launchImageLibraryAsync : ImagePicker.launchCameraAsync
-      let result = await lunchFunc({
+      const result = await lunchFunc({
         mediaTypes: ImagePicker.MediaTypeOptions.All,
         allowsEditing: true,
         quality: 1,

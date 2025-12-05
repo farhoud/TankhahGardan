@@ -51,7 +51,7 @@ export const SpendImportScreen: FC<SpendImportScreenProps> = observer(function S
                   addNewShareIntent(text)
                 }
               } catch (e) {
-                return
+                
               }
             }}
           />

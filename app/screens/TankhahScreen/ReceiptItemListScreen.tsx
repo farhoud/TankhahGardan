@@ -1,4 +1,4 @@
-import { FC, useEffect, useLayoutEffect, useRef, useState } from "react"
+import React, { FC, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { observer } from "mobx-react-lite"
 import { ViewStyle } from "react-native"
 import { AppStackScreenProps, AppNavigation } from "app/navigators"
@@ -8,7 +8,6 @@ import { BSON, UpdateMode } from "realm"
 import { Button, CurrencyField, ListView, ListViewRef, TextField } from "app/components"
 import { useNavigation } from "@react-navigation/native"
 import { ReceiptItem } from "app/models/realm/tankhah"
-import React from "react"
 
 interface ReceiptItemListScreenProps extends AppStackScreenProps<"ReceiptItemList"> {}
 
@@ -76,7 +75,7 @@ export const ReceiptItemListScreen: FC<ReceiptItemListScreenProps> = observer(
     useEffect(() => {
       if (res) {
         const index = data.findIndex((i) => i._objectKey() === res._objectKey())
-        if (index > -1) refList.current?.scrollToIndex({ animated: true, index: index })
+        if (index > -1) refList.current?.scrollToIndex({ animated: true, index })
         setRes(undefined)
       }
     }, [res])
@@ -139,7 +138,7 @@ export const ReceiptItemModal: FC<ReceiptItemModalProps> = (_props) => {
   const [errors, setErrors] = useState<Record<string, string>>()
 
   const validateForm = () => {
-    let errors: Record<string, string> = {}
+    const errors: Record<string, string> = {}
     if (!title) {
       errors.title = "فیلد نام الزامیست"
     }

@@ -94,19 +94,21 @@ ${text || ""}`,
     // transform the data into the format we are expecting
     try {
       const response: ApiResponse<ApiFeedResponse> = await this.apisauce.post(`chat/completions`, {
-        messages: messages,
-        model: model,
+        messages,
+        model,
         temperature: 0.6,
         response_format: {
           type: "json_object",
         },
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          Accept: "application/json",
-        },
-      })
+      },
+        {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            Accept: "application/json",
+          },
+        })
 
-      console.debug(JSON.stringify(response, undefined, 2))
+      // console.debug(JSON.stringify(response, undefined, 2))
       // the typical ways to die when calling an api
       if (!response.ok) {
         const problem = getGeneralApiProblem(response)

@@ -56,7 +56,7 @@ export const CalendarNoteModel = types
             CalenderNote,
             {
               _id: self._id ? new BSON.ObjectID(self._id) : new BSON.ObjectID(),
-              project: project,
+              project,
               title: self.title.value as string,
               isDone: self.isDone,
               dueDate: self.dueDate,

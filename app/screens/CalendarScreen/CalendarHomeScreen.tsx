@@ -197,15 +197,13 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
           />
           <Card.Content style={{ flex: 1 }}>
             <View
-              style={[
-                {
+              style={{
                   alignSelf: "flex-start",
                   flexDirection: "row-reverse",
-                },
-              ]}
+                }}
             >
               <Text
-                style={[{ paddingHorizontal: 20, paddingTop: 6 }]}
+                style={{ paddingHorizontal: 20, paddingTop: 6 }}
                 variant="bodyMedium"
               >{`${format(item.from, "HH:mm")} ${item.to ? "" : "-"} ${item.to ? format(item.to, "HH:mm") : ""
                 }`}</Text>
@@ -215,15 +213,13 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
             </View>
             {!!item.description && (
               <View
-                style={[
-                  {
+                style={{
                     marginBottom: spacing.xs,
                     alignSelf: "flex-start",
                     flexDirection: "row-reverse",
-                  },
-                ]}
+                  }}
               >
-                <Text style={[{ paddingHorizontal: 20, paddingTop: 5 }]} variant="bodyMedium">
+                <Text style={{ paddingHorizontal: 20, paddingTop: 5 }} variant="bodyMedium">
                   {item.description}
                 </Text>
                 <Icon source="text-long" size={24} />
@@ -383,7 +379,7 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
       <ProjectModal visible={!projects[currentPage]} />
       <PagerView
         ref={pagerRef}
-        style={[$root]}
+        style={$root}
         initialPage={currentPage}
         onPageSelected={(e) => {
           setCurrentPage(e.nativeEvent.position)
@@ -392,7 +388,7 @@ export const CalendarHomeScreen: FC<CalendarScreenProps> = observer(function Cal
         }}
       >
         {projects.map((i, index) => (
-          <View key={i._id.toHexString()} style={[{ flex: 1, flexDirection: "row-reverse", backgroundColor: theme.colors.background }]}>
+          <View key={i._id.toHexString()} style={{ flex: 1, flexDirection: "row-reverse", backgroundColor: theme.colors.background }}>
             <ListView data={data} scrollEnabled renderItem={renderItem} />
             <View>{drawerOpen && renderDrawer()}</View>
           </View>

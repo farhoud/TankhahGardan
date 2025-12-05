@@ -27,7 +27,7 @@ export const TankhahArchiveModel = types
   .actions(withSetPropAction)
   .views((self) => ({})) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => {
-    let realm: Realm | undefined = undefined
+    let realm: Realm | undefined
     function setRealm(r: Realm) {
       if (!realm)
         realm = r
@@ -70,7 +70,7 @@ export const TankhahArchiveModel = types
       try {
         const items = realm?.objects(TankhahItem).filtered("doneAt BETWEEN { $0 , $1 } SORT(doneAt DESC)", self.startDate, self.endDate).slice()
         let index = 0
-        for (let i of items) {
+        for (const i of items) {
           const receiptItems = i.receiptItems?.map(i => { return { amount: i.amount, title: i.title, price: i.price } })
           // @ts-ignore
           realm.create(TankhahArchiveItem, { ...i, archiveStart: self.startDate, archiveEnd: self.endDate, archiveId: self.archiveId, receiptItems })

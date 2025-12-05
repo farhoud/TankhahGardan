@@ -64,7 +64,7 @@ export const TankhahPrintModel = types
     },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => {
-    let realm: Realm | undefined = undefined
+    let realm: Realm | undefined
     function setRealm(r: Realm) {
       realm = r
     }

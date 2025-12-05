@@ -31,7 +31,7 @@ export const TankhahSearchModel = types
     },
   })) // eslint-disable-line @typescript-eslint/no-unused-vars
   .actions((self) => {
-    let realmIns: Realm | undefined = undefined
+    let realmIns: Realm | undefined
     function clean() {
       self.gpFilter = cast([])
       self.opFilter = cast([])

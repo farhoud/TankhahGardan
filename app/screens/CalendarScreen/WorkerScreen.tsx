@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import React, { FC, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { observer } from "mobx-react-lite"
 import { View, ViewStyle } from "react-native"
 import { AppStackScreenProps, AppNavigation } from "app/navigators"
@@ -24,7 +24,6 @@ import { useStores } from "app/models"
 import { endOfDay } from "date-fns"
 import { startOfDay } from "date-fns-jalali"
 import { $row, spacing } from "app/theme"
-import React from "react"
 
 interface WorkerScreenProps extends AppStackScreenProps<"Worker"> {}
 
@@ -182,7 +181,7 @@ export const WorkerScreen: FC<WorkerScreenProps> = observer(function WorkerScree
   useEffect(() => {
     if (res) {
       const index = data.findIndex((i) => i._objectKey() === res._objectKey())
-      if (index > -1) refList.current?.scrollToIndex({ animated: true, index: index })
+      if (index > -1) refList.current?.scrollToIndex({ animated: true, index })
       setRes(undefined)
     }
   }, [res])
@@ -271,7 +270,7 @@ export const WorkerModal: FC<WorkerModalProps> = (_props) => {
   const [errors, setErrors] = useState<Record<string, string>>()
 
   const validateForm = () => {
-    let errors: Record<string, string> = {}
+    const errors: Record<string, string> = {}
     if (!name) {
       errors.name = "فیلد تاریخ الزامیست"
     }
