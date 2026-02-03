@@ -7,7 +7,7 @@ import { Surface, Drawer, Appbar, useTheme, Searchbar } from "react-native-paper
 import Animated, { FadeInLeft, FadeOutLeft } from "react-native-reanimated"
 import { CommonActions, useNavigation } from "@react-navigation/native"
 import { useRealm } from "@realm/react"
-import { CalendarItemEnum, SearchResultItem , useStores } from "app/models"
+import { CalendarItemEnum, SearchResultItem, useStores } from "app/models"
 import { ListRenderItemInfo } from "@shopify/flash-list"
 
 interface CalendarSearchScreenProps extends AppStackScreenProps<"CalendarSearch"> { }
@@ -50,7 +50,6 @@ export const CalendarSearchScreen: FC<CalendarSearchScreenProps> = observer(func
           <Appbar.Action
             icon="menu"
             onPress={() => {
-              console.log(drawerOpen)
               setDrawerOpen(prev => !prev)
             }}
           />

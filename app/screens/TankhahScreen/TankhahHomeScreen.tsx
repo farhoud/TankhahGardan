@@ -414,7 +414,7 @@ export const TankhahHomeScreen: FC<AppTabScreenProps<"TankhahHome">> = observer(
             },
             {
               icon: "clipboard",
-              label: "هضمس",
+              label: "هضم",
               onPress: async () => {
                 try {
                   const text = await Clipboard.getStringAsync()

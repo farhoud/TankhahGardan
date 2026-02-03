@@ -7,7 +7,7 @@ import { Surface, Drawer, Appbar, useTheme, Searchbar } from "react-native-paper
 import Animated, { FadeInLeft, FadeOutLeft } from "react-native-reanimated"
 import { CommonActions, RouteProp, useNavigation, useRoute } from "@react-navigation/native"
 import { useRealm } from "@realm/react"
-import { SearchResultItem , useStores } from "app/models"
+import { SearchResultItem, useStores } from "app/models"
 import { ListRenderItemInfo } from "@shopify/flash-list"
 
 interface TankhahSearchScreenProps extends AppStackScreenProps<"TankhahSearch"> { }
@@ -55,7 +55,6 @@ export const TankhahSearchScreen: FC<TankhahSearchScreenProps> = observer(functi
           <Appbar.Action
             icon="menu"
             onPress={() => {
-              console.log(drawerOpen)
               setDrawerOpen(prev => !prev)
             }}
           />

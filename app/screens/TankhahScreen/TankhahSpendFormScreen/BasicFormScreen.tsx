@@ -4,7 +4,7 @@ import { ViewStyle } from "react-native"
 import { AutoComplete, DatePicker, Select, TextField } from "app/components"
 import { Surface } from "react-native-paper"
 import { useStores } from "app/models"
-import { PaymentMethod, OperationType, TankhahItem } from "app/models/realm/tankhah"
+import { PaymentMethod, OperationType, TankhahItem, TankhahGroup } from "app/models/realm/tankhah"
 import { useQuery } from "@realm/react"
 
 export const BasicFormScreen: FC = memo(
@@ -28,29 +28,30 @@ export const BasicFormScreen: FC = memo(
     } = useStores()
 
     const groupSuggestions = useQuery({
-      type:TankhahItem,
-      query: (spends) => 
-        spends.filtered(
-          "group.name CONTAINS $0 SORT(doneAt DESC) DISTINCT(group.name)",
+      type: TankhahGroup,
+      query: (groups) =>
+        groups.filtered(
+          "name CONTAINS $0",
           group,
         )
-      },
+    },
       [group]
     )
 
     const recipientSuggestions = useQuery({
-      type:TankhahItem,
+      type: TankhahItem,
       query: (spends) => {
         return spends.filtered(
           "recipient CONTAINS $0 AND recipient != '' AND opType == $1 SORT(doneAt DESC) DISTINCT(recipient)",
           recipient,
           opType,
         )
-      }},
+      }
+    },
       [recipient, opType],
     )
     const accountNumSuggestions = useQuery({
-      type:TankhahItem,
+      type: TankhahItem,
       query: (spends) => {
         return spends.filtered(
           "accountNum CONTAINS $0 AND accountNum != '' AND recipient CONTAINS $1 AND paymentMethod == $2 SORT(doneAt DESC) DISTINCT(accountNum)",
@@ -58,7 +59,8 @@ export const BasicFormScreen: FC = memo(
           recipient,
           paymentMethod,
         )
-      }},
+      }
+    },
       [accountNum, recipient, paymentMethod],
     )
 
@@ -89,7 +91,7 @@ export const BasicFormScreen: FC = memo(
           onChangeText={(value) => setProp("group", value)}
           error={!!errors?.group}
           suggestions={groupSuggestions.map((i) => {
-            return { title: i.group?.name || "" }
+            return { title: i.name || "" }
           })}
           onSelect={(value) => {
             setProp("group", value)

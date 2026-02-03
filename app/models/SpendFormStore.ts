@@ -207,9 +207,12 @@ export const SpendFormStoreModel = types
 
       const groups = realm.objects(TankhahGroup).filtered("name = $0", group)
       if (groups.length === 0) {
-        groupObject = realm.create(TankhahGroup, {
-          _id: new BSON.ObjectID(),
-          name: group,
+        groupObject = realm.write(() => {
+          return realm.create(TankhahGroup, {
+            _id: new BSON.ObjectID(),
+            name: group,
+            active: true
+          })
         })
       } else {
         groupObject = groups[0]
@@ -249,9 +252,9 @@ export const SpendFormStoreModel = types
     },
   }))
 
-export interface SpendFormStore extends Instance<typeof SpendFormStoreModel> {}
-export interface SpendFormStoreSnapshotOut extends SnapshotOut<typeof SpendFormStoreModel> {}
-export interface SpendFormStoreSnapshotIn extends SnapshotIn<typeof SpendFormStoreModel> {}
+export interface SpendFormStore extends Instance<typeof SpendFormStoreModel> { }
+export interface SpendFormStoreSnapshotOut extends SnapshotOut<typeof SpendFormStoreModel> { }
+export interface SpendFormStoreSnapshotIn extends SnapshotIn<typeof SpendFormStoreModel> { }
 export const createSpendFormStoreDefaultModel = () =>
   types.optional(SpendFormStoreModel, {
     doneAt: new Date(),

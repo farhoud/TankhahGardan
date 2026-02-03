@@ -194,7 +194,6 @@ export const ProjectModal: FC<ProjectModalProps> = (_props) => {
           data ? UpdateMode.Modified : undefined,
         )
       })
-      console.log("res:", res)
       onDone && onDone(res)
       clear()
     }
@@ -214,7 +213,6 @@ export const ProjectModal: FC<ProjectModalProps> = (_props) => {
       if (data) {
         setName(data.name)
         setDescription(data.description)
-        console.log("data.actice:", data.active)
         setActive(data.active)
       } else {
         clear()
